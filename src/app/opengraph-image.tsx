@@ -50,7 +50,7 @@ export default async function Image() {
               style={{
                 fontSize: '72px',
                 fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%)',
+                background: 'linear-gradient(135deg, oklch(0.6489 0.2370 26.9728) 0%, oklch(0.5635 0.2408 260.8178) 100%)',
                 backgroundClip: 'text',
                 color: 'transparent',
                 display: 'flex',
@@ -72,7 +72,7 @@ export default async function Image() {
               style={{
                 fontSize: '72px',
                 fontWeight: 'bold',
-                background: 'linear-gradient(135deg, #ec4899 0%, #f59e0b 100%)',
+                background: 'linear-gradient(135deg, oklch(0.9680 0.2110 109.7692) 0%, oklch(0.7044 0.1872 23.1858) 100%)',
                 backgroundClip: 'text',
                 color: 'transparent',
                 display: 'flex',
@@ -108,11 +108,11 @@ export default async function Image() {
             <div
               style={{
                 padding: '12px 24px',
-                backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                border: '2px solid rgba(59, 130, 246, 0.3)',
-                borderRadius: '8px',
+                backgroundColor: 'oklch(0.95 0.05 26.9728)',
+                border: '2px solid oklch(0.6489 0.2370 26.9728)',
+                borderRadius: '0px',
                 fontSize: '20px',
-                color: '#60a5fa',
+                color: 'oklch(0.4 0.2 26.9728)',
                 display: 'flex',
               }}
             >
@@ -121,11 +121,11 @@ export default async function Image() {
             <div
               style={{
                 padding: '12px 24px',
-                backgroundColor: 'rgba(139, 92, 246, 0.1)',
-                border: '2px solid rgba(139, 92, 246, 0.3)',
-                borderRadius: '8px',
+                backgroundColor: 'oklch(0.95 0.05 260.8178)',
+                border: '2px solid oklch(0.5635 0.2408 260.8178)',
+                borderRadius: '0px',
                 fontSize: '20px',
-                color: '#a78bfa',
+                color: 'oklch(0.4 0.2 260.8178)',
                 display: 'flex',
               }}
             >
@@ -134,11 +134,11 @@ export default async function Image() {
             <div
               style={{
                 padding: '12px 24px',
-                backgroundColor: 'rgba(236, 72, 153, 0.1)',
-                border: '2px solid rgba(236, 72, 153, 0.3)',
-                borderRadius: '8px',
+                backgroundColor: 'oklch(0.95 0.05 109.7692)',
+                border: '2px solid oklch(0.9680 0.2110 109.7692)',
+                borderRadius: '0px',
                 fontSize: '20px',
-                color: '#f472b6',
+                color: 'oklch(0.5 0.15 109.7692)',
                 display: 'flex',
               }}
             >
