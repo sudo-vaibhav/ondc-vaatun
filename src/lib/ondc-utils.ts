@@ -12,7 +12,7 @@ function getEnvVar(key: string): string {
 
 export const ENCRYPTION_PRIVATE_KEY = getEnvVar('ENCRYPTION_PRIVATE_KEY');
 export const ONDC_PUBLIC_KEY = getEnvVar('ONDC_PUBLIC_KEY');
-export const REQUEST_ID = getEnvVar('REQUEST_ID');
+export const STATIC_SUBSCRIBE_REQUEST_ID = getEnvVar('STATIC_SUBSCRIBE_REQUEST_ID');
 export const SIGNING_PRIVATE_KEY = getEnvVar('SIGNING_PRIVATE_KEY');
 
 // Pre-compute keys and shared secret

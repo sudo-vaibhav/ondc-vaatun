@@ -24,53 +24,61 @@ A Next.js application for integrating with the Open Network for Digital Commerce
 ## Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd ondc-vaatun
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Create a `.env` file in the project root (copy from `.env.example`):
+
 ```bash
 cp .env.example .env
 ```
 
 4. Add your ONDC credentials to `.env`:
+
 ```env
 ENCRYPTION_PRIVATE_KEY=your_encryption_private_key_here
 ONDC_PUBLIC_KEY=your_ondc_public_key_here
-REQUEST_ID=your_request_id_here
+STATIC_SUBSCRIBE_REQUEST_ID=your_request_id_here
 SIGNING_PRIVATE_KEY=your_signing_private_key_here
 ```
 
 ## Environment Variables
 
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `ENCRYPTION_PRIVATE_KEY` | Your X25519 private key for encryption (base64) | `MC4CAQAwBQYD...` |
-| `ONDC_PUBLIC_KEY` | ONDC's public key for your environment (base64) | `MCowBQYDK2Vu...` |
-| `REQUEST_ID` | Unique request ID for site verification | `019aa6d1-8906-...` |
-| `SIGNING_PRIVATE_KEY` | Ed25519 private key for signing (base64) | `gjMvb5yp77UV...` |
+| Variable                      | Description                                     | Example             |
+| ----------------------------- | ----------------------------------------------- | ------------------- |
+| `ENCRYPTION_PRIVATE_KEY`      | Your X25519 private key for encryption (base64) | `MC4CAQAwBQYD...`   |
+| `ONDC_PUBLIC_KEY`             | ONDC's public key for your environment (base64) | `MCowBQYDK2Vu...`   |
+| `STATIC_SUBSCRIBE_REQUEST_ID` | Unique request ID for site verification         | `019aa6d1-8906-...` |
+| `SIGNING_PRIVATE_KEY`         | Ed25519 private key for signing (base64)        | `gjMvb5yp77UV...`   |
 
 ## Running the Application
 
 ### Development
+
 ```bash
 npm run dev
 ```
+
 The application will start at [http://localhost:3000](http://localhost:3000)
 
 ### Production Build
+
 ```bash
 npm run build
 npm start
 ```
 
 ### Code Quality
+
 ```bash
 npm run lint      # Check code quality
 npm run format    # Format code with Biome
@@ -85,6 +93,7 @@ npm run format    # Format code with Biome
 Handles ONDC subscription challenge-response verification.
 
 **Request:**
+
 ```json
 {
   "subscriber_id": "ondc-buyer-staging-app.yash.com",
@@ -93,6 +102,7 @@ Handles ONDC subscription challenge-response verification.
 ```
 
 **Response:**
+
 ```json
 {
   "answer": "decrypted_challenge_string"
@@ -100,6 +110,7 @@ Handles ONDC subscription challenge-response verification.
 ```
 
 **How it works:**
+
 1. ONDC sends an encrypted challenge using AES-256-ECB
 2. The endpoint decrypts it using the Diffie-Hellman shared secret
 3. Returns the decrypted answer to verify successful subscription
@@ -111,6 +122,7 @@ Handles ONDC subscription challenge-response verification.
 Serves HTML page with signed meta tag for domain verification.
 
 **Response:**
+
 ```html
 <html>
   <head>
@@ -129,6 +141,7 @@ Serves HTML page with signed meta tag for domain verification.
 Check service health status.
 
 **Response:**
+
 ```json
 {
   "status": "Health OK!!"
@@ -138,16 +151,19 @@ Check service health status.
 ## Testing the Endpoints
 
 ### Test Health Check
+
 ```bash
 curl http://localhost:3000/api/ondc/health
 ```
 
 ### Test Site Verification
+
 ```bash
 curl http://localhost:3000/ondc-site-verification.html
 ```
 
 ### Test Subscription Endpoint
+
 ```bash
 curl -X POST http://localhost:3000/api/ondc/on_subscribe \
   -H "Content-Type: application/json" \
@@ -212,6 +228,7 @@ ondc-vaatun/
 ### Other Platforms
 
 Ensure your deployment platform supports:
+
 - Node.js 18+
 - Environment variables
 - HTTPS (required by ONDC)

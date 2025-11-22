@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
-import { REQUEST_ID, SIGNING_PRIVATE_KEY, signMessage } from '@/lib/ondc-utils';
+import { STATIC_SUBSCRIBE_REQUEST_ID, SIGNING_PRIVATE_KEY, signMessage } from '@/lib/ondc-utils';
 
 export async function GET() {
   try {
-    // Sign the REQUEST_ID
-    const signedContent = await signMessage(REQUEST_ID, SIGNING_PRIVATE_KEY);
+    // Sign the STATIC_SUBSCRIBE_REQUEST_ID
+    const signedContent = await signMessage(STATIC_SUBSCRIBE_REQUEST_ID, SIGNING_PRIVATE_KEY);
 
     // HTML template with signed content
     const htmlContent = `<!DOCTYPE html>
