@@ -18,9 +18,15 @@ export const metadata: Metadata = {
   keywords: ["ONDC", "Open Network for Digital Commerce", "Next.js", "API", "Integration", "E-commerce", "India"],
   authors: [{ name: "Vaatun" }],
   openGraph: {
-    title: "ONDC Vaatun",
-    description: "ONDC Network Integration Service - Subscription verification and domain ownership",
+    title: "ONDC x Vaatun",
+    description: "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
     type: "website",
+    siteName: "ONDC Vaatun",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "ONDC x Vaatun",
+    description: "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
   },
 };
 
