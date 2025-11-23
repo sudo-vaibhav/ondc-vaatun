@@ -17,6 +17,25 @@ export const metadata: Metadata = {
   description: "A Next.js service for integrating with the Open Network for Digital Commerce (ONDC). Handle subscription verification, domain ownership, and cryptographic operations with ease.",
   keywords: ["ONDC", "Open Network for Digital Commerce", "Next.js", "API", "Integration", "E-commerce", "India"],
   authors: [{ name: "Vaatun" }],
+  applicationName: "ONDC Vaatun",
+  appleWebApp: {
+    capable: true,
+    title: "ONDC Vaatun",
+    statusBarStyle: "default",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+  },
+  manifest: "/manifest.json",
   openGraph: {
     title: "ONDC x Vaatun",
     description: "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",

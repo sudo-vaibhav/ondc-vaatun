@@ -52,9 +52,9 @@ export default function Home() {
               variant="outline"
               className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
             >
-              <a href="https://github.com/yourusername/ondc-vaatun" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+              <a href="https://www.vaatun.com" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
                 <Code2 className="h-5 w-5" />
-                View on GitHub
+                Learn about Vaatun
               </a>
             </Button>
           </div>

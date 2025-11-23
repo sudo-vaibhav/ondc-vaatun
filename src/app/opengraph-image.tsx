@@ -116,7 +116,7 @@ export default async function Image() {
                 display: 'flex',
               }}
             >
-              Next.js 16
+              API Integration
             </div>
             <div
               style={{
