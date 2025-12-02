@@ -8,7 +8,7 @@ Welcome to the ONDC Vaatun documentation. This directory contains comprehensive 
 - **[Tenant Architecture](./TENANT_ARCHITECTURE.md)** - Comprehensive guide to the Tenant entity system for credential management
 
 ### Planning
-- **[Feature PRD](./prds/features.md)** - Product Requirements Document for implementing full ONDC protocol support
+- **[Feature PRD](./prds/features/)** - Product Requirements Document for implementing full ONDC protocol support
 
 ## Quick Start
 
@@ -20,7 +20,7 @@ Welcome to the ONDC Vaatun documentation. This directory contains comprehensive 
 
 ### Making Changes
 
-1. **Check [Feature PRD](./prds/features.md)** - See planned features and implementation phases
+1. **Check [Feature PRD](./prds/features/)** - See planned features and implementation phases
 2. **Follow Tenant patterns** - All new endpoints should use the Tenant entity for credentials
 3. **Update documentation** - Keep docs in sync with code changes
 
@@ -55,6 +55,9 @@ When adding new features:
 4. **Follow patterns** - Match existing code style and patterns
 
 ## Resources
+- [ONDC Financial Services Access Guide PPT](https://docs.google.com/presentation/d/1CDfFTOJp8Hm5TTLvTS-_os8R9b7WfIcbv3RH4-g0Lg8)
+- [Process Flow - FigJam](https://www.figma.com/board/YkfXnnXN2D0h3N1X3ciUhq/)
+- [Insurance BRD](https://docs.google.com/document/d/1bsnil7bGb2F_pLQSisd4s2z_ztGC8Yz62wsPTOG1OX4)
 
 ### External Documentation
 - [ONDC Official](https://ondc.org/)
@@ -62,11 +65,14 @@ When adding new features:
 - [ONDC Developer Docs](https://github.com/ONDC-Official/developer-docs)
 - [Next.js Documentation](https://nextjs.org/docs)
 - [libsodium](https://doc.libsodium.org/)
+- [ONDC Financial Services Developer Guide](https://ondc-official.github.io/ONDC-FIS-Specifications/?branch=release-FIS13-2.0.1-health)
 
 ### Internal Resources
 - [Project README](../README.md)
 - [Codebase Context](../CLAUDE.md)
 - [Environment Template](../.env.example)
+- [ONDC Integration Intro - Meet Recording](https://vaatun-my.sharepoint.com/:v:/p/vaibhav/IQBqk2Nni_MwRaYPt8gg1eBfAS_ogT68d-BgYCZJmrRwSV8?e=B65tQc)
+- [Vaatun <> ONDC Team Whatsapp Group](https://chat.whatsapp.com/LPJNarWRQ3VG8wOXoBptfb)
 
 ## Document Updates
 
