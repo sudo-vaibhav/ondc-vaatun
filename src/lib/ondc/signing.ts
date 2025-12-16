@@ -1,0 +1,54 @@
+import _sodium from 'libsodium-wrappers';
+import { getTenant } from '@/entities/tenant';
+import crypto from 'crypto';
+
+interface ValuesToSign {
+    created: number;
+    expires: number;
+    digest: string;
+}
+
+/**
+ * Calculate Blake2b-512 digest of the request body
+ */
+export async function calculateDigest(body: any): Promise<string> {
+    await _sodium.ready;
+    const sodium = _sodium;
+    const data = JSON.stringify(body);
+    const hash = sodium.crypto_generichash(64, data);
+    return sodium.to_base64(hash, _sodium.base64_variants.ORIGINAL);
+}
+
+/**
+ * generate Authorization header for ONDC requests
+ */
+export async function createAuthorizationHeader(
+    body: any
+): Promise<string> {
+    const tenant = getTenant();
+
+    // 1. Calculate Digest
+    const digest = await calculateDigest(body);
+
+    // 2. Create Signing String
+    const created = Math.floor(Date.now() / 1000);
+    const expires = created + 300; // 5 minutes expiry usually
+
+    // Format: (created) (expires) digest:BLAKE-512=<digest>
+    // Note: ONDC signing string format is specific. 
+    // Per specs: "(created): <created>\n(expires): <expires>\ndigest: BLAKE-512=<digest>"
+    // BUT standard HTTP Signature usually uses pseudo-headers.
+    // ONDC Specifics: 
+    // The signature string is: "(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}"
+
+    const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
+
+    // 3. Sign the string
+    const signature = await tenant.signMessage(signingString);
+
+    // 4. Construct Header
+    // keyId format: "subscriber_id|unique_key_id|algo"
+    const keyId = `${tenant.subscriberId}|${tenant.uniqueKeyId}|ed25519`;
+
+    return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
+}

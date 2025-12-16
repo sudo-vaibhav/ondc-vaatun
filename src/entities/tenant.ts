@@ -12,6 +12,7 @@ const TenantEnvSchema = z.object({
     .refine((val) => val.includes("."), {
       message: "Subscriber ID should be a domain name",
     }),
+  UNIQUE_KEY_ID: z.string().optional(),
   STATIC_SUBSCRIBE_REQUEST_ID: z.string()
     .min(1, "Subscribe Request ID is required")
     .transform((val) => new UUID(val)),
@@ -76,6 +77,7 @@ export class Tenant {
 
   // Identity
   public readonly subscriberId: string;
+  public readonly uniqueKeyId: string;
   public readonly subscribeRequestId: UUID;
 
   // Raw credentials (base64 encoded)
@@ -96,12 +98,14 @@ export class Tenant {
     const env: TenantEnv = TenantEnvSchema.parse({
       SUBSCRIBER_ID: process.env.SUBSCRIBER_ID,
       STATIC_SUBSCRIBE_REQUEST_ID: process.env.STATIC_SUBSCRIBE_REQUEST_ID,
+      UNIQUE_KEY_ID: process.env.UNIQUE_KEY_ID,
       ENCRYPTION_PRIVATE_KEY: process.env.ENCRYPTION_PRIVATE_KEY,
       ONDC_PUBLIC_KEY: process.env.ONDC_PUBLIC_KEY,
       SIGNING_PRIVATE_KEY: process.env.SIGNING_PRIVATE_KEY,
     });
 
     this.subscriberId = env.SUBSCRIBER_ID;
+    this.uniqueKeyId = env.UNIQUE_KEY_ID || "custom-key-id"; // Default for development if not provided
     this.subscribeRequestId = env.STATIC_SUBSCRIBE_REQUEST_ID;
     this.encryptionPrivateKey = env.ENCRYPTION_PRIVATE_KEY;
     this.ondcPublicKey = env.ONDC_PUBLIC_KEY;
