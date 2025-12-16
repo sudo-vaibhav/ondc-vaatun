@@ -28,6 +28,8 @@ const TenantEnvSchema = z.object({
     }, {
       message: "Encryption private key must be valid base64",
     }),
+  ENCRYPTION_PUBLIC_KEY: z.string()
+    .min(1, "Encryption public key is required"),
   ONDC_PUBLIC_KEY: z.string()
     .min(1, "ONDC public key is required")
     .refine((val) => {
@@ -52,6 +54,8 @@ const TenantEnvSchema = z.object({
     }, {
       message: "Signing private key must be valid base64",
     }),
+  SIGNING_PUBLIC_KEY: z.string()
+    .min(1, "Signing public key is required"),
 });
 
 type TenantEnv = z.infer<typeof TenantEnvSchema>;
@@ -82,8 +86,10 @@ export class Tenant {
 
   // Raw credentials (base64 encoded)
   private readonly encryptionPrivateKey: string;
-  private readonly ondcPublicKey: string;
+  private readonly ondcPublicKey: string; // ONDC's public key (for verifying them)
+  public readonly encryptionPublicKey: string; // OUR public key (for payload)
   private readonly signingPrivateKey: string;
+  public readonly signingPublicKey: string; // OUR public key (for payload)
 
   // Computed cryptographic objects
   private readonly privateKeyObject: crypto.KeyObject;
@@ -100,15 +106,19 @@ export class Tenant {
       STATIC_SUBSCRIBE_REQUEST_ID: process.env.STATIC_SUBSCRIBE_REQUEST_ID,
       UNIQUE_KEY_ID: process.env.UNIQUE_KEY_ID,
       ENCRYPTION_PRIVATE_KEY: process.env.ENCRYPTION_PRIVATE_KEY,
+      ENCRYPTION_PUBLIC_KEY: process.env.ENCRYPTION_PUBLIC_KEY,
       ONDC_PUBLIC_KEY: process.env.ONDC_PUBLIC_KEY,
       SIGNING_PRIVATE_KEY: process.env.SIGNING_PRIVATE_KEY,
+      SIGNING_PUBLIC_KEY: process.env.SIGNING_PUBLIC_KEY,
     });
 
     this.subscriberId = env.SUBSCRIBER_ID;
     this.uniqueKeyId = env.UNIQUE_KEY_ID || "custom-key-id"; // Default for development if not provided
     this.subscribeRequestId = env.STATIC_SUBSCRIBE_REQUEST_ID;
     this.encryptionPrivateKey = env.ENCRYPTION_PRIVATE_KEY;
+    this.encryptionPublicKey = env.ENCRYPTION_PUBLIC_KEY;
     this.ondcPublicKey = env.ONDC_PUBLIC_KEY;
+    this.signingPublicKey = env.SIGNING_PUBLIC_KEY;
     this.signingPrivateKey = env.SIGNING_PRIVATE_KEY;
 
     // Pre-compute cryptographic objects for performance

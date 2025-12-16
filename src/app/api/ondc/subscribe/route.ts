@@ -18,9 +18,11 @@ export async function POST(request: NextRequest) {
 
         const payload = {
             context: {
-                domain: "ONDC:INS10", // Health Insurance domain
-                country: "IND",
-                city: "std:080", // Can be "*" or specific city
+                domain: "ONDC:FIS13", // Health Insurance domain
+                location: {
+                    country: { code: "IND" },
+                    city: { code: "std:080" },
+                },
                 action: "subscribe",
                 core_version: "1.0.0",
                 bap_id: tenant.subscriberId,
@@ -41,8 +43,8 @@ export async function POST(request: NextRequest) {
                         gateway: false
                     },
                     key_pair: {
-                        signing_public_key: process.env.SIGNING_PUBLIC_KEY || "TODO_GET_FROM_ENV", // We need the PUBLIC signing key to send to them
-                        encryption_public_key: process.env.ONDC_PUBLIC_KEY // Wait, this is THEIR key. We need OUR public encryption key.
+                        signing_public_key: tenant.signingPublicKey,
+                        encryption_public_key: tenant.encryptionPublicKey
                     }
                 }
             }
