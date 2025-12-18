@@ -1,105 +1,85 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTenant } from '@/entities/tenant';
-import { createAuthorizationHeader } from '@/lib/ondc/signing';
-import { v4 as uuidv4 } from 'uuid';
+import { ONDCClient } from '@/lib/ondc/client';
 
 export async function POST(request: NextRequest) {
     try {
         const tenant = getTenant();
 
-        // 1. Prepare the subscription payload
-        // This structure follows the ONDC Protocol for network participant subscription
-        const requestId = uuidv4();
+        const requestId = tenant.subscribeRequestId.value;
         const timestamp = new Date().toISOString();
 
-        // Note: In a real scenario, these URLs should probably come from env or config
-        // For now, constructing based on subscriberId assuming it's a domain
-        const baseUrl = `https://${tenant.subscriberId}`;
+        // Constructing Payload based on ONDC Network Participant Onboarding v2.0.5
+        // Reference: Context.operation.ops_no = 1 (Buyer New entity registration)
+
+        // NOTE: Many fields (GST, PAN, Address) are hardcoded for the "Vaatun" demo entity.
+        // In a real multi-tenant system, these would come from the Tenant configuration.
 
         const payload = {
             context: {
-                domain: "ONDC:FIS13", // Health Insurance domain
-                location: {
-                    country: { code: "IND" },
-                    city: { code: "std:080" },
-                },
-                action: "subscribe",
-                core_version: "1.0.0",
-                bap_id: tenant.subscriberId,
-                bap_uri: `${baseUrl}/api/ondc`, // Callback base URL
-                message_id: uuidv4(),
-                timestamp: timestamp,
+                operation: {
+                    ops_no: 1 // Buyer New entity registration
+                }
             },
             message: {
+                request_id: requestId,
+                timestamp: timestamp,
                 entity: {
-                    gsp: {
-                        subscriber_id: tenant.subscriberId,
-                        subscriber_url: `${baseUrl}/api/ondc`, // Ensure this matches context.bap_uri
+                    gst: {
+                        legal_entity_name: "Vaatun Health Tech Pvt Ltd",
+                        business_address: "Tech Park, Koramangala, Bengaluru, Karnataka 560034",
+                        city_code: ["std:080"],
+                        gst_no: "29AABCU9603R1Zj" // Dummy/Demo GST
                     },
-                    entity_type: {
-                        nodal: false,
-                        buyer_app: true,
-                        seller_app: false,
-                        gateway: false
+                    pan: {
+                        name_as_per_pan: "Vaatun Health Tech",
+                        pan_no: "ABCDE1234F", // Dummy PAN
+                        date_of_incorporation: "01/01/2024"
                     },
+                    name_of_authorised_signatory: "Vaibhav Chopra",
+                    address_of_authorised_signatory: "Tech Park, Koramangala, Bengaluru, Karnataka 560034",
+                    email_id: "vaibhav@vaatun.com",
+                    mobile_no: 9876543210,
+                    country: "IND",
+                    subscriber_id: tenant.subscriberId,
+                    unique_key_id: tenant.uniqueKeyId,
+                    callback_url: "/api/ondc", // Relative to subscriber url usually, or full path.
                     key_pair: {
                         signing_public_key: tenant.signingPublicKey,
-                        encryption_public_key: tenant.encryptionPublicKey
+                        encryption_public_key: tenant.encryptionPublicKey,
+                        valid_from: timestamp, // Using current time as start
+                        valid_until: new Date(Date.now() + 315360000000).toISOString() // Valid for ~10 years
                     }
-                }
+                },
+                network_participant: [
+                    {
+                        subscriber_url: "/api/ondc", // relative path for callbacks
+                        domain: "ONDC:FIS13", // Health Insurance
+                        type: "buyerApp",
+                        msn: false,
+                        city_code: ["std:080"]
+                    }
+                ]
             }
         };
 
-        /**
-         * CRITICAL: The payload needs to send OUR Public keys to the registry.
-         * The Current Tenant class loads PRIVATE keys but doesn't explicitly expose the derived PUBLIC keys 
-         * in a simple property (except via keyObject).
-         * 
-         * For now, we will assume standard headers are sufficient for the 'call', 
-         * BUT for the BODY of the subscribe call, we need to send our PUBLIC keys.
-         * 
-         * Let's derive them from the Tenant's private keys if possible, or assume they are in env.
-         * The user's env listing showed ONDC_PUBLIC_KEY (which is likely the Gateway/Registry's key),
-         * but didn't explicitly list "MY_ENCRYPTION_PUBLIC_KEY".
-         * 
-         * However, we can derive the public key from the private key using crypto.
-         */
-
-        // 2. Sign the request
-        const authHeader = await createAuthorizationHeader(payload);
-
-        // 3. Send to ONDC Gateway/Registry
+        // 3. Send to ONDC Gateway/Registry using ONDCClient
         // The Gateway URL should be in env. For now using a placeholder or common staging URL.
         const gatewayUrl = process.env.ONDC_GATEWAY_URL || 'https://staging.registry.ondc.org/subscribe';
 
         console.log('[Subscribe] Sending request to:', gatewayUrl);
         console.log('[Subscribe] Payload:', JSON.stringify(payload, null, 2));
 
-        const response = await fetch(gatewayUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'Authorization': authHeader,
-            },
-            body: JSON.stringify(payload),
-        });
+        const response = await ONDCClient.send(gatewayUrl, 'POST', payload);
 
-        if (!response.ok) {
-            const errorText = await response.text();
-            console.error('[Subscribe] Failed:', response.status, errorText);
-            return NextResponse.json(
-                { error: 'Subscription request failed', details: errorText },
-                { status: response.status }
-            );
-        }
+        console.log('[Subscribe] ONDC Response:', JSON.stringify(response, null, 2));
 
-        const data = await response.json();
-        return NextResponse.json(data);
+        return NextResponse.json(response);
 
     } catch (error) {
         console.error('[Subscribe] Error:', error);
         return NextResponse.json(
-            { error: 'Internal server error' },
+            { error: 'Internal server error', details: error instanceof Error ? error.message : String(error) },
             { status: 500 }
         );
     }

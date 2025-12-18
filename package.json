@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "biome check",
-    "format": "biome format --write"
+    "format": "biome format --write",
+    "ngrok": "ngrok http --domain moved-starfish-rapid.ngrok-free.app 3000"
   },
   "dependencies": {
     "@radix-ui/react-separator": "^1.1.8",
