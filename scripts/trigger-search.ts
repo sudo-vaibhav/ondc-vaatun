@@ -1,8 +1,8 @@
 /**
- * usage: npx tsx scripts/trigger-subscription.ts
+ * usage: npx tsx scripts/trigger-search.ts
  */
-async function triggerSubscription() {
-    const endpoint = 'https://5c82b7156f5c.ngrok-free.app/api/ondc/subscribe';
+async function triggerSearch() {
+    const endpoint = 'https://5c82b7156f5c.ngrok-free.app/api/ondc/search';
 
     console.log(`[Trigger] Hitting endpoint: ${endpoint}`);
 
@@ -23,4 +23,4 @@ async function triggerSubscription() {
     }
 }
 
-triggerSubscription();
+triggerSearch();

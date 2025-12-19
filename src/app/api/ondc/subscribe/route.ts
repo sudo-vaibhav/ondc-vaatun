@@ -65,7 +65,7 @@ export async function POST(request: NextRequest) {
 
         // 3. Send to ONDC Gateway/Registry using ONDCClient
         // The Gateway URL should be in env. For now using a placeholder or common staging URL.
-        const gatewayUrl = process.env.ONDC_GATEWAY_URL || 'https://staging.registry.ondc.org/subscribe';
+        const gatewayUrl = `${process.env.ONDC_REGISTRY_URL || 'https://staging.registry.ondc.org'}/subscribe`;
 
         console.log('[Subscribe] Sending request to:', gatewayUrl);
         console.log('[Subscribe] Payload:', JSON.stringify(payload, null, 2));

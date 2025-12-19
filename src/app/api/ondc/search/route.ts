@@ -1,14 +1,26 @@
 // implement the search ondc call
 
 import { NextRequest, NextResponse } from 'next/server';
+import { getTenant } from '@/entities/tenant';
+import { ONDCClient } from '@/lib/ondc/client';
+
 
 export async function POST(request: NextRequest) {
     try {
-
-
+        const tenant = getTenant();
+        const requestId = tenant.subscribeRequestId.value;
+        const timestamp = new Date().toISOString();
+        const transactionId = "some_random_transaction_id";
+        const messageId = "some_random_message_id";
         // Search payload with all mandatory fields (Owner: BAP)
         const payload = {
             context: {
+                action: "search", // Beckn protocol method being called
+                // BAP (Buyer Application Platform) details
+                bap_id: tenant.subscriberId, // Subscriber ID of the BAP
+                bap_uri: `https://${tenant.subscriberId}/api/ondc`, // Subscriber URL of the BAP for accepting callbacks
+                // ONDC Domain details
+                domain: "ONDC:FIS13", // Domain code relevant to this transaction context
                 // Location details
                 location: {
                     country: {
@@ -18,22 +30,14 @@ export async function POST(request: NextRequest) {
                         code: "*" // City code this location is or is located within
                     }
                 },
-                // Domain and protocol details
-                domain: "ONDC:FIS13", // Domain code relevant to this transaction context
-                action: "search", // Beckn protocol method being called
-                version: "2.0.1", // Version of transaction protocol being used
-
-                // BAP (Buyer Application Platform) details
-                bap_id: "fis.test.bap.io", // Subscriber ID of the BAP
-                bap_uri: "https://fis.test.bap.io/", // Subscriber URL of the BAP for accepting callbacks
-
                 // Transaction identifiers
-                transaction_id: "6743e9e2", // Unique value which persists across all API calls
-                message_id: "13ba9018f176", // Unique value which persists during a request/callback cycle
+                transaction_id: transactionId, // Unique value which persists across all API calls
+                message_id: messageId, // Unique value which persists during a request/callback cycle
 
                 // Timing details
-                timestamp: "2023-03-23T04:41:16Z", // Time of request generation in RFC3339 format
-                ttl: "PT30S" // Duration in ISO8601 format after timestamp for which message holds valid
+                timestamp: timestamp, // Time of request generation in RFC3339 format
+                ttl: "PT30S", // Duration in ISO8601 format after timestamp for which message holds valid
+                version: "2.0.1", // Version of transaction protocol being used
             },
             message: {
                 intent: {
@@ -43,7 +47,7 @@ export async function POST(request: NextRequest) {
                         }
                     },
                     payment: {
-                        collected_by: "BPP", // Indicates who is the collector of payment
+                        collected_by: "BAP", // Indicates who is the collector of payment
                         tags: [
                             {
                                 descriptor: {
@@ -109,20 +113,21 @@ export async function POST(request: NextRequest) {
             }
         };
 
+        const gatewayUrl = `${process.env.ONDC_GATEWAY_URL || 'https://staging.gateway.proteantech.in'}/search`;
 
+        console.log('[Search] Sending request to:', gatewayUrl);
+        console.log('[Search] Payload:', JSON.stringify(payload, null, 2));
 
-        return NextResponse.json(
-            {
-                status: 'Health OK!!',
-                ready: true,
-            },
-            { status: 200 }
-        );
+        const response = await ONDCClient.send(gatewayUrl, 'POST', payload);
+
+        console.log('[Search] ONDC Response:', JSON.stringify(response, null, 2));
+
+        return NextResponse.json(response);
     } catch (error) {
-        console.error('[health] Service not ready:', error);
+        console.error('[Search] Error:', error);
         return NextResponse.json(
             {
-                status: 'Health FAIL',
+                status: 'Search FAIL',
                 ready: false,
             },
             { status: 503 }

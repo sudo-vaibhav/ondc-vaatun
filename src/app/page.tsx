@@ -5,6 +5,7 @@ import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Shield, Zap, Code2, Lock, Server } from "lucide-react";
 import RotatingText from "@/components/RotatingText";
 import SubscriptionTrigger from "@/components/SubscriptionTrigger";
+import SearchTrigger from "@/components/SearchTrigger";
 
 export default function Home() {
   return (
@@ -314,8 +315,9 @@ export default function Home() {
                 Open Network for Digital Commerce
               </a>
             </p>
-            <div className="mt-2">
+            <div className="mt-2 flex gap-2 flex-wrap">
               <SubscriptionTrigger />
+              <SearchTrigger />
             </div>
           </div>
           <div className="flex gap-4">
