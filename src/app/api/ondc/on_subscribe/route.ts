@@ -5,6 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     const tenant = getTenant();
     const body = await request.json();
+    console.log("\n\n[on_subscribe] Request Body:\n\n", JSON.stringify(body, null, 2));
     const { challenge, subscriber_id } = body;
 
     if (!challenge) {
@@ -24,6 +25,8 @@ export async function POST(request: NextRequest) {
 
     // Decrypt the challenge using tenant's credentials
     const answer = tenant.decryptChallenge(challenge);
+
+    console.log("\n\n[on_subscribe] Answer:\n\n", answer);
 
     return NextResponse.json({ answer }, { status: 200 });
   } catch (error) {
