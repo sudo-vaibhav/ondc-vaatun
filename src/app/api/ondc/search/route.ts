@@ -1,17 +1,24 @@
 // implement the search ondc call
 
 import { NextRequest, NextResponse } from 'next/server';
+import { v4 as uuidv4 } from 'uuid';
 import { getTenant } from '@/entities/tenant';
 import { ONDCClient } from '@/lib/ondc/client';
+import { createSearchEntry } from '@/lib/searchStore';
 
 
 export async function POST(request: NextRequest) {
     try {
         const tenant = getTenant();
-        const requestId = tenant.subscribeRequestId.value;
-        const timestamp = new Date().toISOString();
-        const transactionId = "some_random_transaction_id";
-        const messageId = "some_random_message_id";
+
+        // Generate unique IDs for this search transaction
+        const transactionId = uuidv4();
+        const messageId = uuidv4();
+        const categoryCode = "HEALTH_INSURANCE";
+
+        // Create store entry to track responses
+        createSearchEntry(transactionId, messageId, categoryCode);
+
         // Search payload with all mandatory fields (Owner: BAP)
         const payload = {
             context: {
@@ -35,8 +42,8 @@ export async function POST(request: NextRequest) {
                 message_id: messageId, // Unique value which persists during a request/callback cycle
 
                 // Timing details
-                timestamp: timestamp, // Time of request generation in RFC3339 format
-                ttl: "PT30S", // Duration in ISO8601 format after timestamp for which message holds valid
+                timestamp: new Date().toISOString(), // Time of request generation in RFC3339 format
+                ttl: "PT5M", // Duration in ISO8601 format after timestamp for which message holds valid
                 version: "2.0.1", // Version of transaction protocol being used
             },
             message: {
@@ -122,7 +129,12 @@ export async function POST(request: NextRequest) {
 
         console.log('[Search] ONDC Response:', JSON.stringify(response, null, 2));
 
-        return NextResponse.json(response);
+        // Return transaction ID so frontend can poll for results
+        return NextResponse.json({
+            ...response,
+            transactionId,
+            messageId,
+        });
     } catch (error) {
         console.error('[Search] Error:', error);
         return NextResponse.json(
