@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { CheckCircle2, Shield, Zap, Code2, Lock, Server } from "lucide-react";
 import RotatingText from "@/components/RotatingText";
+import SubscriptionTrigger from "@/components/SubscriptionTrigger";
+import SearchTrigger from "@/components/SearchTrigger";
 
 export default function Home() {
   return (
@@ -187,18 +189,18 @@ export default function Home() {
                   <div>
                     <h4 className="mb-2 font-semibold">Request Body:</h4>
                     <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-{`{
-  "subscriber_id": "ondc-staging.vaatun.com",
-  "challenge": "encrypted_challenge_string"
-}`}
+                      {`{
+                        "subscriber_id": "ondc-staging.vaatun.com",
+                        "challenge": "encrypted_challenge_string"
+                      }`}
                     </pre>
                   </div>
                   <div>
                     <h4 className="mb-2 font-semibold">Response:</h4>
                     <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-{`{
-  "answer": "decrypted_challenge_string"
-}`}
+                      {`{
+                        "answer": "decrypted_challenge_string"
+                      }`}
                     </pre>
                   </div>
                 </div>
@@ -221,7 +223,7 @@ export default function Home() {
                 <div>
                   <h4 className="mb-2 font-semibold">Response:</h4>
                   <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-{`<html>
+                    {`<html>
   <head>
     <meta name="ondc-site-verification"
           content="SIGNED_REQUEST_ID" />
@@ -249,7 +251,7 @@ export default function Home() {
                 <div>
                   <h4 className="mb-2 font-semibold">Response:</h4>
                   <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-{`{
+                    {`{
   "status": "Health OK!!"
 }`}
                   </pre>
@@ -292,26 +294,32 @@ export default function Home() {
       <footer className="container mx-auto px-4 py-8">
         <Separator className="mb-8 border-2 border-foreground" />
         <div className="flex flex-col items-center justify-between gap-4 text-center text-sm text-muted-foreground sm:flex-row sm:text-left">
-          <p>
-            Built by{" "}
-            <a
-              href="https://www.vaatun.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline underline-offset-4"
-            >
-              Vaatun
-            </a>{" "}
-            on the{" "}
-            <a
-              href="https://ondc.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold underline underline-offset-4"
-            >
-              Open Network for Digital Commerce
-            </a>
-          </p>
+          <div className="flex flex-col gap-2">
+            <p>
+              Built by{" "}
+              <a
+                href="https://www.vaatun.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline underline-offset-4"
+              >
+                Vaatun
+              </a>{" "}
+              on the{" "}
+              <a
+                href="https://ondc.org/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold underline underline-offset-4"
+              >
+                Open Network for Digital Commerce
+              </a>
+            </p>
+            <div className="mt-2 flex gap-2 flex-wrap">
+              <SubscriptionTrigger />
+              <SearchTrigger />
+            </div>
+          </div>
           <div className="flex gap-4">
             <a href="https://ondc.org/" target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
               ONDC Site
