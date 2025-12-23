@@ -21,6 +21,7 @@ This PRD outlines the redesign of ONDC Vaatun from a developer-focused technical
 | Health Insurance | [website-design/health.md](./website-design/health.md) | Draft |
 | Motor Insurance | [website-design/motor.md](./website-design/motor.md) | Draft |
 | Technical Docs | [website-design/tech.md](./website-design/tech.md) | Draft |
+| **Brand & Image Guidelines** | [website-design/brand-image-guidelines.md](./website-design/brand-image-guidelines.md) | Draft |
 
 ---
 

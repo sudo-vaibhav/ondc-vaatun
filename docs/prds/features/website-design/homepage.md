@@ -113,6 +113,51 @@ Backed by the Government of India's initiative to democratize digital commerce.
 - Action: Smooth scroll to Section 4
 - Style: Outline/ghost button
 
+#### 3D Hero Animation
+
+**Spline Scene**: [WEB Diagram](https://community.spline.design/file/0e8a6d7e-b090-4d6d-95f4-fdc3b432580c)
+**License**: CC0 1.0 (Public Domain)
+
+**Purpose**: Network workflow visualization representing the ONDC insurance journey. The 3D scene shows interconnected nodes that visually communicate how the open network connects users to insurers.
+
+**Step Labels to Customize** (in Spline editor):
+| Step | Label |
+|------|-------|
+| 1 | Share Details |
+| 2 | Search Network |
+| 3 | Compare |
+| 4 | Get Covered |
+
+**Layout**: Position the 3D scene as a background element behind the hero copy, or as a side element on desktop.
+
+**Integration**:
+```bash
+pnpm add @splinetool/react-spline
+```
+
+```tsx
+import Spline from '@splinetool/react-spline';
+
+export function HeroAnimation() {
+  return (
+    <Spline
+      scene="https://prod.spline.design/[customized-scene-id]/scene.splinecode"
+    />
+  );
+}
+```
+
+**Interaction**: Mouse-based camera orbit animation (built into Spline scene)
+
+**Performance Considerations**:
+- Implement lazy loading for the Spline scene
+- Provide static fallback image for slow connections
+- Consider reduced-motion preferences
+
+**Mobile**: Show simplified animation or static representation of the network diagram
+
+---
+
 #### Quote Widget
 
 **Toggle Tabs**: `[Health]` `[Motor]`
