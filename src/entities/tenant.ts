@@ -275,9 +275,10 @@ export class Tenant {
 }
 
 /**
+ * Don't use this directly
  * Helper function to get tenant instance
  * Use this in API routes and server components
  */
-export function getTenant(): Tenant {
+export function __internal_do_not_import_getTenant(): Tenant {
   return Tenant.getInstance();
 }

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { addSearchResponse } from "@/lib/searchStore";
+import { addSearchResponse } from "@/lib/search-store";
 
 export async function POST(request: NextRequest) {
   try {

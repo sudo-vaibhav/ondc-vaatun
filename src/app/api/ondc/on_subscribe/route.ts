@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getTenant } from "@/entities/tenant";
+import { getContext } from "@/lib/context";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenant = getTenant();
+    const tenant = getContext().tenant;
     const body = await request.json();
     console.log(
       "\n\n[on_subscribe] Request Body:\n\n",

@@ -2,9 +2,8 @@
 
 import { type NextRequest, NextResponse } from "next/server";
 import { v7 as uuidv7 } from "uuid";
-import { getTenant } from "@/entities/tenant";
-import { ONDCClient } from "@/lib/ondc/client";
-import { createSelectEntry } from "@/lib/selectStore";
+import { getContext } from "@/lib/context";
+import { createSelectEntry } from "@/lib/select-store";
 
 /**
  * Select Request Body Interface
@@ -35,8 +34,7 @@ interface SelectRequestBody {
 export async function POST(request: NextRequest) {
   try {
     const body: SelectRequestBody = await request.json();
-    const tenant = getTenant();
-    const ondcClient = new ONDCClient(tenant);
+    const { tenant, ondcClient } = getContext();
     // Validate required fields
     if (
       !body.transactionId ||

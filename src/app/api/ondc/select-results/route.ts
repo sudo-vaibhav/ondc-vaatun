@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
-import { getSelectResult } from "@/lib/selectStore";
+import { getSelectResult } from "@/lib/select-store";
 
 /**
  * GET /api/ondc/select-results?transaction_id=xxx&message_id=yyy

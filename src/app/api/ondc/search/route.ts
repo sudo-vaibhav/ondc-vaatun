@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import { v7 as uuidv7 } from "uuid";
-import { getTenant } from "@/entities/tenant";
 import { ONDCClient } from "@/lib/ondc/client";
-import { createSearchEntry } from "@/lib/searchStore";
+import { createSearchEntry } from "@/lib/search-store";
+import { getContext } from "@/lib/context";
 
 export async function POST() {
   try {
-    const tenant = getTenant();
-    const ondcClient = new ONDCClient(tenant);
+    const ctx = getContext();
     // Generate unique IDs for this search transaction
     const transactionId = uuidv7();
     const messageId = uuidv7();
@@ -21,10 +20,10 @@ export async function POST() {
       context: {
         action: "search", // Beckn protocol method being called
         // BAP (Buyer Application Platform) details
-        bap_id: tenant.subscriberId, // Subscriber ID of the BAP
-        bap_uri: `https://${tenant.subscriberId}/api/ondc`, // Subscriber URL of the BAP for accepting callbacks
+        bap_id: ctx.tenant.subscriberId, // Subscriber ID of the BAP
+        bap_uri: `https://${ctx.tenant.subscriberId}/api/ondc`, // Subscriber URL of the BAP for accepting callbacks
         // ONDC Domain details
-        domain: tenant.domainCode, // Domain code relevant to this insurance domain
+        domain: ctx.tenant.domainCode, // Domain code relevant to this insurance domain
         // Location details
         location: {
           country: {
@@ -122,7 +121,7 @@ export async function POST() {
     console.log("[Search] Sending request to:", gatewayUrl);
     console.log("[Search] Payload:", JSON.stringify(payload, null, "\t"));
 
-    const response = await ondcClient.send(gatewayUrl, "POST", payload);
+    const response = await ctx.ondcClient.send(gatewayUrl, "POST", payload);
 
     console.log("[Search] ONDC Response:", JSON.stringify(response, null, 2));
 

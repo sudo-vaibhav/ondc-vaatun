@@ -1,10 +1,10 @@
+import { getContext } from "@/lib/context";
 import { NextResponse } from "next/server";
-import { getTenant } from "@/entities/tenant";
 
 export async function GET() {
   try {
-    // If getTenant() succeeds, the setup is valid
-    getTenant();
+    // If getContext() succeeds, the setup is valid
+    getContext();
 
     return NextResponse.json(
       {

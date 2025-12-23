@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { OnSearchResponse } from "@/lib/searchStore";
+import type { OnSearchResponse } from "@/lib/search-store";
 
 interface SearchResultsData {
   found: boolean;

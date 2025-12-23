@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { getTenant } from "@/entities/tenant";
-import { ONDCClient } from "@/lib/ondc/client";
+import { getContext } from "@/lib/context";
 
 export async function POST() {
   try {
-    const tenant = getTenant();
-    const ondcClient = new ONDCClient(tenant);
+    const { tenant, ondcClient } = getContext();
 
     const requestId = tenant.subscribeRequestId.value;
     const timestamp = new Date().toISOString();

@@ -24,7 +24,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { Quote, SelectItem, SelectProvider } from "@/lib/selectStore";
+import type { Quote, SelectItem, SelectProvider } from "@/lib/select-store";
 
 interface SelectResultsData {
   found: boolean;

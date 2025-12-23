@@ -10,7 +10,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import type { OnSearchResponse } from "@/lib/searchStore";
+import type { OnSearchResponse } from "@/lib/search-store";
 import ItemCard, { type SelectionData } from "./ItemCard";
 
 interface ProviderCardProps {
