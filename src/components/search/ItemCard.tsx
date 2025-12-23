@@ -1,7 +1,10 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, Clock, Shield } from "lucide-react";
+import { ArrowRight, Clock, Shield, Loader2 } from "lucide-react";
+import { useState } from "react";
 
 interface ItemTag {
     descriptor?: { name?: string; code?: string };
@@ -9,38 +12,54 @@ interface ItemTag {
     display?: boolean;
 }
 
-interface ItemCardProps {
-    item: {
-        id: string;
-        descriptor?: {
-            name?: string;
-            short_desc?: string;
-            long_desc?: string;
-            images?: Array<{ url: string; size_type?: string }>;
-        };
-        category_ids?: string[];
-        tags?: Array<{
-            descriptor?: { name?: string; code?: string };
-            list?: ItemTag[];
-        }>;
-        xinput?: {
-            form?: {
-                id?: string;
-                url?: string;
-                mime_type?: string;
-            };
-            required?: boolean;
-        };
-        time?: {
-            label?: string;
-            duration?: string;
-        };
-        add_ons?: Array<{
-            id: string;
-            descriptor?: { name?: string; code?: string };
-            price?: { currency?: string; value?: string };
-        }>;
+export interface ItemData {
+    id: string;
+    parent_item_id?: string;
+    descriptor?: {
+        name?: string;
+        short_desc?: string;
+        long_desc?: string;
+        images?: Array<{ url: string; size_type?: string }>;
     };
+    category_ids?: string[];
+    tags?: Array<{
+        descriptor?: { name?: string; code?: string };
+        list?: ItemTag[];
+    }>;
+    xinput?: {
+        form?: {
+            id?: string;
+            url?: string;
+            mime_type?: string;
+        };
+        required?: boolean;
+    };
+    time?: {
+        label?: string;
+        duration?: string;
+    };
+    add_ons?: Array<{
+        id: string;
+        descriptor?: { name?: string; code?: string };
+        price?: { currency?: string; value?: string };
+    }>;
+}
+
+export interface SelectionData {
+    itemId: string;
+    parentItemId: string;
+    providerId: string;
+    bppId: string;
+    bppUri: string;
+}
+
+interface ItemCardProps {
+    item: ItemData;
+    providerId: string;
+    bppId: string;
+    bppUri: string;
+    onSelect?: (data: SelectionData) => void;
+    isSelecting?: boolean;
 }
 
 // Important tags to display
@@ -85,7 +104,14 @@ function parseDuration(duration: string): string {
     return duration;
 }
 
-export default function ItemCard({ item }: ItemCardProps) {
+export default function ItemCard({
+    item,
+    providerId,
+    bppId,
+    bppUri,
+    onSelect,
+    isSelecting = false
+}: ItemCardProps) {
     // Extract important tags from the first tag group (usually GENERAL_INFO)
     const generalInfoTags = item.tags?.find(t => t.descriptor?.code === 'GENERAL_INFO');
     const displayTags = generalInfoTags?.list?.filter(tag =>
@@ -93,8 +119,19 @@ export default function ItemCard({ item }: ItemCardProps) {
     ) || [];
 
     const tenure = item.time?.duration ? parseDuration(item.time.duration) : null;
-    const formUrl = item.xinput?.form?.url;
     const addOnsCount = item.add_ons?.length || 0;
+
+    const handleSelect = () => {
+        if (onSelect) {
+            onSelect({
+                itemId: item.id,
+                parentItemId: item.parent_item_id || item.id,
+                providerId,
+                bppId,
+                bppUri,
+            });
+        }
+    };
 
     return (
         <Card className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all">
@@ -143,20 +180,25 @@ export default function ItemCard({ item }: ItemCardProps) {
                     </div>
                 )}
 
-                {/* Form Link */}
-                {formUrl && (
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full border-2 border-foreground text-xs"
-                        asChild
-                    >
-                        <a href={formUrl} target="_blank" rel="noopener noreferrer">
-                            <ExternalLink className="mr-1 h-3 w-3" />
+                {/* Select Button */}
+                <Button
+                    onClick={handleSelect}
+                    disabled={isSelecting}
+                    size="sm"
+                    className="w-full border-2 border-foreground text-xs shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                >
+                    {isSelecting ? (
+                        <>
+                            <Loader2 className="mr-1 h-3 w-3 animate-spin" />
+                            Getting Quote...
+                        </>
+                    ) : (
+                        <>
                             Get Quote
-                        </a>
-                    </Button>
-                )}
+                            <ArrowRight className="ml-1 h-3 w-3" />
+                        </>
+                    )}
+                </Button>
             </CardContent>
         </Card>
     );

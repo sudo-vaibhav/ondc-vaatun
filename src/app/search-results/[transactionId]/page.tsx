@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import ProviderCard from "@/components/search/ProviderCard";
 import type { OnSearchResponse } from "@/lib/searchStore";
+import type { SelectionData } from "@/components/search/ItemCard";
 
 interface SearchResultsData {
     found: boolean;
@@ -52,6 +53,7 @@ export default function SearchResultsPage() {
     const [isPolling, setIsPolling] = useState(true);
     const [pollStartTime] = useState(Date.now());
     const [lastResponseCount, setLastResponseCount] = useState(0);
+    const [selectingItemId, setSelectingItemId] = useState<string | null>(null);
 
     const fetchResults = useCallback(async () => {
         try {
@@ -102,19 +104,48 @@ export default function SearchResultsPage() {
         setIsPolling(!isPolling);
     };
 
-    const formatTimestamp = (timestamp?: string) => {
-        if (!timestamp) return 'N/A';
-        return new Date(timestamp).toLocaleString('en-IN', {
-            dateStyle: 'medium',
-            timeStyle: 'short'
-        });
-    };
-
     const getElapsedTime = () => {
         if (!data?.searchTimestamp) return null;
         const elapsed = Math.floor((Date.now() - new Date(data.searchTimestamp).getTime()) / 1000);
         if (elapsed < 60) return `${elapsed}s ago`;
         return `${Math.floor(elapsed / 60)}m ${elapsed % 60}s ago`;
+    };
+
+    // Handle item selection - call /select API and navigate to quote page
+    const handleItemSelect = async (selectionData: SelectionData) => {
+        setSelectingItemId(selectionData.itemId);
+
+        try {
+            const response = await fetch('/api/ondc/select', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    transactionId,
+                    bppId: selectionData.bppId,
+                    bppUri: selectionData.bppUri,
+                    providerId: selectionData.providerId,
+                    itemId: selectionData.itemId,
+                    parentItemId: selectionData.parentItemId,
+                }),
+            });
+
+            const result = await response.json();
+            console.log('[SearchResults] Select response:', result);
+
+            if (response.ok && result.messageId) {
+                // Navigate to quote page with transaction_id and message_id
+                router.push(`/quote/${transactionId}/${result.messageId}`);
+            } else {
+                throw new Error(result.error || 'Failed to select item');
+            }
+        } catch (err) {
+            console.error('[SearchResults] Select error:', err);
+            alert(err instanceof Error ? err.message : 'Failed to get quote');
+        } finally {
+            setSelectingItemId(null);
+        }
     };
 
     return (
@@ -279,6 +310,8 @@ export default function SearchResultsPage() {
                             <ProviderCard
                                 key={`${response.context.bpp_id || index}-${response._receivedAt}`}
                                 response={response}
+                                onItemSelect={handleItemSelect}
+                                selectingItemId={selectingItemId}
                             />
                         ))}
                     </div>

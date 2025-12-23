@@ -1,21 +1,26 @@
+"use client";
+
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Building2, AlertCircle, Package } from "lucide-react";
-import ItemCard from "./ItemCard";
+import ItemCard, { type SelectionData } from "./ItemCard";
 import type { OnSearchResponse, CatalogProvider } from "@/lib/searchStore";
 
 interface ProviderCardProps {
     response: OnSearchResponse;
+    onItemSelect?: (data: SelectionData) => void;
+    selectingItemId?: string | null;
 }
 
-export default function ProviderCard({ response }: ProviderCardProps) {
+export default function ProviderCard({ response, onItemSelect, selectingItemId }: ProviderCardProps) {
     const { context, message, error } = response;
     const catalog = message?.catalog;
     const catalogDescriptor = catalog?.descriptor;
     const providers = catalog?.providers || [];
 
     const bppId = context.bpp_id || 'Unknown Provider';
+    const bppUri = context.bpp_uri || '';
     const bppName = catalogDescriptor?.name || providers[0]?.descriptor?.name || bppId;
     const bppLogo = catalogDescriptor?.images?.[0]?.url || providers[0]?.descriptor?.images?.[0]?.url;
 
@@ -103,7 +108,15 @@ export default function ProviderCard({ response }: ProviderCardProps) {
                         {/* Items Grid */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                             {provider.items?.map((item) => (
-                                <ItemCard key={item.id} item={item} />
+                                <ItemCard
+                                    key={item.id}
+                                    item={item}
+                                    providerId={provider.id}
+                                    bppId={bppId}
+                                    bppUri={bppUri}
+                                    onSelect={onItemSelect}
+                                    isSelecting={selectingItemId === item.id}
+                                />
                             ))}
                         </div>
                     </div>
