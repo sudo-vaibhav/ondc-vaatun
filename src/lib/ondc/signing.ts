@@ -1,6 +1,6 @@
 // import crypto from "crypto";
 import _sodium from "libsodium-wrappers";
-import { getTenant } from "@/entities/tenant";
+import { getContext } from "@/lib/context";
 
 // interface ValuesToSign {
 //     created: number;
@@ -23,7 +23,7 @@ export async function calculateDigest(body: object): Promise<string> {
  * generate Authorization header for ONDC requests
  */
 export async function createAuthorizationHeader(body: object): Promise<string> {
-  const tenant = getTenant();
+  const { tenant } = getContext();
 
   // 1. Calculate Digest
   const digest = await calculateDigest(body);
