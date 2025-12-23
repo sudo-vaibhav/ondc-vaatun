@@ -34,15 +34,15 @@ export async function createAuthorizationHeader(body: object): Promise<string> {
   // between our server and the ONDC gateway
   const CLOCK_DRIFT_OFFSET_SECONDS = 3;
 
-  let created: number;
-  if (body?.context?.timestamp) {
-    // Parse ISO timestamp from the request body
-    created =
-      Math.floor(new Date(body.context.timestamp).getTime() / 1000) -
-      CLOCK_DRIFT_OFFSET_SECONDS;
-  } else {
-    created = Math.floor(Date.now() / 1000) - CLOCK_DRIFT_OFFSET_SECONDS;
-  }
+  // let created: number;
+  // if (body?.context?.timestamp) {
+  //   // Parse ISO timestamp from the request body
+  //   created =
+  //     Math.floor(new Date(body.context.timestamp).getTime() / 1000) -
+  //     CLOCK_DRIFT_OFFSET_SECONDS;
+  // } else {
+  const created = Math.floor(Date.now() / 1000) - CLOCK_DRIFT_OFFSET_SECONDS;
+  // }
   const expires = created + 300; // 5 minutes expiry usually
 
   // Format: (created) (expires) digest:BLAKE-512=<digest>
@@ -54,14 +54,14 @@ export async function createAuthorizationHeader(body: object): Promise<string> {
 
   const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
-  console.log(
-    "[Signing] Created:",
-    created,
-    "from timestamp:",
-    body?.context?.timestamp,
-    "→",
-    new Date(created * 1000).toISOString(),
-  );
+  // console.log(
+  //   "[Signing] Created:",
+  //   created,
+  //   "from timestamp:",
+  //   body?.context?.timestamp,
+  //   "→",
+  //   new Date(created * 1000).toISOString(),
+  // );
 
   // 3. Sign the string
   const signature = await tenant.signMessage(signingString);
