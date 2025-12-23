@@ -1,4 +1,5 @@
 import { CheckCircle2, Code2, Lock, Server, Shield, Zap } from "lucide-react";
+import { Header } from "@/components/header";
 import RotatingText from "@/components/RotatingText";
 import SearchTrigger from "@/components/SearchTrigger";
 import SubscriptionTrigger from "@/components/SubscriptionTrigger";
@@ -16,6 +17,8 @@ import { Separator } from "@/components/ui/separator";
 export default function Home() {
   return (
     <div className="min-h-screen bg-background">
+      <Header />
+
       {/* Hero Section */}
       <section className="container mx-auto px-4 py-16 md:py-24">
         <div className="mx-auto max-w-4xl text-center">
@@ -55,7 +58,7 @@ export default function Home() {
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button
               size="lg"
-              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               <a href="#api-endpoints" className="flex items-center gap-2">
                 <Zap className="h-5 w-5" />
@@ -65,7 +68,7 @@ export default function Home() {
             <Button
               size="lg"
               variant="outline"
-              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
             >
               <a
                 href="https://www.vaatun.com"
@@ -108,11 +111,11 @@ export default function Home() {
       <Separator className="my-8 border-2 border-foreground" />
 
       {/* Features Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section id="features" className="container mx-auto px-4 py-16">
         <div className="mx-auto max-w-6xl">
           <h2 className="mb-12 text-center text-4xl font-bold">Features</h2>
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <Shield className="mb-2 h-10 w-10" />
                 <CardTitle>Subscription Verification</CardTitle>
@@ -123,7 +126,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <CheckCircle2 className="mb-2 h-10 w-10" />
                 <CardTitle>Domain Verification</CardTitle>
@@ -134,7 +137,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <Lock className="mb-2 h-10 w-10" />
                 <CardTitle>Secure Key Management</CardTitle>
@@ -145,7 +148,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <Server className="mb-2 h-10 w-10" />
                 <CardTitle>Health Monitoring</CardTitle>
@@ -156,7 +159,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <Code2 className="mb-2 h-10 w-10" />
                 <CardTitle>TypeScript</CardTitle>
@@ -167,7 +170,7 @@ export default function Home() {
               </CardHeader>
             </Card>
 
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <Zap className="mb-2 h-10 w-10" />
                 <CardTitle>High Performance</CardTitle>
@@ -192,7 +195,7 @@ export default function Home() {
 
           <div className="space-y-6">
             {/* On Subscribe Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Badge className="border-2 border-foreground font-mono">
@@ -249,7 +252,7 @@ export default function Home() {
             </Card>
 
             {/* Site Verification Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Badge
@@ -284,7 +287,7 @@ export default function Home() {
             </Card>
 
             {/* Health Check Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
               <CardHeader>
                 <div className="flex items-center gap-3">
                   <Badge
@@ -320,13 +323,13 @@ export default function Home() {
       <Separator className="my-8 border-2 border-foreground" />
 
       {/* Tech Stack Section */}
-      <section className="container mx-auto px-4 py-16">
+      <section id="tech-stack" className="container mx-auto px-4 py-16">
         <div className="mx-auto max-w-4xl">
           <div className="flex items-center justify-center gap-3 text-3xl md:text-5xl font-bold">
             <span>made with</span>
             <Badge
               variant="default"
-              className="border-2 border-foreground px-6 py-3 text-2xl md:text-4xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              className="border-2 border-foreground px-6 py-3 text-2xl md:text-4xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
             >
               <RotatingText
                 texts={[

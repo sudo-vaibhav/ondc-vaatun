@@ -39,7 +39,7 @@ export default function SubscriptionTrigger() {
     <Button
       onClick={handleTrigger}
       disabled={isLoading}
-      className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+      className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
     >
       <Play className="mr-2 h-4 w-4" />
       {isLoading ? "Triggering..." : "Trigger Subscription"}

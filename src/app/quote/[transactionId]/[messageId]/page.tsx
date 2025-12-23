@@ -154,7 +154,7 @@ export default function QuotePage() {
       <main className="container mx-auto px-4 py-8 max-w-4xl">
         {/* Loading State */}
         {loading && !data && (
-          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
               <p className="text-muted-foreground">Loading quote details...</p>
@@ -164,7 +164,7 @@ export default function QuotePage() {
 
         {/* Waiting for Response */}
         {data && !data.hasResponse && (
-          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               {isPolling ? (
                 <>
@@ -202,7 +202,7 @@ export default function QuotePage() {
 
         {/* Error from BPP */}
         {hasError && (
-          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] mb-6">
+          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] mb-6">
             <CardContent className="py-8 text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
               <p className="text-lg font-medium text-destructive mb-2">
@@ -233,7 +233,7 @@ export default function QuotePage() {
           <div className="space-y-6">
             {/* Provider Info */}
             {provider && (
-              <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                 <CardHeader>
                   <div className="flex items-center gap-3">
                     {provider.descriptor?.images?.[0]?.url ? (
@@ -271,7 +271,7 @@ export default function QuotePage() {
 
             {/* Product Info */}
             {item && (
-              <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+              <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
                 <CardHeader>
                   <CardTitle className="text-base">
                     {item.descriptor?.name || item.id}
@@ -326,7 +326,7 @@ export default function QuotePage() {
                   Back to Results
                 </Button>
                 <Button
-                  className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
+                  className="border-2 border-foreground shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:shadow-[1px_1px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[1px_1px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[1px] hover:translate-y-[1px] transition-all"
                   disabled
                 >
                   Proceed to Init
@@ -339,7 +339,7 @@ export default function QuotePage() {
 
         {/* Fetch Error */}
         {error && (
-          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
               <p className="text-destructive font-medium">{error}</p>

@@ -46,7 +46,7 @@ export default function ProviderCard({
   // If this is an error response
   if (error) {
     return (
-      <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+      <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
         <CardHeader>
           <div className="flex items-center gap-3">
             <div className="h-10 w-10 rounded border-2 border-foreground flex items-center justify-center bg-destructive/10">
@@ -73,7 +73,7 @@ export default function ProviderCard({
   }
 
   return (
-    <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
       <CardHeader>
         <div className="flex items-center gap-3">
           {/* Provider Logo */}

@@ -71,7 +71,7 @@ export default function QuoteBreakdown({ quote }: QuoteBreakdownProps) {
   const addOnItems = breakup.filter((b) => b.title === "ADD_ONS");
 
   return (
-    <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+    <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">

@@ -246,7 +246,7 @@ export default function SearchResultsPage() {
 
         {/* Loading State */}
         {loading && !data && (
-          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               <RefreshCw className="h-8 w-8 mx-auto mb-4 animate-spin" />
               <p className="text-muted-foreground">Loading search results...</p>
@@ -256,7 +256,7 @@ export default function SearchResultsPage() {
 
         {/* Error State */}
         {error && (
-          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-destructive shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               <AlertCircle className="h-8 w-8 mx-auto mb-4 text-destructive" />
               <p className="text-destructive font-medium">{error}</p>
@@ -274,7 +274,7 @@ export default function SearchResultsPage() {
 
         {/* Empty State */}
         {data && data.responseCount === 0 && (
-          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+          <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
             <CardContent className="py-12 text-center">
               {isPolling ? (
                 <>
