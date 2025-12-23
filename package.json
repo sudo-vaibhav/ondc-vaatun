@@ -5,9 +5,10 @@
   "scripts": {
     "dev": "next dev",
     "d": "$npm_execpath dev",
-    "build": "next build",
+    "b": "$npm_execpath build",
+    "build": "$npm_execpath lint && $npm_execpath format && next build",
     "start": "next start",
-    "lint": "biome check",
+    "lint": "biome check --write",
     "format": "biome format --write",
     "ngrok": "ngrok http --domain moved-starfish-rapid.ngrok-free.app 3000"
   },

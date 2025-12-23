@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { getTenant } from '@/entities/tenant';
+import { NextResponse } from "next/server";
+import { getTenant } from "@/entities/tenant";
 
 export async function GET() {
   try {
@@ -8,19 +8,19 @@ export async function GET() {
 
     return NextResponse.json(
       {
-        status: 'Health OK!!',
+        status: "Health OK!!",
         ready: true,
       },
-      { status: 200 }
+      { status: 200 },
     );
   } catch (error) {
-    console.error('[health] Service not ready:', error);
+    console.error("[health] Service not ready:", error);
     return NextResponse.json(
       {
-        status: 'Health FAIL',
+        status: "Health FAIL",
         ready: false,
       },
-      { status: 503 }
+      { status: 503 },
     );
   }
 }

@@ -14,8 +14,17 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "ONDC Vaatun - Open Network for Digital Commerce Integration",
-  description: "A Next.js service for integrating with the Open Network for Digital Commerce (ONDC). Handle subscription verification, domain ownership, and cryptographic operations with ease.",
-  keywords: ["ONDC", "Open Network for Digital Commerce", "Next.js", "API", "Integration", "E-commerce", "India"],
+  description:
+    "A Next.js service for integrating with the Open Network for Digital Commerce (ONDC). Handle subscription verification, domain ownership, and cryptographic operations with ease.",
+  keywords: [
+    "ONDC",
+    "Open Network for Digital Commerce",
+    "Next.js",
+    "API",
+    "Integration",
+    "E-commerce",
+    "India",
+  ],
   authors: [{ name: "Vaatun" }],
   applicationName: "ONDC Vaatun",
   appleWebApp: {
@@ -38,14 +47,16 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   openGraph: {
     title: "ONDC x Vaatun",
-    description: "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
+    description:
+      "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
     type: "website",
     siteName: "ONDC Vaatun",
   },
   twitter: {
     card: "summary_large_image",
     title: "ONDC x Vaatun",
-    description: "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
+    description:
+      "Open Network for Digital Commerce Integration - Subscription verification and domain ownership",
   },
 };
 

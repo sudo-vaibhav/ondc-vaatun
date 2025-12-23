@@ -1,5 +1,5 @@
-import { NextResponse } from 'next/server';
-import { getTenant } from '@/entities/tenant';
+import { NextResponse } from "next/server";
+import { getTenant } from "@/entities/tenant";
 
 export async function GET() {
   try {
@@ -36,14 +36,14 @@ export async function GET() {
     return new NextResponse(htmlContent, {
       status: 200,
       headers: {
-        'Content-Type': 'text/html',
+        "Content-Type": "text/html",
       },
     });
   } catch (error) {
-    console.error('[ondc-site-verification] Error:', error);
+    console.error("[ondc-site-verification] Error:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
+      { error: "Internal server error" },
+      { status: 500 },
     );
   }
 }
