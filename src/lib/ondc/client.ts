@@ -1,7 +1,7 @@
+import type { URL } from "node:url";
 import type { Tenant } from "@/entities/tenant";
-import { calculateDigest } from "./signing";
-import { URL } from "node:url";
 import { getContext } from "../context";
+import { calculateDigest } from "./signing";
 
 interface ONDCResponse {
   message?: {
@@ -87,9 +87,9 @@ export class ONDCClient {
   async send<T = any>(
     url: string | URL,
     method: "POST",
-    body: any,
+    body: object,
   ): Promise<T> {
-    getContext()
+    getContext();
     try {
       // 1. Generate the ONDC Authorization Header
       const authHeader = await this.createAuthorizationHeader(body);

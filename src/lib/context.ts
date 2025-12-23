@@ -1,7 +1,7 @@
 import { AsyncLocalStorage } from "node:async_hooks";
 import {
-  type Tenant,
   __internal_do_not_import_getTenant,
+  type Tenant,
 } from "@/entities/tenant";
 import { ONDCClient } from "./ondc/client";
 
