@@ -3,6 +3,7 @@ import _sodium from "libsodium-wrappers";
 import { z } from "zod";
 import { Id } from "@/value-objects/id";
 import { UUID } from "@/value-objects/uuid";
+import { URL } from "node:url";
 
 /**
  * ONDC:FIS13 is for insurance
@@ -19,6 +20,7 @@ const TenantEnvSchema = z.object({
     .refine((val) => val.includes("."), {
       message: "Subscriber ID should be a domain name",
     }),
+
   DOMAIN_CODE: z.enum(ALLOWED_DOMAIN_CODES).default("ONDC:FIS13"),
   UNIQUE_KEY_ID: z.string().optional(),
   STATIC_SUBSCRIBE_REQUEST_ID: z
@@ -104,9 +106,11 @@ export class Tenant {
    * Subscriber ID (domain name format)
    * */
   public readonly subscriberId: string;
+  public readonly status: "active" | "inactive" | "suspended" = "active";
   public readonly uniqueKeyId: string;
   public readonly subscribeRequestId: UUID;
-
+  public readonly gatewayUrl: URL;
+  public readonly registryUrl: URL;
   /**
    * Adding for future use of whitelisted intermediary ID, in case multiple brokers are using this software
    */
@@ -130,19 +134,7 @@ export class Tenant {
    */
   private constructor() {
     // Validate and load credentials from environment using Zod
-    const env = TenantEnvSchema.parse({
-      SUBSCRIBER_ID: process.env.SUBSCRIBER_ID,
-      STATIC_SUBSCRIBE_REQUEST_ID: process.env.STATIC_SUBSCRIBE_REQUEST_ID,
-      UNIQUE_KEY_ID: process.env.UNIQUE_KEY_ID,
-      ENCRYPTION_PRIVATE_KEY: process.env.ENCRYPTION_PRIVATE_KEY,
-      ONDC_REGISTRY_URL: process.env.ONDC_REGISTRY_URL,
-      ONDC_GATEWAY_URL: process.env.ONDC_GATEWAY_URL,
-      ENCRYPTION_PUBLIC_KEY: process.env.ENCRYPTION_PUBLIC_KEY,
-      ONDC_PUBLIC_KEY: process.env.ONDC_PUBLIC_KEY,
-      SIGNING_PRIVATE_KEY: process.env.SIGNING_PRIVATE_KEY,
-      SIGNING_PUBLIC_KEY: process.env.SIGNING_PUBLIC_KEY,
-      DOMAIN_CODE: process.env.DOMAIN_CODE,
-    });
+    const env = TenantEnvSchema.parse(process.env);
 
     this.subscriberId = env.SUBSCRIBER_ID;
     this.uniqueKeyId = env.UNIQUE_KEY_ID || "custom-key-id"; // Default for development if not provided
@@ -153,6 +145,8 @@ export class Tenant {
     this.signingPublicKey = env.SIGNING_PUBLIC_KEY;
     this.signingPrivateKey = env.SIGNING_PRIVATE_KEY;
     this.domainCode = env.DOMAIN_CODE;
+    this.registryUrl = new URL(env.ONDC_REGISTRY_URL);
+    this.gatewayUrl = new URL(env.ONDC_GATEWAY_URL);
     // Pre-compute cryptographic objects for performance
     try {
       this.privateKeyObject = crypto.createPrivateKey({

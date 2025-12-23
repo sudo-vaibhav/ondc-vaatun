@@ -6,7 +6,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     console.log(
       "\n\n[on_search] Request Body:\n\n",
-      JSON.stringify(body, null, 2),
+      JSON.stringify(body, null, "\t"),
     );
 
     // Extract transaction_id from the context

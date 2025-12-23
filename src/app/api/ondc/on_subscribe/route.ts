@@ -1,14 +1,15 @@
-import { type NextRequest, NextResponse } from "next/server";
-import { getContext } from "@/lib/context";
+import { NextResponse } from "next/server";
+import { createONDCHandler } from "@/lib/context";
 
-export async function POST(request: NextRequest) {
+export const POST = createONDCHandler(async (request, { tenant }) => {
   try {
-    const tenant = getContext().tenant;
     const body = await request.json();
+
     console.log(
       "\n\n[on_subscribe] Request Body:\n\n",
       JSON.stringify(body, null, 2),
     );
+
     const { challenge, subscriber_id } = body;
 
     if (!challenge) {
@@ -18,7 +19,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Optional: Validate subscriber_id matches tenant
     if (subscriber_id && subscriber_id !== tenant.subscriberId) {
       console.warn("[on_subscribe] Subscriber ID mismatch:", {
         expected: tenant.subscriberId,
@@ -26,7 +26,6 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Decrypt the challenge using tenant's credentials
     const answer = tenant.decryptChallenge(challenge);
 
     console.log("\n\n[on_subscribe] Answer:\n\n", answer);
@@ -39,4 +38,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});
