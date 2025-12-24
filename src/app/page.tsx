@@ -1,4 +1,13 @@
-import { CheckCircle2, Code2, Lock, Server, Shield, Zap } from "lucide-react";
+import {
+  CheckCircle2,
+  Code2,
+  FolderOpen,
+  Lock,
+  Server,
+  Shield,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 import { Header } from "@/components/header";
 import RotatingText from "@/components/RotatingText";
 import SearchTrigger from "@/components/SearchTrigger";
@@ -317,6 +326,30 @@ export default function Home() {
               </CardContent>
             </Card>
           </div>
+        </div>
+      </section>
+
+      <Separator className="my-8 border-2 border-foreground" />
+
+      {/* API Directory Section */}
+      <section id="api-directory" className="container mx-auto px-4 py-16">
+        <div className="mx-auto max-w-3xl text-center">
+          <FolderOpen className="mx-auto mb-4 h-12 w-12" />
+          <h2 className="mb-4 text-3xl font-bold">API Directory</h2>
+          <p className="mb-8 text-lg text-muted-foreground">
+            Test API endpoints directly from your browser with preset payloads.
+            No curl required.
+          </p>
+          <Button
+            size="lg"
+            asChild
+            className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
+          >
+            <Link href="/directory">
+              <Zap className="mr-2 h-5 w-5" />
+              Open Directory
+            </Link>
+          </Button>
         </div>
       </section>
 

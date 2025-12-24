@@ -294,6 +294,30 @@ curl -X POST http://localhost:3000/api/ondc/on_subscribe \
 6. **Error logging** - All errors logged to console for debugging
 7. **Performance** - Shared secret pre-computed for fast response times
 
+## Zod Schema Conventions
+
+When defining Zod schemas for API routes:
+
+- **Request schemas**: Use `z.object()` for strict validation of outgoing requests
+- **Response schemas**: Use `z.looseObject()` to allow additional fields from external APIs
+
+This is important because we're exploring and learning the ONDC/Beckn APIs. Using `looseObject` for responses ensures we see all fields returned by the registry/gateway, including undocumented ones.
+
+```typescript
+// Request - strict validation (what we send)
+const LookupRequestSchema = z.object({
+  subscriber_id: z.string().optional(),
+  type: z.enum(["bap", "bpp", "bg"]).optional(),
+});
+
+// Response - loose validation (what we receive)
+const SubscriberSchema = z.looseObject({
+  subscriber_id: z.string(),
+  signing_public_key: z.string(),
+  // ... additional fields will pass through
+});
+```
+
 ## Common Tasks
 
 ### Adding shadcn/ui Components
