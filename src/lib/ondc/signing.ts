@@ -68,7 +68,7 @@ export async function createAuthorizationHeader(body: object): Promise<string> {
 
   // 4. Construct Header
   // keyId format: "subscriber_id|unique_key_id|algo"
-  const keyId = `${tenant.subscriberId}|${tenant.uniqueKeyId}|ed25519`;
+  const keyId = `${tenant.subscriberId}|${tenant.uniqueKeyId}|ed25519`; // acc to Nishtha: stays same throughout the subscription.
 
   return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
 }

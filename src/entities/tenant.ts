@@ -136,7 +136,17 @@ export class Tenant {
     // Validate and load credentials from environment using Zod
     const env = TenantEnvSchema.parse(process.env);
 
-    this.subscriberId = env.SUBSCRIBER_ID;
+    this.subscriberId = env.SUBSCRIBER_ID; // human friend unique identifier
+    // uk id -> unique key id -> this is like a uuid equivalent identifier for subscriber id
+
+    // unique key id: is for identifying the key pair
+
+    // request id -> this is per request basis, i can change this. -> we are not using
+    // this one right now.
+
+    // request id -> used for ondc site verification -> stay same for the entire duration
+    // unique key id -> stays same and needs to be passed for headers of request.
+
     this.uniqueKeyId = env.UNIQUE_KEY_ID || "custom-key-id"; // Default for development if not provided
     this.subscribeRequestId = env.STATIC_SUBSCRIBE_REQUEST_ID;
     this.encryptionPrivateKey = env.ENCRYPTION_PRIVATE_KEY;
