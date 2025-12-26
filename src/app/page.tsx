@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { Header } from "@/components/header";
+import LookupTrigger from "@/components/LookupTrigger";
 import RotatingText from "@/components/RotatingText";
 import SearchTrigger from "@/components/SearchTrigger";
 import SubscriptionTrigger from "@/components/SubscriptionTrigger";
@@ -412,6 +413,7 @@ export default function Home() {
             <div className="mt-2 flex gap-2 flex-wrap">
               <SubscriptionTrigger />
               <SearchTrigger />
+              <LookupTrigger />
             </div>
           </div>
           <div className="flex gap-4">
