@@ -1,14 +1,13 @@
 "use client";
-
 import { Moon, Sun } from "lucide-react";
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
 const navLinks = [
-  { href: "#features", label: "Features" },
-  { href: "#api-endpoints", label: "API Endpoints" },
-  { href: "#tech-stack", label: "Tech Stack" },
+  { href: "/reference", label: "API Reference" },
+  { href:"/directory", label: "Directory" },
 ];
 
 export function Header() {
@@ -22,19 +21,19 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <a href="/" className="text-xl font-bold">
+        <Link href="/" className="text-xl font-bold">
           ONDC Vaatun
-        </a>
+        </Link>
 
         <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
-            <a
+            <Link
               key={link.href}
               href={link.href}
               className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
             >
               {link.label}
-            </a>
+            </Link>
           ))}
         </nav>
 

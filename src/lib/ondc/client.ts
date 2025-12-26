@@ -86,7 +86,7 @@ export class ONDCClient {
   // biome-ignore lint/suspicious/noExplicitAny: ignore
   async send<T = any>(
     url: string | URL,
-    method: "POST",
+    method: "POST" | "GET",
     body: object,
   ): Promise<T> {
     getContext();

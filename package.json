@@ -4,14 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "d": "$npm_execpath dev",
+    "d": "$npm_execpath openapi:generate & $npm_execpath dev",
     "b": "$npm_execpath build",
-    "build": "$npm_execpath lint && $npm_execpath format && next build",
+    "build": "$npm_execpath lint && $npm_execpath format && $npm_execpath openapi:generate && next build",
     "start": "next start",
     "lint": "biome check --write",
     "format": "biome format --write",
+    "check": "biome check --write",
     "ngrok": "ngrok http --domain moved-starfish-rapid.ngrok-free.app 3000",
     "n": "$npm_execpath ngrok",
+    "openapi:generate": "tsx src/openapi/generator.ts",
+    "g": "$npm_execpath openapi:generate",
+    "openapi:watch": "tsx watch src/openapi/generator.ts",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:headed": "playwright test --headed",
@@ -21,6 +25,7 @@
     "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
+    "@asteasolutions/zod-to-openapi": "^8.2.0",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@scalar/nextjs-api-reference": "^0.9.7",
@@ -45,8 +50,10 @@
     "@types/node": "^24",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/swagger-ui-react": "^5.18.0",
     "babel-plugin-react-compiler": "1.0.0",
     "tailwindcss": "^4.1.18",
+    "tsx": "^4.21.0",
     "tw-animate-css": "^1.4.0",
     "typescript": "^5.9.3"
   }

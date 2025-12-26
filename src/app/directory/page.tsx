@@ -23,41 +23,64 @@ export default function DirectoryPage() {
           </p>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Lookup */}
-          <ApiTrigger
-            title="Registry Lookup"
-            description="Look up subscribers in the ONDC registry"
-            endpoint="/api/ondc/lookup"
-            method="POST"
-            payload={{}}
-          />
+        {/* Registry Section */}
+        <div className="mb-10">
+          <h2 className="mb-4 text-2xl font-semibold">Registry</h2>
+          <p className="mb-6 text-muted-foreground">
+            Endpoints for ONDC Registry operations - subscriber management,
+            lookup, and verification.
+          </p>
+          <div className="grid gap-6 md:grid-cols-2">
+            <ApiTrigger
+              title="Registry Lookup"
+              description="Look up subscribers in the ONDC registry"
+              endpoint="/api/ondc/lookup"
+              method="POST"
+              payload={{}}
+            />
 
-          {/* Subscribe */}
-          <ApiTrigger
-            title="Subscribe"
-            description="Send subscription request to ONDC registry"
-            endpoint="/api/ondc/subscribe"
-            method="POST"
-            payload={{}}
-          />
+            <ApiTrigger
+              title="Subscribe"
+              description="Send subscription request to ONDC registry"
+              endpoint="/api/ondc/subscribe"
+              method="POST"
+              payload={{}}
+            />
+          </div>
+        </div>
 
-          {/* Search */}
-          <ApiTrigger
-            title="Search"
-            description="Trigger an insurance search on the ONDC network"
-            endpoint="/api/ondc/search"
-            method="POST"
-            payload={{}}
-          />
+        {/* Gateway Section */}
+        <div className="mb-10">
+          <h2 className="mb-4 text-2xl font-semibold">Gateway</h2>
+          <p className="mb-6 text-muted-foreground">
+            Endpoints for ONDC Gateway operations - transaction flows like
+            search, select, init, and confirm.
+          </p>
+          <div className="grid gap-6 md:grid-cols-2">
+            <ApiTrigger
+              title="Search"
+              description="Trigger an insurance search on the ONDC network"
+              endpoint="/api/ondc/search"
+              method="POST"
+              payload={{}}
+            />
+          </div>
+        </div>
 
-          {/* Health Check */}
-          <ApiTrigger
-            title="Health Check"
-            description="Check if the service is running"
-            endpoint="/api/ondc/health"
-            method="GET"
-          />
+        {/* Internal Section */}
+        <div className="mb-10">
+          <h2 className="mb-4 text-2xl font-semibold">Internal</h2>
+          <p className="mb-6 text-muted-foreground">
+            Utility endpoints for health checks and internal operations.
+          </p>
+          <div className="grid gap-6 md:grid-cols-2">
+            <ApiTrigger
+              title="Health Check"
+              description="Check if the service is running"
+              endpoint="/api/ondc/health"
+              method="GET"
+            />
+          </div>
         </div>
       </section>
     </div>
