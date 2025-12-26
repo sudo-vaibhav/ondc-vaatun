@@ -22,7 +22,7 @@ const TenantEnvSchema = z.object({
     }),
 
   DOMAIN_CODE: z.enum(ALLOWED_DOMAIN_CODES).default("ONDC:FIS13"),
-  UNIQUE_KEY_ID: z.string().optional(),
+  STATIC_UNIQUE_KEY_ID: z.string().min(1, "Unique Key ID is required"),
   STATIC_SUBSCRIBE_REQUEST_ID: z
     .string()
     .min(1, "Subscribe Request ID is required")
@@ -107,7 +107,9 @@ export class Tenant {
    * */
   public readonly subscriberId: string;
   public readonly status: "active" | "inactive" | "suspended" = "active";
-  public readonly uniqueKeyId: string;
+  public readonly uniqueKeyId: Id;
+  // this needs to be remembered per tenant;
+
   public readonly subscribeRequestId: UUID;
   public readonly gatewayUrl: URL;
   public readonly registryUrl: URL;
@@ -147,7 +149,7 @@ export class Tenant {
     // request id -> used for ondc site verification -> stay same for the entire duration
     // unique key id -> stays same and needs to be passed for headers of request.
 
-    this.uniqueKeyId = env.UNIQUE_KEY_ID || "custom-key-id"; // Default for development if not provided
+    this.uniqueKeyId = new Id(env.STATIC_UNIQUE_KEY_ID); // Default for development if not provided
     this.subscribeRequestId = env.STATIC_SUBSCRIBE_REQUEST_ID;
     this.encryptionPrivateKey = env.ENCRYPTION_PRIVATE_KEY;
     this.encryptionPublicKey = env.ENCRYPTION_PUBLIC_KEY;

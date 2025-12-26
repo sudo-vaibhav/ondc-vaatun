@@ -1,0 +1,995 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ONDC Vaatun API",
+    "version": "0.1.0",
+    "description": "Next.js application providing integration endpoints for the Open Network for Digital Commerce (ONDC) platform. Handles cryptographic operations, subscription verification, and Beckn protocol transactions.",
+    "contact": {
+      "name": "Vaatun Technologies",
+      "email": "vaibhav@vaatun.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://ondc-staging.vaatun.com",
+      "description": "Staging environment"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Registry",
+      "description": "ONDC registry operations for subscription and lookup"
+    },
+    {
+      "name": "Beckn Protocol",
+      "description": "Beckn protocol transaction flows (search, select, init, confirm)"
+    },
+    {
+      "name": "Callbacks",
+      "description": "Callback endpoints for ONDC/BPP responses"
+    },
+    {
+      "name": "Verification",
+      "description": "Domain and subscriber verification"
+    },
+    {
+      "name": "Health",
+      "description": "Service health monitoring"
+    }
+  ],
+  "paths": {
+    "/api/ondc/health": {
+      "get": {
+        "summary": "Health Check",
+        "description": "Service health monitoring endpoint. Returns service status and readiness.",
+        "tags": ["Health"],
+        "operationId": "healthCheck",
+        "responses": {
+          "200": {
+            "description": "Service is healthy and ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "Health OK!!"
+                    },
+                    "ready": {
+                      "type": "boolean",
+                      "example": true
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service is not ready",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/subscribe": {
+      "post": {
+        "summary": "Subscribe to ONDC Network",
+        "description": "Initiates subscription to the ONDC registry. Sends subscriber details including GST, PAN, authorized signatory information, and cryptographic keys.",
+        "tags": ["Registry"],
+        "operationId": "subscribe",
+        "requestBody": {
+          "description": "No request body required - tenant configuration is used",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription request sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/on_subscribe": {
+      "post": {
+        "summary": "Handle Subscription Challenge",
+        "description": "ONDC callback endpoint for subscription verification. Decrypts the challenge using shared secret and returns the plaintext answer.",
+        "tags": ["Callbacks", "Registry"],
+        "operationId": "onSubscribe",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubscribeChallenge"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Challenge decrypted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscribeChallengeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing or invalid challenge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Decryption or processing error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/lookup": {
+      "post": {
+        "summary": "Lookup Subscribers",
+        "description": "Look up subscriber(s) in the ONDC registry. Search by subscriber_id, type, domain, country, or city.",
+        "tags": ["Registry"],
+        "operationId": "lookup",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LookupRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Lookup successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SubscriberDetails"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ValidationError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lookup failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/search": {
+      "post": {
+        "summary": "Search for Products/Services",
+        "description": "Initiates a search request in the ONDC network. Creates a transaction and broadcasts search to BPPs via the gateway.",
+        "tags": ["Beckn Protocol"],
+        "operationId": "search",
+        "requestBody": {
+          "description": "No request body required - uses predefined search criteria",
+          "required": false
+        },
+        "responses": {
+          "200": {
+            "description": "Search request initiated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Search failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/on_search": {
+      "post": {
+        "summary": "Handle Search Results Callback",
+        "description": "Callback endpoint for BPPs to send search results. Stores responses for the transaction and returns ACK/NACK.",
+        "tags": ["Callbacks", "Beckn Protocol"],
+        "operationId": "onSearch",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSearchCallback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search result acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Processing error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NackResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/search-results": {
+      "get": {
+        "summary": "Get Search Results",
+        "description": "Polling endpoint to fetch aggregated search results for a transaction. Returns all on_search responses received.",
+        "tags": ["Beckn Protocol"],
+        "operationId": "getSearchResults",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "query",
+            "required": true,
+            "description": "Transaction ID from the search request",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing transaction_id parameter",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/select": {
+      "post": {
+        "summary": "Select Product/Service",
+        "description": "Selects a specific item from search results. Sends select request to BPP to get detailed quote.",
+        "tags": ["Beckn Protocol"],
+        "operationId": "select",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Select request sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string"
+                    },
+                    "required": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Select request failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectFailure"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/on_select": {
+      "post": {
+        "summary": "Handle Select Results Callback",
+        "description": "Callback endpoint for BPPs to send quote details after select. Stores quote information and returns ACK/NACK.",
+        "tags": ["Callbacks", "Beckn Protocol"],
+        "operationId": "onSelect",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSelectCallback"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Select result acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Processing error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NackResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ondc/select-results": {
+      "get": {
+        "summary": "Get Select Results",
+        "description": "Polling endpoint to fetch select results (quote) for a transaction. Returns on_select response with pricing details.",
+        "tags": ["Beckn Protocol"],
+        "operationId": "getSelectResults",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "query",
+            "required": true,
+            "description": "Transaction ID from the select request",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "message_id",
+            "in": "query",
+            "required": true,
+            "description": "Message ID from the select request",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Select results retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required parameters",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ondc-site-verification.html": {
+      "get": {
+        "summary": "Domain Verification Page",
+        "description": "Serves HTML page with signed meta tag for ONDC domain verification. Used to prove domain ownership during subscription.",
+        "tags": ["Verification"],
+        "operationId": "siteVerification",
+        "responses": {
+          "200": {
+            "description": "Verification page with signed request ID",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string",
+                  "example": "<!DOCTYPE html><html>...</html>"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "description": "Error message"
+          },
+          "details": {
+            "type": "string",
+            "description": "Detailed error information"
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Invalid request body"
+          },
+          "details": {
+            "type": "object",
+            "description": "Zod validation error details"
+          }
+        }
+      },
+      "HealthFailure": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "Health FAIL"
+          },
+          "ready": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "SubscribeChallenge": {
+        "type": "object",
+        "required": ["challenge"],
+        "properties": {
+          "subscriber_id": {
+            "type": "string",
+            "example": "ondc-staging.vaatun.com",
+            "description": "Subscriber ID (optional, for validation)"
+          },
+          "challenge": {
+            "type": "string",
+            "description": "Base64-encoded AES-256-ECB encrypted challenge"
+          }
+        }
+      },
+      "SubscribeChallengeResponse": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "Decrypted plaintext challenge answer"
+          }
+        }
+      },
+      "LookupRequest": {
+        "type": "object",
+        "properties": {
+          "subscriber_id": {
+            "type": "string",
+            "description": "Specific subscriber ID to lookup"
+          },
+          "country": {
+            "type": "string",
+            "description": "Filter by country code"
+          },
+          "city": {
+            "type": "string",
+            "description": "Filter by city code"
+          },
+          "domain": {
+            "type": "string",
+            "description": "Filter by domain (e.g., ONDC:FIS13)"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["bg", "bap", "bpp", "BAP", "BPP", "BG"],
+            "description": "Filter by participant type"
+          }
+        }
+      },
+      "SubscriberDetails": {
+        "type": "object",
+        "properties": {
+          "subscriber_id": {
+            "type": "string",
+            "example": "ondc-staging.vaatun.com"
+          },
+          "subscriber_url": {
+            "type": "string",
+            "example": "https://ondc-staging.vaatun.com/api/ondc"
+          },
+          "type": {
+            "type": "string",
+            "example": "buyerApp"
+          },
+          "domain": {
+            "type": "string",
+            "example": "ONDC:FIS13"
+          },
+          "city": {
+            "type": "string",
+            "example": "std:080"
+          },
+          "country": {
+            "type": "string",
+            "example": "IND"
+          },
+          "signing_public_key": {
+            "type": "string",
+            "description": "Ed25519 public key for signature verification"
+          },
+          "encr_public_key": {
+            "type": "string",
+            "description": "X25519 public key for encryption"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string",
+            "example": "SUBSCRIBED"
+          },
+          "created": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updated": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID v7 transaction identifier"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "UUID v7 message identifier"
+          }
+        }
+      },
+      "SearchFailure": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "Search FAIL"
+          },
+          "ready": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "OnSearchCallback": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "object",
+            "properties": {
+              "transaction_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "message_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "action": {
+                "type": "string",
+                "example": "on_search"
+              }
+            }
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "catalog": {
+                "type": "object",
+                "description": "Catalog of products/services from BPP"
+              }
+            }
+          }
+        }
+      },
+      "AckResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACK"],
+                    "example": "ACK"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "NackResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["NACK"],
+                    "example": "NACK"
+                  }
+                }
+              }
+            }
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "example": "DOMAIN-ERROR"
+              },
+              "code": {
+                "type": "string",
+                "example": "500"
+              },
+              "message": {
+                "type": "string",
+                "example": "Internal server error"
+              }
+            }
+          }
+        }
+      },
+      "SearchResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "Whether search entry was found"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "responseCount": {
+            "type": "integer",
+            "description": "Number of on_search responses received"
+          },
+          "providers": {
+            "type": "array",
+            "description": "Array of providers from all responses",
+            "items": {
+              "type": "object"
+            }
+          },
+          "responses": {
+            "type": "array",
+            "description": "Raw on_search responses",
+            "items": {
+              "type": "object"
+            }
+          }
+        }
+      },
+      "SelectRequest": {
+        "type": "object",
+        "required": [
+          "transactionId",
+          "bppId",
+          "bppUri",
+          "providerId",
+          "itemId"
+        ],
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transaction ID from search"
+          },
+          "bppId": {
+            "type": "string",
+            "description": "BPP subscriber ID"
+          },
+          "bppUri": {
+            "type": "string",
+            "description": "BPP callback URI"
+          },
+          "providerId": {
+            "type": "string",
+            "description": "Provider ID from catalog"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item ID to select"
+          },
+          "parentItemId": {
+            "type": "string",
+            "description": "Parent item ID (optional, defaults to itemId)"
+          },
+          "xinputFormId": {
+            "type": "string",
+            "description": "XInput form ID if required"
+          },
+          "xinputSubmissionId": {
+            "type": "string",
+            "description": "XInput submission ID if form was filled"
+          },
+          "addOns": {
+            "type": "array",
+            "description": "Optional add-ons to select",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "quantity": {
+                  "type": "integer"
+                }
+              }
+            }
+          }
+        }
+      },
+      "SelectResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "SelectFailure": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "Select FAIL"
+          },
+          "error": {
+            "type": "string"
+          },
+          "ready": {
+            "type": "boolean",
+            "example": false
+          }
+        }
+      },
+      "OnSelectCallback": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "object",
+            "properties": {
+              "transaction_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "message_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "bpp_id": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string",
+                "example": "on_select"
+              }
+            }
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "order": {
+                "type": "object",
+                "properties": {
+                  "quote": {
+                    "type": "object",
+                    "description": "Quote with pricing details"
+                  }
+                }
+              }
+            }
+          },
+          "error": {
+            "type": "object",
+            "description": "Error details if BPP encountered an issue"
+          }
+        }
+      },
+      "SelectResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "Whether select entry was found"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hasResponse": {
+            "type": "boolean",
+            "description": "Whether on_select response was received"
+          },
+          "response": {
+            "type": "object",
+            "description": "Raw on_select response if available"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "For ONDC network authentication (not currently implemented)"
+      }
+    }
+  }
+}

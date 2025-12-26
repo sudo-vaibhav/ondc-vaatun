@@ -34,7 +34,7 @@ export const POST = createONDCHandler(
             mobile_no: 9876543210,
             country: "IND",
             subscriber_id: tenant.subscriberId,
-            unique_key_id: tenant.uniqueKeyId,
+            unique_key_id: tenant.uniqueKeyId.value,
             callback_url: "/api/ondc",
             key_pair: {
               signing_public_key: tenant.signingPublicKey,

@@ -1,5 +1,8 @@
 # CLAUDE.md - Codebase Context
 
+> **📚 API Documentation**: This project uses Scalar for interactive OpenAPI docs at `/api/reference`.
+> **⚠️ CRITICAL**: When modifying API routes, ALWAYS update `/public/openapi.json`. See [API Documentation](#api-documentation) section below.
+
 ## Project Overview
 
 **ondc-vaatun** is a Next.js application that provides integration endpoints for the Open Network for Digital Commerce (ONDC) platform. It handles the cryptographic operations required for ONDC network subscription and verification.
@@ -16,6 +19,9 @@ This service acts as a backend integration layer for ONDC network participation.
 1. **Subscription Verification**: Handles ONDC's challenge-response mechanism to verify network subscription
 2. **Domain Verification**: Serves a signed verification page to prove domain ownership
 3. **Health Monitoring**: Provides health check endpoints for service monitoring
+4. **Beckn Protocol Integration**: Complete implementation of search, select, init, confirm transaction flows
+5. **Registry Operations**: Lookup and subscribe to ONDC network participants
+6. **Interactive API Documentation**: Scalar-powered OpenAPI documentation at `/api/reference`
 
 ## What is ONDC?
 
@@ -40,6 +46,11 @@ ONDC (Open Network for Digital Commerce) is a Government of India initiative to 
 - **lucide-react** 0.554.0 - Icon library
 - **tw-animate-css** 1.4.0 - Animation utilities
 
+### Documentation
+
+- **@scalar/nextjs-api-reference** 0.9.7 - Interactive OpenAPI documentation
+- **OpenAPI** 3.1.0 - API specification standard
+
 ### Development Tools
 
 - **Biome** 2.2.0 - Code formatting and linting
@@ -48,6 +59,7 @@ ONDC (Open Network for Digital Commerce) is a Government of India initiative to 
 ### Node.js Built-ins
 
 - **crypto** - AES-256-ECB decryption and Diffie-Hellman key exchange
+- **async_hooks** - AsyncLocalStorage for request context
 
 ## Architecture
 
@@ -57,22 +69,49 @@ ONDC (Open Network for Digital Commerce) is a Government of India initiative to 
 ondc-vaatun/
 ├── src/
 │   ├── app/                          # Next.js App Router
-│   │   ├── api/ondc/
-│   │   │   ├── on_subscribe/
-│   │   │   │   └── route.ts         # POST /api/ondc/on_subscribe
-│   │   │   └── health/
-│   │   │       └── route.ts         # GET /api/ondc/health
+│   │   ├── api/
+│   │   │   ├── ondc/
+│   │   │   │   ├── on_subscribe/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/on_subscribe
+│   │   │   │   ├── subscribe/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/subscribe
+│   │   │   │   ├── lookup/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/lookup
+│   │   │   │   ├── search/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/search
+│   │   │   │   ├── on_search/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/on_search
+│   │   │   │   ├── search-results/
+│   │   │   │   │   └── route.ts     # GET /api/ondc/search-results
+│   │   │   │   ├── select/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/select
+│   │   │   │   ├── on_select/
+│   │   │   │   │   └── route.ts     # POST /api/ondc/on_select
+│   │   │   │   ├── select-results/
+│   │   │   │   │   └── route.ts     # GET /api/ondc/select-results
+│   │   │   │   └── health/
+│   │   │   │       └── route.ts     # GET /api/ondc/health
+│   │   │   └── reference/
+│   │   │       └── route.ts         # GET /api/reference (OpenAPI docs)
 │   │   ├── ondc-site-verification.html/
 │   │   │   └── route.ts             # GET /ondc-site-verification.html
 │   │   ├── layout.tsx               # Root layout
 │   │   └── page.tsx                 # Home page
 │   └── lib/
-│       └── ondc-utils.ts            # Cryptographic utilities
+│       ├── ondc/
+│       │   ├── client.ts            # ONDC API client
+│       │   └── signing.ts           # Request signing utilities
+│       ├── context.ts               # Request context management
+│       ├── search-store.ts          # Search results store
+│       └── select-store.ts          # Quote results store
+├── public/
+│   └── openapi.json                 # OpenAPI 3.1 specification
 ├── .env                             # Environment variables (gitignored)
 ├── .env.example                     # Environment template
 ├── package.json                     # Dependencies
 ├── tsconfig.json                    # TypeScript config
 ├── biome.json                       # Biome config
+├── CLAUDE.md                        # Codebase context (this file)
 └── README.md                        # User documentation
 ```
 
@@ -293,6 +332,7 @@ curl -X POST http://localhost:3000/api/ondc/on_subscribe \
 5. **Challenge uniqueness** - Each ONDC challenge is unique and single-use
 6. **Error logging** - All errors logged to console for debugging
 7. **Performance** - Shared secret pre-computed for fast response times
+8. **Update OpenAPI docs** - ALWAYS update `/public/openapi.json` when modifying API routes (see [API Documentation](#api-documentation) section)
 
 ## Zod Schema Conventions
 
@@ -317,6 +357,171 @@ const SubscriberSchema = z.looseObject({
   // ... additional fields will pass through
 });
 ```
+
+## API Documentation
+
+### OpenAPI Specification
+
+This project includes comprehensive OpenAPI documentation powered by Scalar:
+
+- **Interactive Documentation**: Available at `/api/reference`
+- **OpenAPI Spec**: Located at `/public/openapi.json`
+- **Technology**: Uses `@scalar/nextjs-api-reference` package
+
+### Keeping OpenAPI Documentation in Sync
+
+**CRITICAL**: Whenever you modify an API route, you MUST update the OpenAPI specification to keep the documentation accurate.
+
+#### When to Update OpenAPI Docs
+
+Update `/public/openapi.json` when:
+
+1. **Adding a new API endpoint**
+   - Add the route path under `paths`
+   - Define request/response schemas
+   - Include examples and descriptions
+   - Add appropriate tags
+
+2. **Modifying an existing endpoint**
+   - Update request body schemas
+   - Update response schemas
+   - Modify parameters or query strings
+   - Update descriptions to reflect changes
+
+3. **Changing request/response structures**
+   - Update schema definitions in `components.schemas`
+   - Update examples to match new structure
+   - Document any new fields or breaking changes
+
+4. **Adding or changing error responses**
+   - Add new error status codes
+   - Document error response formats
+   - Include error examples
+
+#### How to Update OpenAPI Docs
+
+**Step 1**: Read the current OpenAPI spec
+```bash
+# Review the existing structure
+cat /public/openapi.json
+```
+
+**Step 2**: Identify the changes needed
+- Find the path in `paths` object (e.g., `/api/ondc/search`)
+- Locate related schemas in `components.schemas`
+- Check examples match actual behavior
+
+**Step 3**: Update the specification
+- Modify request/response schemas to match code changes
+- Update descriptions and examples
+- Ensure schema references (`$ref`) are correct
+- Validate JSON syntax
+
+**Step 4**: Test the documentation
+- Visit `/api/reference` in the browser
+- Verify the endpoint appears correctly
+- Test "Try it out" functionality if applicable
+- Check that examples are accurate
+
+#### Example: Adding a New Endpoint
+
+When adding a new route like `/api/ondc/init`:
+
+```json
+{
+  "paths": {
+    "/api/ondc/init": {
+      "post": {
+        "summary": "Initialize Order",
+        "description": "Initialize an order with customer details and selected item",
+        "tags": ["Beckn Protocol"],
+        "operationId": "init",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/InitRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Init request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "InitRequest": {
+        "type": "object",
+        "required": ["transactionId", "messageId"],
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+#### Validation Checklist
+
+Before committing changes to routes, verify:
+
+- [ ] OpenAPI spec updated for all endpoint changes
+- [ ] Request/response schemas match actual code
+- [ ] Examples are accurate and complete
+- [ ] All required fields are marked as `required: true`
+- [ ] Status codes match actual responses
+- [ ] Error responses are documented
+- [ ] Tags are appropriate and consistent
+- [ ] Descriptions are clear and helpful
+- [ ] JSON syntax is valid (no trailing commas, etc.)
+
+#### Testing Documentation Changes
+
+```bash
+# 1. Start dev server
+pnpm dev
+
+# 2. Visit the API docs
+open http://localhost:3000/api/reference
+
+# 3. Verify your endpoint appears
+# 4. Check request/response examples
+# 5. Test "Try it out" if applicable
+```
+
+### Documentation Tools
+
+**Scalar Features**:
+- Interactive API explorer with "Try it out" functionality
+- Dark mode support
+- Searchable endpoints
+- Auto-generated request examples
+- Schema validation display
+
+**OpenAPI Resources**:
+- [OpenAPI 3.1 Specification](https://spec.openapis.org/oas/v3.1.0)
+- [Scalar Documentation](https://github.com/scalar/scalar)
 
 ## Common Tasks
 

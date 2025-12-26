@@ -13,6 +13,7 @@ const nextConfig: NextConfig = {
       new URL("https://usgi.ai/JanSurakshaPortal/images/**"),
     ],
   },
+  allowedDevOrigins: ["moved-starfish-rapid.ngrok-free.app"],
 };
 
 export default nextConfig;

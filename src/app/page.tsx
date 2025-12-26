@@ -1,4 +1,5 @@
 import {
+  BookOpen,
   CheckCircle2,
   Code2,
   FolderOpen,
@@ -16,7 +17,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -67,12 +67,13 @@ export default function Home() {
           <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
             <Button
               size="lg"
+              asChild
               className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
             >
-              <a href="#api-endpoints" className="flex items-center gap-2">
-                <Zap className="h-5 w-5" />
-                View API Endpoints
-              </a>
+              <Link href="/api/reference" className="flex items-center gap-2">
+                <BookOpen className="h-5 w-5" />
+                API Documentation
+              </Link>
             </Button>
             <Button
               size="lg"
@@ -193,144 +194,6 @@ export default function Home() {
         </div>
       </section>
 
-      <Separator className="my-8 border-2 border-foreground" />
-
-      {/* API Endpoints Section */}
-      <section id="api-endpoints" className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-12 text-center text-4xl font-bold">
-            API Endpoints
-          </h2>
-
-          <div className="space-y-6">
-            {/* On Subscribe Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Badge className="border-2 border-foreground font-mono">
-                    POST
-                  </Badge>
-                  <code className="text-lg font-semibold">
-                    /api/ondc/on_subscribe
-                  </code>
-                </div>
-                <CardTitle className="mt-4">
-                  ONDC Subscription Endpoint
-                </CardTitle>
-                <CardDescription>
-                  Handles ONDC subscription challenge-response verification
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="mb-2 font-semibold">How it works:</h4>
-                    <ol className="list-decimal space-y-1 pl-5 text-sm text-muted-foreground">
-                      <li>
-                        ONDC sends an encrypted challenge using AES-256-ECB
-                      </li>
-                      <li>
-                        The endpoint decrypts it using the Diffie-Hellman shared
-                        secret
-                      </li>
-                      <li>
-                        Returns the decrypted answer to verify successful
-                        subscription
-                      </li>
-                    </ol>
-                  </div>
-                  <div>
-                    <h4 className="mb-2 font-semibold">Request Body:</h4>
-                    <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-                      {`{
-                        "subscriber_id": "ondc-staging.vaatun.com",
-                        "challenge": "encrypted_challenge_string"
-                      }`}
-                    </pre>
-                  </div>
-                  <div>
-                    <h4 className="mb-2 font-semibold">Response:</h4>
-                    <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-                      {`{
-                        "answer": "decrypted_challenge_string"
-                      }`}
-                    </pre>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Site Verification Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="secondary"
-                    className="border-2 border-foreground font-mono"
-                  >
-                    GET
-                  </Badge>
-                  <code className="text-lg font-semibold">
-                    /ondc-site-verification.html
-                  </code>
-                </div>
-                <CardTitle className="mt-4">Site Verification</CardTitle>
-                <CardDescription>
-                  Serves HTML page with signed meta tag for domain verification
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <h4 className="mb-2 font-semibold">Response:</h4>
-                  <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-                    {`<html>
-  <head>
-    <meta name="ondc-site-verification"
-          content="SIGNED_REQUEST_ID" />
-  </head>
-  <body>ONDC Site Verification Page</body>
-</html>`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Health Check Endpoint */}
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <div className="flex items-center gap-3">
-                  <Badge
-                    variant="secondary"
-                    className="border-2 border-foreground font-mono"
-                  >
-                    GET
-                  </Badge>
-                  <code className="text-lg font-semibold">
-                    /api/ondc/health
-                  </code>
-                </div>
-                <CardTitle className="mt-4">Health Check</CardTitle>
-                <CardDescription>
-                  Monitor service availability and status
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <h4 className="mb-2 font-semibold">Response:</h4>
-                  <pre className="overflow-x-auto rounded border-2 border-foreground bg-muted p-3 text-xs">
-                    {`{
-  "status": "Health OK!!"
-}`}
-                  </pre>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      <Separator className="my-8 border-2 border-foreground" />
-
       {/* API Directory Section */}
       <section id="api-directory" className="container mx-auto px-4 py-16">
         <div className="mx-auto max-w-3xl text-center">
@@ -415,6 +278,9 @@ export default function Home() {
             </div>
           </div>
           <div className="flex gap-4">
+            <Link href="/api/reference" className="hover:text-foreground">
+              API Docs
+            </Link>
             <a
               href="https://ondc.org/"
               target="_blank"

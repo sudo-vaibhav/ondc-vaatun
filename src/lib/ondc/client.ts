@@ -71,7 +71,7 @@ export class ONDCClient {
 
     // 4. Construct Header
     // keyId format: "subscriber_id|unique_key_id|algo"
-    const keyId = `${this.tenant.subscriberId}|${this.tenant.uniqueKeyId}|ed25519`;
+    const keyId = `${this.tenant.subscriberId}|${this.tenant.uniqueKeyId.value}|ed25519`;
     return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
   }
 
