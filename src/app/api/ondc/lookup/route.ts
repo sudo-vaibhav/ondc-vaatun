@@ -2,32 +2,10 @@ import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
 import {
   createErrorResponse,
-  createRequestBody,
   createResponse,
   type RouteConfig,
 } from "@/lib/openapi";
 import { z } from "@/lib/zod";
-
-/**
- * Schema for lookup request body
- * Based on Beckn Registry API specification
- * @see https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup
- */
-export const LookupRequestSchema = z
-  .object({
-    subscriber_id: z
-      .string()
-      .optional()
-      .openapi({ example: "ondc-staging.vaatun.com" }),
-    country: z.string().optional().openapi({ example: "IND" }),
-    city: z.string().optional().openapi({ example: "*" }),
-    domain: z.string().optional().openapi({ example: "ONDC:FIS13" }),
-    type: z
-      .enum(["bg", "bap", "bpp", "BAP", "BPP", "BG"])
-      .optional()
-      .openapi({ example: "bap" }),
-  })
-  .openapi("LookupRequest");
 
 /**
  * Schema for subscriber details in response
@@ -56,70 +34,58 @@ export const LookupResponseSchema = z
   .array(SubscriberSchema)
   .openapi("LookupResponse");
 
-export type LookupRequest = z.infer<typeof LookupRequestSchema>;
 export type SubscriberDetails = z.infer<typeof SubscriberSchema>;
 
 /**
- * OpenAPI route configuration - uses Zod schemas directly.
- * The generator auto-generates $ref references and includes
- * field-level examples from .openapi({ example: ... })
+ * OpenAPI route configuration
  */
 export const routeConfig: RouteConfig = {
-  method: "post",
+  method: "get",
   path: "/api/ondc/lookup",
-  summary: "Lookup Subscribers",
-  description: `Look up subscriber(s) in the ONDC registry by various filters.
+  summary: "Lookup Tenant Subscription",
+  description: `Look up the current tenant's subscription in the ONDC registry.
 
-This endpoint queries the ONDC Registry to find registered network participants (BAPs, BPPs, or Gateways). You can filter by subscriber ID, type, domain, country, or city.
+This endpoint queries the ONDC Registry using the configured tenant's subscriber ID and domain code to retrieve registration details.
 
 **Use Cases:**
-- Find a specific subscriber by ID
-- List all BAPs in the insurance domain
-- Discover BPPs in a specific city
-- Retrieve public keys for signature verification`,
+- Verify tenant registration status
+- Retrieve public keys for the tenant
+- Check subscription validity`,
   tags: ["Registry"],
   operationId: "lookup",
   externalDocs: {
     description: "Beckn Registry API - Lookup Specification",
     url: "https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup",
   },
-  security: [{ Ed25519Signature: [] }],
-  request: createRequestBody(LookupRequestSchema),
   responses: {
     200: createResponse(LookupResponseSchema, {
       description: "Successful lookup",
     }),
-    400: createErrorResponse("Invalid request parameters"),
     500: createErrorResponse("Server error"),
+  },
+  directoryConfig: {
+    title: "Registry Lookup",
+    description: "Look up tenant subscription in the ONDC registry",
   },
 };
 
 /**
- * POST /api/ondc/lookup
+ * GET /api/ondc/lookup
  *
- * Look up subscriber(s) in the ONDC registry.
- * Forwards the lookup request to the configured registry URL.
+ * Look up the tenant's subscription in the ONDC registry.
+ * Uses tenant's subscriber_id and domain code from environment config.
  *
  * @see https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup
  */
-export const POST = createONDCHandler(
-  async (request, { tenant, ondcClient }) => {
+export const GET = createONDCHandler(
+  async (_request, { tenant, ondcClient }) => {
     try {
-      const body = await request.json();
+      // Build lookup payload from tenant config
+      const lookupPayload = {
+        subscriber_id: tenant.subscriberId,
+        domain: tenant.domainCode,
+      };
 
-      // Validate request body
-      const parseResult = LookupRequestSchema.safeParse(body);
-      if (!parseResult.success) {
-        return NextResponse.json(
-          {
-            error: "Invalid request body",
-            details: parseResult.error.flatten(),
-          },
-          { status: 400 },
-        );
-      }
-
-      const lookupPayload: LookupRequest = parseResult.data;
       const registryUrl = new URL("/v2.0/lookup", tenant.registryUrl);
 
       console.log("[Lookup] Sending request to:", registryUrl.toString());
@@ -127,7 +93,7 @@ export const POST = createONDCHandler(
 
       const response = await ondcClient.send<SubscriberDetails[]>(
         registryUrl,
-        "GET",
+        "POST",
         lookupPayload,
       );
 

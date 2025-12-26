@@ -35,6 +35,10 @@ export const routeConfig: RouteConfig = {
       description: "Service is not ready",
     }),
   },
+  directoryConfig: {
+    title: "Health Check",
+    description: "Check if the service is running",
+  },
 };
 
 export const GET = createONDCHandler(async (_request, _ctx) => {

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { href: "/reference", label: "API Reference" },
-  { href:"/directory", label: "Directory" },
+  { href: "/directory", label: "Directory" },
 ];
 
 export function Header() {

@@ -1,12 +1,33 @@
 import {
+  type RouteConfig as BaseRouteConfig,
   OpenAPIRegistry,
-  type RouteConfig,
 } from "@asteasolutions/zod-to-openapi";
 import type { z } from "./zod";
 
 // Re-export registry for use in routes
 export { OpenAPIRegistry };
-export type { RouteConfig };
+
+/**
+ * Configuration for displaying a route in the API Directory page.
+ * Routes with this config will be shown in the directory UI.
+ */
+export interface DirectoryConfig {
+  /** Display title for the directory card */
+  title: string;
+  /** Short description for the directory card */
+  description: string;
+  /** Default payload for POST requests (optional) */
+  payload?: object;
+}
+
+/**
+ * Extended RouteConfig with optional directory display settings.
+ * Extends the base RouteConfig from zod-to-openapi.
+ */
+export interface RouteConfig extends BaseRouteConfig {
+  /** If present, route will be shown in the API Directory page */
+  directoryConfig?: DirectoryConfig;
+}
 
 /**
  * Create a typed request body configuration for RouteConfig.

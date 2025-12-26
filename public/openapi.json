@@ -24,6 +24,23 @@
   ],
   "components": {
     "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "Health OK!!"
+          },
+          "ready": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "status",
+          "ready"
+        ]
+      },
       "Subscriber": {
         "type": "object",
         "properties": {
@@ -92,56 +109,6 @@
         "items": {
           "$ref": "#/components/schemas/Subscriber"
         }
-      },
-      "LookupRequest": {
-        "type": "object",
-        "properties": {
-          "subscriber_id": {
-            "type": "string",
-            "example": "ondc-staging.vaatun.com"
-          },
-          "country": {
-            "type": "string",
-            "example": "IND"
-          },
-          "city": {
-            "type": "string",
-            "example": "*"
-          },
-          "domain": {
-            "type": "string",
-            "example": "ONDC:FIS13"
-          },
-          "type": {
-            "type": "string",
-            "enum": [
-              "bg",
-              "bap",
-              "bpp",
-              "BAP",
-              "BPP",
-              "BG"
-            ],
-            "example": "bap"
-          }
-        }
-      },
-      "HealthResponse": {
-        "type": "object",
-        "properties": {
-          "status": {
-            "type": "string",
-            "example": "Health OK!!"
-          },
-          "ready": {
-            "type": "boolean",
-            "example": true
-          }
-        },
-        "required": [
-          "status",
-          "ready"
-        ]
       }
     },
     "parameters": {},
@@ -155,53 +122,6 @@
     }
   },
   "paths": {
-    "/api/ondc/lookup": {
-      "post": {
-        "summary": "Lookup Subscribers",
-        "description": "Look up subscriber(s) in the ONDC registry by various filters.\n\nThis endpoint queries the ONDC Registry to find registered network participants (BAPs, BPPs, or Gateways). You can filter by subscriber ID, type, domain, country, or city.\n\n**Use Cases:**\n- Find a specific subscriber by ID\n- List all BAPs in the insurance domain\n- Discover BPPs in a specific city\n- Retrieve public keys for signature verification",
-        "tags": [
-          "Registry"
-        ],
-        "operationId": "lookup",
-        "externalDocs": {
-          "description": "Beckn Registry API - Lookup Specification",
-          "url": "https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup"
-        },
-        "security": [
-          {
-            "Ed25519Signature": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/LookupRequest"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Successful lookup",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/LookupResponse"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Invalid request parameters"
-          },
-          "500": {
-            "description": "Server error"
-          }
-        }
-      }
-    },
     "/api/ondc/health": {
       "get": {
         "summary": "Health Check",
@@ -210,6 +130,10 @@
           "Internal"
         ],
         "operationId": "healthCheck",
+        "directoryConfig": {
+          "title": "Health Check",
+          "description": "Check if the service is running"
+        },
         "responses": {
           "200": {
             "description": "Service is healthy and ready",
@@ -230,6 +154,39 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/ondc/lookup": {
+      "get": {
+        "summary": "Lookup Tenant Subscription",
+        "description": "Look up the current tenant's subscription in the ONDC registry.\n\nThis endpoint queries the ONDC Registry using the configured tenant's subscriber ID and domain code to retrieve registration details.\n\n**Use Cases:**\n- Verify tenant registration status\n- Retrieve public keys for the tenant\n- Check subscription validity",
+        "tags": [
+          "Registry"
+        ],
+        "operationId": "lookup",
+        "externalDocs": {
+          "description": "Beckn Registry API - Lookup Specification",
+          "url": "https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup"
+        },
+        "directoryConfig": {
+          "title": "Registry Lookup",
+          "description": "Look up tenant subscription in the ONDC registry"
+        },
+        "responses": {
+          "200": {
+            "description": "Successful lookup",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LookupResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
           }
         }
       }

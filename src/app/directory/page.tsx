@@ -3,8 +3,12 @@ import Link from "next/link";
 import { ApiTrigger } from "@/components/ApiTrigger";
 import { Header } from "@/components/header";
 import { Button } from "@/components/ui/button";
+import { getDirectoryRoutes } from "@/lib/routes-registry";
+import { tags } from "@/openapi/tags";
 
 export default function DirectoryPage() {
+  const routesByTag = getDirectoryRoutes();
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -23,65 +27,29 @@ export default function DirectoryPage() {
           </p>
         </div>
 
-        {/* Registry Section */}
-        <div className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold">Registry</h2>
-          <p className="mb-6 text-muted-foreground">
-            Endpoints for ONDC Registry operations - subscriber management,
-            lookup, and verification.
-          </p>
-          <div className="grid gap-6 md:grid-cols-2">
-            <ApiTrigger
-              title="Registry Lookup"
-              description="Look up subscribers in the ONDC registry"
-              endpoint="/api/ondc/lookup"
-              method="POST"
-              payload={{}}
-            />
+        {tags.map((tag) => {
+          const routes = routesByTag[tag.name];
+          if (!routes?.length) return null;
 
-            <ApiTrigger
-              title="Subscribe"
-              description="Send subscription request to ONDC registry"
-              endpoint="/api/ondc/subscribe"
-              method="POST"
-              payload={{}}
-            />
-          </div>
-        </div>
-
-        {/* Gateway Section */}
-        <div className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold">Gateway</h2>
-          <p className="mb-6 text-muted-foreground">
-            Endpoints for ONDC Gateway operations - transaction flows like
-            search, select, init, and confirm.
-          </p>
-          <div className="grid gap-6 md:grid-cols-2">
-            <ApiTrigger
-              title="Search"
-              description="Trigger an insurance search on the ONDC network"
-              endpoint="/api/ondc/search"
-              method="POST"
-              payload={{}}
-            />
-          </div>
-        </div>
-
-        {/* Internal Section */}
-        <div className="mb-10">
-          <h2 className="mb-4 text-2xl font-semibold">Internal</h2>
-          <p className="mb-6 text-muted-foreground">
-            Utility endpoints for health checks and internal operations.
-          </p>
-          <div className="grid gap-6 md:grid-cols-2">
-            <ApiTrigger
-              title="Health Check"
-              description="Check if the service is running"
-              endpoint="/api/ondc/health"
-              method="GET"
-            />
-          </div>
-        </div>
+          return (
+            <div key={tag.name} className="mb-10">
+              <h2 className="mb-4 text-2xl font-semibold">{tag.name}</h2>
+              <p className="mb-6 text-muted-foreground">{tag.description}</p>
+              <div className="grid gap-6 md:grid-cols-2">
+                {routes.map((route) => (
+                  <ApiTrigger
+                    key={route.path}
+                    title={route.directoryConfig.title}
+                    description={route.directoryConfig.description}
+                    endpoint={route.path}
+                    method={route.method.toUpperCase() as "GET" | "POST"}
+                    payload={route.directoryConfig.payload}
+                  />
+                ))}
+              </div>
+            </div>
+          );
+        })}
       </section>
     </div>
   );
