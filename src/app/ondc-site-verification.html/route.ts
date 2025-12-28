@@ -1,15 +1,13 @@
 import { NextResponse } from "next/server";
-import { getContext } from "@/lib/context";
+import { createONDCHandler } from "@/lib/context";
 
-export async function GET() {
-  try {
-    const { tenant } = getContext();
-    const subscriberId = tenant.subscriberId; // Ensure tenant is initialized
-    // Sign the subscribe request ID using tenant's signing key
-    const signedContent = await tenant.signSubscribeRequestId();
+export const GET = createONDCHandler(async (_request, { tenant }) => {
+  const subscriberId = tenant.subscriberId; // Ensure tenant is initialized
+  // Sign the subscribe request ID using tenant's signing key
+  const signedContent = await tenant.signSubscribeRequestId();
 
-    // HTML template with signed content
-    const htmlContent = `<!DOCTYPE html>
+  // HTML template with signed content
+  const htmlContent = `<!DOCTYPE html>
 <html>
   <head>
     <meta
@@ -33,17 +31,10 @@ export async function GET() {
   </body>
 </html>`;
 
-    return new NextResponse(htmlContent, {
-      status: 200,
-      headers: {
-        "Content-Type": "text/html",
-      },
-    });
-  } catch (error) {
-    console.error("[ondc-site-verification] Error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
-  }
-}
+  return new NextResponse(htmlContent, {
+    status: 200,
+    headers: {
+      "Content-Type": "text/html",
+    },
+  });
+});
