@@ -60,7 +60,7 @@ export function createRequestBody<T extends z.ZodType>(
  *
  * Field-level examples come from the Zod schema's .openapi({ example: ... })
  */
-export function createResponse<T extends z.ZodType>(
+export function rcreateResponse<T extends z.ZodType>(
   schema: T,
   options?: {
     description?: string;

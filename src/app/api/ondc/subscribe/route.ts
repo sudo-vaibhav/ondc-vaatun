@@ -1,5 +1,54 @@
 import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
+import {
+  createErrorResponse,
+  createResponse,
+  type RouteConfig,
+} from "@/lib/openapi";
+import { z } from "@/lib/zod";
+
+/**
+ * Schema for subscribe response
+ */
+export const SubscribeResponseSchema = z
+  .object({
+    message: z.object({
+      ack: z.object({
+        status: z.string().openapi({ example: "ACK" }),
+      }),
+    }),
+  })
+  .passthrough()
+  .openapi("SubscribeResponse");
+
+/**
+ * OpenAPI route configuration
+ */
+export const routeConfig: RouteConfig = {
+  method: "post",
+  path: "/api/ondc/subscribe",
+  summary: "Trigger Subscription",
+  description: `Trigger a subscription request to the ONDC registry.
+
+This endpoint sends the tenant's registration details to the ONDC registry to initiate or refresh network subscription.
+
+**Flow:**
+1. Builds subscription payload with tenant details (GST, PAN, keys)
+2. Signs and sends request to ONDC registry
+3. Registry responds with ACK and triggers on_subscribe callback`,
+  tags: ["Registry"],
+  operationId: "subscribe",
+  responses: {
+    200: createResponse(SubscribeResponseSchema, {
+      description: "Subscription request accepted",
+    }),
+    500: createErrorResponse("Server error"),
+  },
+  directoryConfig: {
+    title: "Trigger Subscription",
+    description: "Send subscription request to ONDC registry",
+  },
+};
 
 export const POST = createONDCHandler(
   async (_request, { tenant, ondcClient }) => {

@@ -36,10 +36,7 @@
             "example": true
           }
         },
-        "required": [
-          "status",
-          "ready"
-        ]
+        "required": ["status", "ready"]
       },
       "Subscriber": {
         "type": "object",
@@ -109,6 +106,62 @@
         "items": {
           "$ref": "#/components/schemas/Subscriber"
         }
+      },
+      "SubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "ACK"
+                  }
+                },
+                "required": ["status"]
+              }
+            },
+            "required": ["ack"]
+          }
+        },
+        "required": ["message"],
+        "additionalProperties": {}
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "ACK"
+                  }
+                },
+                "required": ["status"]
+              }
+            },
+            "required": ["ack"]
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019abc12-..."
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019abc12-..."
+          }
+        },
+        "required": ["transactionId", "messageId"],
+        "additionalProperties": {}
       }
     },
     "parameters": {},
@@ -126,9 +179,7 @@
       "get": {
         "summary": "Health Check",
         "description": "Service health monitoring endpoint. Returns service status and readiness. Verifies that tenant configuration is loaded and ONDC client is initialized.",
-        "tags": [
-          "Internal"
-        ],
+        "tags": ["Internal"],
         "operationId": "healthCheck",
         "directoryConfig": {
           "title": "Health Check",
@@ -162,9 +213,7 @@
       "get": {
         "summary": "Lookup Tenant Subscription",
         "description": "Look up the current tenant's subscription in the ONDC registry.\n\nThis endpoint queries the ONDC Registry using the configured tenant's subscriber ID and domain code to retrieve registration details.\n\n**Use Cases:**\n- Verify tenant registration status\n- Retrieve public keys for the tenant\n- Check subscription validity",
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "operationId": "lookup",
         "externalDocs": {
           "description": "Beckn Registry API - Lookup Specification",
@@ -187,6 +236,60 @@
           },
           "500": {
             "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/ondc/subscribe": {
+      "post": {
+        "summary": "Trigger Subscription",
+        "description": "Trigger a subscription request to the ONDC registry.\n\nThis endpoint sends the tenant's registration details to the ONDC registry to initiate or refresh network subscription.\n\n**Flow:**\n1. Builds subscription payload with tenant details (GST, PAN, keys)\n2. Signs and sends request to ONDC registry\n3. Registry responds with ACK and triggers on_subscribe callback",
+        "tags": ["Registry"],
+        "operationId": "subscribe",
+        "directoryConfig": {
+          "title": "Trigger Subscription",
+          "description": "Send subscription request to ONDC registry"
+        },
+        "responses": {
+          "200": {
+            "description": "Subscription request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubscribeResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Server error"
+          }
+        }
+      }
+    },
+    "/api/ondc/search": {
+      "post": {
+        "summary": "Search Insurance",
+        "description": "Initiate a search for insurance products on the ONDC network.\n\nThis endpoint broadcasts a search request to the ONDC gateway, which routes it to all registered insurance providers.\n\n**Flow:**\n1. Generates transaction and message IDs\n2. Creates search payload for health insurance\n3. Sends signed request to ONDC gateway\n4. Returns transaction ID to poll for results",
+        "tags": ["Gateway"],
+        "operationId": "search",
+        "directoryConfig": {
+          "title": "Search Insurance",
+          "description": "Search for insurance products on ONDC network"
+        },
+        "responses": {
+          "200": {
+            "description": "Search request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable"
           }
         }
       }

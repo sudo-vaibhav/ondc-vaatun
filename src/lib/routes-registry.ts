@@ -1,5 +1,7 @@
 import { routeConfig as healthRoute } from "@/app/api/ondc/health/route";
 import { routeConfig as lookupRoute } from "@/app/api/ondc/lookup/route";
+import { routeConfig as searchRoute } from "@/app/api/ondc/search/route";
+import { routeConfig as subscribeRoute } from "@/app/api/ondc/subscribe/route";
 import type { DirectoryConfig, RouteConfig } from "./openapi";
 
 /**
@@ -11,9 +13,8 @@ import type { DirectoryConfig, RouteConfig } from "./openapi";
 export const routeConfigs: RouteConfig[] = [
   healthRoute,
   lookupRoute,
-  // Add more routes here as they're created
-  // subscribeRoute,
-  // searchRoute,
+  subscribeRoute,
+  searchRoute,
 ];
 
 /**
