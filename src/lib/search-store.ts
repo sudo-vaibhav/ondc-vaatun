@@ -107,6 +107,70 @@ export interface SearchEntry {
   categoryCode: string;
   responses: OnSearchResponse[];
   createdAt: number; // For TTL cleanup
+  ttlMs: number; // TTL duration in milliseconds
+  ttlExpiresAt: number; // Timestamp when collection is complete
+}
+
+// Event listeners for SSE subscriptions
+type SearchEventCallback = (transactionId: string, entry: SearchEntry) => void;
+const eventListeners = new Map<string, Set<SearchEventCallback>>();
+
+/**
+ * Subscribe to updates for a specific transaction
+ */
+export function subscribeToSearch(
+  transactionId: string,
+  callback: SearchEventCallback,
+): () => void {
+  let listeners = eventListeners.get(transactionId);
+  if (!listeners) {
+    listeners = new Set();
+    eventListeners.set(transactionId, listeners);
+  }
+  listeners.add(callback);
+
+  // Return unsubscribe function
+  return () => {
+    const listeners = eventListeners.get(transactionId);
+    if (listeners) {
+      listeners.delete(callback);
+      if (listeners.size === 0) {
+        eventListeners.delete(transactionId);
+      }
+    }
+  };
+}
+
+/**
+ * Notify all subscribers of an update
+ */
+function notifySubscribers(transactionId: string, entry: SearchEntry): void {
+  const listeners = eventListeners.get(transactionId);
+  if (listeners) {
+    for (const callback of listeners) {
+      try {
+        callback(transactionId, entry);
+      } catch (error) {
+        console.error("[SearchStore] Error in event callback:", error);
+      }
+    }
+  }
+}
+
+/**
+ * Parse ISO 8601 duration to milliseconds
+ * Supports: PT5M (5 minutes), PT30S (30 seconds), PT1H (1 hour)
+ */
+export function parseTtlToMs(ttl: string): number {
+  const match = ttl.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i);
+  if (!match) {
+    // Default to 5 minutes if parsing fails
+    return 5 * 60 * 1000;
+  }
+  const hours = Number.parseInt(match[1] || "0", 10);
+  const minutes = Number.parseInt(match[2] || "0", 10);
+  const seconds = Number.parseInt(match[3] || "0", 10);
+  return (hours * 3600 + minutes * 60 + seconds) * 1000;
 }
 
 // TTL in milliseconds (10 minutes)
@@ -146,23 +210,32 @@ startCleanupInterval();
 
 /**
  * Create a new search entry when initiating a search
+ * @param ttl - ISO 8601 duration string (e.g., "PT5M" for 5 minutes)
  */
 export function createSearchEntry(
   transactionId: string,
   messageId: string,
   categoryCode: string,
+  ttl = "PT5M",
 ): SearchEntry {
+  const now = Date.now();
+  const ttlMs = parseTtlToMs(ttl);
+
   const entry: SearchEntry = {
     transactionId,
     messageId,
     searchTimestamp: new Date().toISOString(),
     categoryCode,
     responses: [],
-    createdAt: Date.now(),
+    createdAt: now,
+    ttlMs,
+    ttlExpiresAt: now + ttlMs,
   };
 
   searchStore.set(transactionId, entry);
-  console.log(`[SearchStore] Created entry for transaction: ${transactionId}`);
+  console.log(
+    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl}, expires: ${new Date(entry.ttlExpiresAt).toISOString()})`,
+  );
 
   return entry;
 }
@@ -174,41 +247,40 @@ export function addSearchResponse(
   transactionId: string,
   response: Omit<OnSearchResponse, "_receivedAt">,
 ): boolean {
-  const entry = searchStore.get(transactionId);
+  let entry = searchStore.get(transactionId);
 
   if (!entry) {
     console.warn(
       `[SearchStore] No entry found for transaction: ${transactionId}`,
     );
     // Create a new entry if it doesn't exist (for late responses)
-    const newEntry: SearchEntry = {
+    const now = Date.now();
+    const ttlMs = parseTtlToMs(response.context.ttl || "PT5M");
+    entry = {
       transactionId,
       messageId: response.context.message_id,
       searchTimestamp: response.context.timestamp,
       categoryCode: "UNKNOWN",
       responses: [],
-      createdAt: Date.now(),
+      createdAt: now,
+      ttlMs,
+      ttlExpiresAt: now + ttlMs,
     };
-    searchStore.set(transactionId, newEntry);
-  }
-
-  const targetEntry = searchStore.get(transactionId);
-  if (!targetEntry) {
-    console.error(
-      `[SearchStore] Failed to create or retrieve entry for transaction: ${transactionId}`,
-    );
-    return false;
+    searchStore.set(transactionId, entry);
   }
 
   // Add response with received timestamp
-  targetEntry.responses.push({
+  entry.responses.push({
     ...response,
     _receivedAt: new Date().toISOString(),
   } as OnSearchResponse);
 
   console.log(
-    `[SearchStore] Added response for transaction: ${transactionId} (total: ${targetEntry.responses.length})`,
+    `[SearchStore] Added response for transaction: ${transactionId} (total: ${entry.responses.length})`,
   );
+
+  // Notify SSE subscribers of the update
+  notifySubscribers(transactionId, entry);
 
   return true;
 }
@@ -220,16 +292,15 @@ export function getSearchEntry(transactionId: string): SearchEntry | null {
   return searchStore.get(transactionId) || null;
 }
 
-/**
- * Get aggregated results for a transaction
- */
-export function getSearchResults(transactionId: string): {
+export interface SearchResultsResponse {
   found: boolean;
   transactionId: string;
   messageId?: string;
   searchTimestamp?: string;
   categoryCode?: string;
   responseCount: number;
+  isComplete: boolean;
+  ttlExpiresAt: number;
   providers: Array<{
     bppId: string;
     bppUri?: string;
@@ -238,7 +309,14 @@ export function getSearchResults(transactionId: string): {
     hasError: boolean;
   }>;
   responses: OnSearchResponse[];
-} | null {
+}
+
+/**
+ * Get aggregated results for a transaction
+ */
+export function getSearchResults(
+  transactionId: string,
+): SearchResultsResponse | null {
   const entry = searchStore.get(transactionId);
 
   if (!entry) {
@@ -287,6 +365,8 @@ export function getSearchResults(transactionId: string): {
     searchTimestamp: entry.searchTimestamp,
     categoryCode: entry.categoryCode,
     responseCount: entry.responses.length,
+    isComplete: Date.now() > entry.ttlExpiresAt,
+    ttlExpiresAt: entry.ttlExpiresAt,
     providers: Array.from(providerMap.values()),
     responses: entry.responses,
   };

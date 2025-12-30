@@ -130,6 +130,33 @@
         "required": ["message"],
         "additionalProperties": {}
       },
+      "OnSubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "example": "decrypted_challenge_answer",
+            "description": "Decrypted challenge answer"
+          }
+        },
+        "required": ["answer"]
+      },
+      "OnSubscribeRequest": {
+        "type": "object",
+        "properties": {
+          "subscriber_id": {
+            "type": "string",
+            "example": "ondc-staging.vaatun.com"
+          },
+          "challenge": {
+            "type": "string",
+            "example": "base64_encrypted_challenge_string",
+            "description": "Base64 encoded encrypted challenge from ONDC"
+          }
+        },
+        "required": ["challenge"],
+        "additionalProperties": {}
+      },
       "SearchResponse": {
         "type": "object",
         "properties": {
@@ -161,6 +188,689 @@
           }
         },
         "required": ["transactionId", "messageId"],
+        "additionalProperties": {}
+      },
+      "SelectResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "example": "ACK"
+                  }
+                },
+                "required": ["status"]
+              }
+            },
+            "required": ["ack"]
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019abc12-3456-7890-abcd-ef1234567890"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019abc12-3456-7890-abcd-ef1234567891"
+          }
+        },
+        "required": ["transactionId", "messageId"],
+        "additionalProperties": {}
+      },
+      "SelectAddOn": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "addon-001"
+          },
+          "quantity": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "example": 1
+          }
+        },
+        "required": ["id", "quantity"]
+      },
+      "SelectRequest": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "019abc12-3456-7890-abcd-ef1234567890"
+          },
+          "bppId": {
+            "type": "string",
+            "example": "ondc-mock-server.example.com"
+          },
+          "bppUri": {
+            "type": "string",
+            "format": "uri",
+            "example": "https://ondc-mock-server.example.com/api/ondc"
+          },
+          "providerId": {
+            "type": "string",
+            "example": "provider-001"
+          },
+          "itemId": {
+            "type": "string",
+            "example": "item-001"
+          },
+          "parentItemId": {
+            "type": "string",
+            "example": "item-001"
+          },
+          "xinputFormId": {
+            "type": "string",
+            "example": "form-001"
+          },
+          "xinputSubmissionId": {
+            "type": "string",
+            "example": "submission-001"
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SelectAddOn"
+            },
+            "example": [
+              {
+                "id": "addon-001",
+                "quantity": 1
+              }
+            ]
+          }
+        },
+        "required": [
+          "transactionId",
+          "bppId",
+          "bppUri",
+          "providerId",
+          "itemId",
+          "parentItemId"
+        ]
+      },
+      "AckResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACK", "NACK"],
+                    "example": "ACK"
+                  }
+                },
+                "required": ["status"]
+              }
+            },
+            "required": ["ack"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": ["message"]
+      },
+      "BecknContext": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "example": "ONDC:FIS13"
+          },
+          "action": {
+            "type": "string",
+            "example": "on_search"
+          },
+          "bap_id": {
+            "type": "string",
+            "example": "ondc-staging.vaatun.com"
+          },
+          "bap_uri": {
+            "type": "string",
+            "example": "https://ondc-staging.vaatun.com/api/ondc"
+          },
+          "bpp_id": {
+            "type": "string",
+            "example": "ondc-mock-server.example.com"
+          },
+          "bpp_uri": {
+            "type": "string",
+            "example": "https://ondc-mock-server.example.com"
+          },
+          "transaction_id": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567890"
+          },
+          "message_id": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567891"
+          },
+          "timestamp": {
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "version": {
+            "type": "string",
+            "example": "2.0.1"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "OnSearchRequest": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/BecknContext"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "catalog": {
+                "description": "BPP catalog with providers and items"
+              }
+            },
+            "additionalProperties": {}
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": {}
+          }
+        },
+        "additionalProperties": {}
+      },
+      "OnSelectAckResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACK", "NACK"],
+                    "example": "ACK"
+                  }
+                },
+                "required": ["status"]
+              }
+            },
+            "required": ["ack"]
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "required": ["message"]
+      },
+      "OnSelectRequest": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "type": "object",
+            "properties": {
+              "domain": {
+                "type": "string",
+                "example": "ONDC:FIS13"
+              },
+              "action": {
+                "type": "string",
+                "example": "on_select"
+              },
+              "bap_id": {
+                "type": "string",
+                "example": "ondc-staging.vaatun.com"
+              },
+              "bap_uri": {
+                "type": "string",
+                "example": "https://ondc-staging.vaatun.com/api/ondc"
+              },
+              "bpp_id": {
+                "type": "string",
+                "example": "ondc-mock-server.example.com"
+              },
+              "bpp_uri": {
+                "type": "string",
+                "example": "https://ondc-mock-server.example.com"
+              },
+              "transaction_id": {
+                "type": "string",
+                "example": "019abc12-3456-7890-abcd-ef1234567890"
+              },
+              "message_id": {
+                "type": "string",
+                "example": "019abc12-3456-7890-abcd-ef1234567891"
+              },
+              "timestamp": {
+                "type": "string",
+                "example": "2024-01-01T00:00:00.000Z"
+              },
+              "version": {
+                "type": "string",
+                "example": "2.0.1"
+              }
+            },
+            "additionalProperties": {}
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "order": {
+                "type": "object",
+                "properties": {
+                  "provider": {},
+                  "items": {
+                    "type": "array",
+                    "items": {}
+                  },
+                  "quote": {
+                    "type": "object",
+                    "properties": {
+                      "price": {
+                        "type": "object",
+                        "properties": {
+                          "currency": {
+                            "type": "string",
+                            "example": "INR"
+                          },
+                          "value": {
+                            "type": "string",
+                            "example": "1000.00"
+                          }
+                        },
+                        "additionalProperties": {}
+                      },
+                      "breakup": {
+                        "type": "array",
+                        "items": {}
+                      }
+                    },
+                    "additionalProperties": {}
+                  }
+                },
+                "additionalProperties": {}
+              }
+            },
+            "additionalProperties": {}
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string"
+              },
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": {}
+          }
+        },
+        "additionalProperties": {}
+      },
+      "ProviderSummary": {
+        "type": "object",
+        "properties": {
+          "bppId": {
+            "type": "string",
+            "example": "ondc-mock-server.example.com"
+          },
+          "bppUri": {
+            "type": "string",
+            "example": "https://ondc-mock-server.example.com"
+          },
+          "name": {
+            "type": "string",
+            "example": "ICICI Prudential"
+          },
+          "itemCount": {
+            "type": "integer",
+            "example": 5
+          },
+          "hasError": {
+            "type": "boolean",
+            "example": false
+          }
+        },
+        "required": ["bppId", "itemCount", "hasError"]
+      },
+      "SearchResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "example": true
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567890"
+          },
+          "messageId": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567891"
+          },
+          "searchTimestamp": {
+            "type": "string",
+            "example": "2024-01-01T00:00:00.000Z"
+          },
+          "categoryCode": {
+            "type": "string",
+            "example": "HEALTH_INSURANCE"
+          },
+          "responseCount": {
+            "type": "integer",
+            "example": 3
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProviderSummary"
+            },
+            "example": [
+              {
+                "bppId": "ondc-mock-server.example.com",
+                "bppUri": "https://ondc-mock-server.example.com",
+                "name": "ICICI Prudential",
+                "itemCount": 5,
+                "hasError": false
+              }
+            ]
+          },
+          "responses": {
+            "type": "array",
+            "items": {},
+            "description": "Raw on_search responses from BPPs"
+          },
+          "message": {
+            "type": "string",
+            "example": "No search entry found for this transaction ID"
+          }
+        },
+        "required": [
+          "found",
+          "transactionId",
+          "responseCount",
+          "providers",
+          "responses"
+        ],
+        "additionalProperties": {}
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "quote-001"
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "example": "INR"
+              },
+              "value": {
+                "type": "string",
+                "example": "15000.00"
+              }
+            },
+            "required": ["currency", "value"],
+            "additionalProperties": {}
+          },
+          "breakup": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "example": "Base Premium"
+                },
+                "price": {
+                  "type": "object",
+                  "properties": {
+                    "currency": {
+                      "type": "string",
+                      "example": "INR"
+                    },
+                    "value": {
+                      "type": "string",
+                      "example": "15000.00"
+                    }
+                  },
+                  "required": ["currency", "value"],
+                  "additionalProperties": {}
+                },
+                "item": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "add_ons": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": ["id"]
+                      }
+                    }
+                  },
+                  "additionalProperties": {}
+                }
+              },
+              "required": ["title", "price"],
+              "additionalProperties": {}
+            }
+          },
+          "ttl": {
+            "type": "string",
+            "example": "PT30M"
+          }
+        },
+        "required": ["price"],
+        "additionalProperties": {}
+      },
+      "SelectProvider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "provider-001"
+          },
+          "descriptor": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "ICICI Prudential"
+              },
+              "short_desc": {
+                "type": "string"
+              },
+              "long_desc": {
+                "type": "string"
+              },
+              "images": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "additionalProperties": {}
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": {}
+      },
+      "SelectItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "item-001"
+          },
+          "parent_item_id": {
+            "type": "string"
+          },
+          "descriptor": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "example": "Health Guard Plus"
+              },
+              "short_desc": {
+                "type": "string"
+              },
+              "long_desc": {
+                "type": "string"
+              },
+              "images": {
+                "type": "array",
+                "items": {}
+              }
+            },
+            "additionalProperties": {}
+          },
+          "price": {
+            "type": "object",
+            "properties": {
+              "currency": {
+                "type": "string",
+                "example": "INR"
+              },
+              "value": {
+                "type": "string",
+                "example": "15000.00"
+              }
+            },
+            "required": ["currency", "value"],
+            "additionalProperties": {}
+          },
+          "xinput": {},
+          "add_ons": {
+            "type": "array",
+            "items": {}
+          },
+          "tags": {
+            "type": "array",
+            "items": {}
+          }
+        },
+        "required": ["id"],
+        "additionalProperties": {}
+      },
+      "SelectResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "example": true
+          },
+          "transactionId": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567890"
+          },
+          "messageId": {
+            "type": "string",
+            "example": "019abc12-3456-7890-abcd-ef1234567891"
+          },
+          "itemId": {
+            "type": "string",
+            "example": "item-001"
+          },
+          "providerId": {
+            "type": "string",
+            "example": "provider-001"
+          },
+          "hasResponse": {
+            "type": "boolean",
+            "example": true
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/SelectProvider"
+          },
+          "item": {
+            "$ref": "#/components/schemas/SelectItem"
+          },
+          "xinput": {
+            "description": "XInput form details for additional data collection"
+          },
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": {}
+          },
+          "message": {
+            "type": "string",
+            "example": "No select entry found for this transaction"
+          }
+        },
+        "required": ["found", "transactionId", "messageId", "hasResponse"],
         "additionalProperties": {}
       }
     },
@@ -267,6 +977,43 @@
         }
       }
     },
+    "/api/ondc/on_subscribe": {
+      "post": {
+        "summary": "Handle Subscription Challenge",
+        "description": "Callback endpoint for ONDC subscription challenge-response verification.\n\nThis endpoint is called by the ONDC registry during the subscription process to verify that the subscriber controls the claimed domain.\n\n**Flow:**\n1. Registry sends encrypted challenge\n2. Service decrypts using shared secret (Diffie-Hellman derived)\n3. Returns plaintext answer to prove key possession",
+        "tags": ["Registry"],
+        "operationId": "onSubscribe",
+        "requestBody": {
+          "required": true,
+          "description": "Subscription challenge from ONDC registry",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Challenge decrypted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnSubscribeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Challenge is required"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
     "/api/ondc/search": {
       "post": {
         "summary": "Search Insurance",
@@ -290,6 +1037,223 @@
           },
           "503": {
             "description": "Service unavailable"
+          }
+        }
+      }
+    },
+    "/api/ondc/select": {
+      "post": {
+        "summary": "Select Insurance Item",
+        "description": "Select a specific insurance item to get a quote.\n\nThis endpoint sends a select request to the BPP (seller) to get pricing details for a specific item.\n\n**Flow:**\n1. Receives item selection with provider and item IDs\n2. Optionally includes XInput form submission for eligibility\n3. Sends signed request directly to BPP\n4. Returns transaction ID to poll for quote via on_select callback",
+        "tags": ["Gateway"],
+        "operationId": "select",
+        "directoryConfig": {
+          "title": "Select Item",
+          "description": "Select an insurance item to get a quote",
+          "payload": {
+            "transactionId": "019abc12-3456-7890-abcd-ef1234567890",
+            "bppId": "ondc-mock-server.example.com",
+            "bppUri": "https://ondc-mock-server.example.com/api/ondc",
+            "providerId": "provider-001",
+            "itemId": "item-001",
+            "parentItemId": "item-001"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "description": "Item selection details",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Select request accepted",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields"
+          },
+          "503": {
+            "description": "Service unavailable"
+          }
+        }
+      }
+    },
+    "/api/ondc/on_search": {
+      "post": {
+        "summary": "Receive Search Results",
+        "description": "Callback endpoint for receiving search results from BPPs.\n\nThis endpoint is called by BPPs (seller platforms) in response to a search request broadcast by the gateway.\n\n**Flow:**\n1. BPP sends catalog with matching providers and items\n2. Service stores the response keyed by transaction_id\n3. Returns ACK to confirm receipt\n4. Results can be polled via /api/ondc/search-results",
+        "tags": ["Gateway"],
+        "operationId": "onSearch",
+        "requestBody": {
+          "required": true,
+          "description": "Search results from BPP",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search results acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/ondc/on_select": {
+      "post": {
+        "summary": "Receive Quote",
+        "description": "Callback endpoint for receiving quotes from BPPs.\n\nThis endpoint is called by BPPs (seller platforms) in response to a select request with pricing details.\n\n**Flow:**\n1. BPP sends order quote with price breakup\n2. Service stores the response keyed by transaction_id and message_id\n3. Returns ACK to confirm receipt\n4. Quote can be polled via /api/ondc/select-results",
+        "tags": ["Gateway"],
+        "operationId": "onSelect",
+        "requestBody": {
+          "required": true,
+          "description": "Quote from BPP",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Quote acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnSelectAckResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/ondc/search-results": {
+      "get": {
+        "summary": "Poll Search Results",
+        "description": "Polling endpoint to fetch aggregated search results for a transaction.\n\nCalled by the frontend to retrieve on_search responses collected from BPPs.\n\n**Flow:**\n1. Client polls with transaction_id from initial search\n2. Returns all collected on_search responses\n3. Includes provider summary with item counts\n4. Poll until desired providers respond or timeout",
+        "tags": ["Internal"],
+        "operationId": "getSearchResults",
+        "directoryConfig": {
+          "title": "Poll Search Results",
+          "description": "Fetch aggregated search results by transaction ID"
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "019abc12-3456-7890-abcd-ef1234567890",
+              "description": "Transaction ID from the initial search request"
+            },
+            "required": true,
+            "description": "Transaction ID from the initial search request",
+            "name": "transaction_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results (may be empty if no responses yet)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing transaction_id query parameter"
+          },
+          "500": {
+            "description": "Internal server error"
+          }
+        }
+      }
+    },
+    "/api/ondc/select-results": {
+      "get": {
+        "summary": "Poll Quote Results",
+        "description": "Polling endpoint to fetch quote (select) results for a transaction.\n\nCalled by the frontend to retrieve on_select response with pricing details.\n\n**Flow:**\n1. Client polls with transaction_id and message_id from initial select\n2. Returns quote with price breakup when available\n3. May include XInput form for additional data collection\n4. Poll until response received or timeout",
+        "tags": ["Internal"],
+        "operationId": "getSelectResults",
+        "directoryConfig": {
+          "title": "Poll Quote Results",
+          "description": "Fetch quote results by transaction and message ID"
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "019abc12-3456-7890-abcd-ef1234567890",
+              "description": "Transaction ID from the initial select request"
+            },
+            "required": true,
+            "description": "Transaction ID from the initial select request",
+            "name": "transaction_id",
+            "in": "query"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "example": "019abc12-3456-7890-abcd-ef1234567891",
+              "description": "Message ID from the initial select request"
+            },
+            "required": true,
+            "description": "Message ID from the initial select request",
+            "name": "message_id",
+            "in": "query"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Select results (may be empty if no response yet)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing transaction_id or message_id query parameters"
+          },
+          "500": {
+            "description": "Internal server error"
           }
         }
       }

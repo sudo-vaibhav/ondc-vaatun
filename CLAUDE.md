@@ -104,6 +104,12 @@ ondc-vaatun/
 │       ├── context.ts               # Request context management
 │       ├── search-store.ts          # Search results store
 │       └── select-store.ts          # Quote results store
+├── tests/
+│   └── api/                         # E2E API tests (Playwright)
+│       ├── health.spec.ts           # Health endpoint tests
+│       ├── registry.spec.ts         # Registry lookup/subscribe tests
+│       ├── gateway.spec.ts          # Gateway search/select tests
+│       └── polling.spec.ts          # Callback polling flow tests
 ├── public/
 │   └── openapi.json                 # OpenAPI 3.1 specification
 ├── .env                             # Environment variables (gitignored)
@@ -273,6 +279,32 @@ npm run dev              # Start dev server on :3000
 npm run lint             # Run Biome linter
 npm run format           # Format code with Biome
 ```
+
+### Testing
+
+**IMPORTANT**: Run only the specific test file you changed, not the entire test suite.
+
+```bash
+# Run a specific test file
+pnpm test:e2e:chromium -- tests/api/registry.spec.ts
+
+# Run a specific test by line number
+pnpm test:e2e:chromium -- tests/api/registry.spec.ts:28
+
+# Run tests matching a pattern
+pnpm test:e2e:chromium -- --grep "subscribe"
+```
+
+**When to run full test suite**:
+- Major refactors affecting multiple files
+- New feature additions that touch shared code
+- Before creating a PR
+- When explicitly requested
+
+**When to run specific tests**:
+- Fixing a single test
+- Modifying a single endpoint
+- Quick iteration during development
 
 ### Production Build
 
@@ -495,6 +527,7 @@ Before committing changes to routes, verify:
 - [ ] Tags are appropriate and consistent
 - [ ] Descriptions are clear and helpful
 - [ ] JSON syntax is valid (no trailing commas, etc.)
+- [ ] **E2E tests added/updated** in `tests/api/` (see [E2E Testing Requirements](#e2e-testing-requirements))
 
 #### Testing Documentation Changes
 
@@ -573,7 +606,92 @@ export default function MyComponent() {
 1. Create new route under `src/app/api/ondc/[endpoint-name]/route.ts`
 2. Import utilities from `@/lib/ondc-utils`
 3. Follow Next.js App Router conventions
-4. Update README.md with endpoint documentation
+4. Update `/public/openapi.json` with endpoint documentation
+5. **Add E2E tests** in `tests/api/` folder (see below)
+
+### E2E Testing Requirements
+
+**IMPORTANT**: When implementing new API routes, ALWAYS add corresponding E2E tests in the `tests/api/` folder.
+
+#### When to Add E2E Tests
+
+Add E2E tests when:
+
+1. **Adding Beckn protocol pairs** (x and on_x routes):
+   - `search` + `on_search` → Add tests in `gateway.spec.ts` or create new spec
+   - `select` + `on_select` → Add tests for the select flow
+   - `init` + `on_init` → Add tests for the init flow
+   - `confirm` + `on_confirm` → Add tests for the confirm flow
+
+2. **Adding registry operations**:
+   - `lookup`, `subscribe` → Add tests in `registry.spec.ts`
+
+3. **Adding new major endpoints**:
+   - Health checks, status endpoints → Add tests in `health.spec.ts`
+   - New callback flows → Consider a new `*.spec.ts` file
+
+#### Test File Organization
+
+```
+tests/api/
+├── health.spec.ts      # Basic health/status endpoints
+├── registry.spec.ts    # ONDC registry operations (lookup, subscribe)
+├── gateway.spec.ts     # Gateway operations (search, select, init, confirm)
+└── polling.spec.ts     # Callback polling and SSE flows
+```
+
+#### Test Patterns
+
+**For request/callback pairs** (e.g., search/on_search):
+```typescript
+test.describe("Search Flow", () => {
+  test("POST /api/ondc/search triggers gateway request", async ({ request }) => {
+    // Test the outgoing request
+  });
+
+  test("POST /api/ondc/on_search stores callback response", async ({ request }) => {
+    // Test callback handling with mock payload
+  });
+
+  test("GET /api/ondc/search-results returns aggregated results", async ({ request }) => {
+    // Test results retrieval
+  });
+});
+```
+
+**For standalone endpoints**:
+```typescript
+test.describe("Health Endpoint", () => {
+  test("GET /api/ondc/health returns 200", async ({ request }) => {
+    const response = await request.get("/api/ondc/health");
+    expect(response.status()).toBe(200);
+  });
+});
+```
+
+#### Running Tests
+
+```bash
+# Run specific test file
+pnpm test:e2e:chromium -- tests/api/gateway.spec.ts
+
+# Run tests matching pattern
+pnpm test:e2e:chromium -- --grep "search"
+
+# Run all API tests
+pnpm test:e2e:chromium -- tests/api/
+```
+
+#### Test Checklist for New Endpoints
+
+Before completing a new endpoint implementation, verify:
+
+- [ ] E2E test file created or updated in `tests/api/`
+- [ ] Tests cover success cases (200 responses)
+- [ ] Tests cover error cases (400, 500 responses)
+- [ ] For callback routes: tests verify storage in memory store
+- [ ] For polling routes: tests verify data retrieval
+- [ ] Tests run successfully: `pnpm test:e2e:chromium -- tests/api/[file].spec.ts`
 
 ### Updating Cryptographic Logic
 

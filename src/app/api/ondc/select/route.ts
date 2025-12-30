@@ -1,19 +1,121 @@
 import { NextResponse } from "next/server";
 import { v7 as uuidv7 } from "uuid";
 import { createONDCHandler } from "@/lib/context";
+import {
+  createErrorResponse,
+  createRequestBody,
+  createResponse,
+  type RouteConfig,
+} from "@/lib/openapi";
 import { createSelectEntry } from "@/lib/select-store";
+import { z } from "@/lib/zod";
 
-interface SelectRequestBody {
-  transactionId: string;
-  bppId: string;
-  bppUri: string;
-  providerId: string;
-  itemId: string;
-  parentItemId: string;
-  xinputFormId?: string;
-  xinputSubmissionId?: string;
-  addOns?: Array<{ id: string; quantity: number }>;
-}
+/**
+ * Schema for add-on items in select request
+ */
+const AddOnSchema = z
+  .object({
+    id: z.string().openapi({ example: "addon-001" }),
+    quantity: z.number().int().positive().openapi({ example: 1 }),
+  })
+  .openapi("SelectAddOn");
+
+/**
+ * Schema for select request body
+ */
+export const SelectRequestSchema = z
+  .object({
+    transactionId: z
+      .string()
+      .uuid()
+      .openapi({ example: "019abc12-3456-7890-abcd-ef1234567890" }),
+    bppId: z.string().openapi({ example: "ondc-mock-server.example.com" }),
+    bppUri: z
+      .string()
+      .url()
+      .openapi({ example: "https://ondc-mock-server.example.com/api/ondc" }),
+    providerId: z.string().openapi({ example: "provider-001" }),
+    itemId: z.string().openapi({ example: "item-001" }),
+    parentItemId: z.string().openapi({ example: "item-001" }),
+    xinputFormId: z.string().optional().openapi({ example: "form-001" }),
+    xinputSubmissionId: z
+      .string()
+      .optional()
+      .openapi({ example: "submission-001" }),
+    addOns: z
+      .array(AddOnSchema)
+      .optional()
+      .openapi({ example: [{ id: "addon-001", quantity: 1 }] }),
+  })
+  .openapi("SelectRequest");
+
+/**
+ * Schema for select response
+ */
+export const SelectResponseSchema = z
+  .object({
+    message: z
+      .object({
+        ack: z.object({
+          status: z.string().openapi({ example: "ACK" }),
+        }),
+      })
+      .optional(),
+    transactionId: z
+      .string()
+      .uuid()
+      .openapi({ example: "019abc12-3456-7890-abcd-ef1234567890" }),
+    messageId: z
+      .string()
+      .uuid()
+      .openapi({ example: "019abc12-3456-7890-abcd-ef1234567891" }),
+  })
+  .passthrough()
+  .openapi("SelectResponse");
+
+/**
+ * OpenAPI route configuration
+ */
+export const routeConfig: RouteConfig = {
+  method: "post",
+  path: "/api/ondc/select",
+  summary: "Select Insurance Item",
+  description: `Select a specific insurance item to get a quote.
+
+This endpoint sends a select request to the BPP (seller) to get pricing details for a specific item.
+
+**Flow:**
+1. Receives item selection with provider and item IDs
+2. Optionally includes XInput form submission for eligibility
+3. Sends signed request directly to BPP
+4. Returns transaction ID to poll for quote via on_select callback`,
+  tags: ["Gateway"],
+  operationId: "select",
+  request: createRequestBody(SelectRequestSchema, {
+    description: "Item selection details",
+  }),
+  responses: {
+    200: createResponse(SelectResponseSchema, {
+      description: "Select request accepted",
+    }),
+    400: createErrorResponse("Missing required fields"),
+    503: createErrorResponse("Service unavailable"),
+  },
+  directoryConfig: {
+    title: "Select Item",
+    description: "Select an insurance item to get a quote",
+    payload: {
+      transactionId: "019abc12-3456-7890-abcd-ef1234567890",
+      bppId: "ondc-mock-server.example.com",
+      bppUri: "https://ondc-mock-server.example.com/api/ondc",
+      providerId: "provider-001",
+      itemId: "item-001",
+      parentItemId: "item-001",
+    },
+  },
+};
+
+type SelectRequestBody = z.infer<typeof SelectRequestSchema>;
 
 export const POST = createONDCHandler(
   async (request, { tenant, ondcClient }) => {
