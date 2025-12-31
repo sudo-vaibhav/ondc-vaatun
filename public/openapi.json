@@ -36,10 +36,7 @@
             "example": true
           }
         },
-        "required": [
-          "status",
-          "ready"
-        ]
+        "required": ["status", "ready"]
       },
       "Subscriber": {
         "type": "object",
@@ -124,19 +121,13 @@
                     "example": "ACK"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             },
-            "required": [
-              "ack"
-            ]
+            "required": ["ack"]
           }
         },
-        "required": [
-          "message"
-        ],
+        "required": ["message"],
         "additionalProperties": {}
       },
       "OnSubscribeResponse": {
@@ -148,9 +139,7 @@
             "description": "Decrypted challenge answer"
           }
         },
-        "required": [
-          "answer"
-        ]
+        "required": ["answer"]
       },
       "OnSubscribeRequest": {
         "type": "object",
@@ -165,9 +154,7 @@
             "description": "Base64 encoded encrypted challenge from ONDC"
           }
         },
-        "required": [
-          "challenge"
-        ],
+        "required": ["challenge"],
         "additionalProperties": {}
       },
       "SearchResponse": {
@@ -184,14 +171,10 @@
                     "example": "ACK"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             },
-            "required": [
-              "ack"
-            ]
+            "required": ["ack"]
           },
           "transactionId": {
             "type": "string",
@@ -204,10 +187,7 @@
             "example": "019abc12-..."
           }
         },
-        "required": [
-          "transactionId",
-          "messageId"
-        ],
+        "required": ["transactionId", "messageId"],
         "additionalProperties": {}
       },
       "SelectResponse": {
@@ -224,14 +204,10 @@
                     "example": "ACK"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             },
-            "required": [
-              "ack"
-            ]
+            "required": ["ack"]
           },
           "transactionId": {
             "type": "string",
@@ -244,10 +220,7 @@
             "example": "019abc12-3456-7890-abcd-ef1234567891"
           }
         },
-        "required": [
-          "transactionId",
-          "messageId"
-        ],
+        "required": ["transactionId", "messageId"],
         "additionalProperties": {}
       },
       "SelectAddOn": {
@@ -263,10 +236,7 @@
             "example": 1
           }
         },
-        "required": [
-          "id",
-          "quantity"
-        ]
+        "required": ["id", "quantity"]
       },
       "SelectRequest": {
         "type": "object",
@@ -338,21 +308,14 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": [
-                      "ACK",
-                      "NACK"
-                    ],
+                    "enum": ["ACK", "NACK"],
                     "example": "ACK"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             },
-            "required": [
-              "ack"
-            ]
+            "required": ["ack"]
           },
           "error": {
             "type": "object",
@@ -369,9 +332,7 @@
             }
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       },
       "BecknContext": {
         "type": "object",
@@ -463,21 +424,14 @@
                 "properties": {
                   "status": {
                     "type": "string",
-                    "enum": [
-                      "ACK",
-                      "NACK"
-                    ],
+                    "enum": ["ACK", "NACK"],
                     "example": "ACK"
                   }
                 },
-                "required": [
-                  "status"
-                ]
+                "required": ["status"]
               }
             },
-            "required": [
-              "ack"
-            ]
+            "required": ["ack"]
           },
           "error": {
             "type": "object",
@@ -494,9 +448,7 @@
             }
           }
         },
-        "required": [
-          "message"
-        ]
+        "required": ["message"]
       },
       "OnSelectRequest": {
         "type": "object",
@@ -630,11 +582,7 @@
             "example": false
           }
         },
-        "required": [
-          "bppId",
-          "itemCount",
-          "hasError"
-        ]
+        "required": ["bppId", "itemCount", "hasError"]
       },
       "SearchResultsResponse": {
         "type": "object",
@@ -716,10 +664,7 @@
                 "example": "15000.00"
               }
             },
-            "required": [
-              "currency",
-              "value"
-            ],
+            "required": ["currency", "value"],
             "additionalProperties": {}
           },
           "breakup": {
@@ -743,10 +688,7 @@
                       "example": "15000.00"
                     }
                   },
-                  "required": [
-                    "currency",
-                    "value"
-                  ],
+                  "required": ["currency", "value"],
                   "additionalProperties": {}
                 },
                 "item": {
@@ -764,19 +706,14 @@
                             "type": "string"
                           }
                         },
-                        "required": [
-                          "id"
-                        ]
+                        "required": ["id"]
                       }
                     }
                   },
                   "additionalProperties": {}
                 }
               },
-              "required": [
-                "title",
-                "price"
-              ],
+              "required": ["title", "price"],
               "additionalProperties": {}
             }
           },
@@ -785,9 +722,7 @@
             "example": "PT30M"
           }
         },
-        "required": [
-          "price"
-        ],
+        "required": ["price"],
         "additionalProperties": {}
       },
       "SelectProvider": {
@@ -818,9 +753,7 @@
             "additionalProperties": {}
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": {}
       },
       "SelectItem": {
@@ -865,10 +798,7 @@
                 "example": "15000.00"
               }
             },
-            "required": [
-              "currency",
-              "value"
-            ],
+            "required": ["currency", "value"],
             "additionalProperties": {}
           },
           "xinput": {},
@@ -881,9 +811,7 @@
             "items": {}
           }
         },
-        "required": [
-          "id"
-        ],
+        "required": ["id"],
         "additionalProperties": {}
       },
       "SelectResultsResponse": {
@@ -942,12 +870,7 @@
             "example": "No select entry found for this transaction"
           }
         },
-        "required": [
-          "found",
-          "transactionId",
-          "messageId",
-          "hasResponse"
-        ],
+        "required": ["found", "transactionId", "messageId", "hasResponse"],
         "additionalProperties": {}
       }
     },
@@ -966,9 +889,7 @@
       "get": {
         "summary": "Health Check",
         "description": "Service health monitoring endpoint. Returns service status and readiness. Verifies that tenant configuration is loaded and ONDC client is initialized.",
-        "tags": [
-          "Internal"
-        ],
+        "tags": ["Internal"],
         "operationId": "healthCheck",
         "directoryConfig": {
           "title": "Health Check",
@@ -1002,9 +923,7 @@
       "get": {
         "summary": "Lookup Tenant Subscription",
         "description": "Look up the current tenant's subscription in the ONDC registry.\n\nThis endpoint queries the ONDC Registry using the configured tenant's subscriber ID and domain code to retrieve registration details.\n\n**Use Cases:**\n- Verify tenant registration status\n- Retrieve public keys for the tenant\n- Check subscription validity",
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "operationId": "lookup",
         "externalDocs": {
           "description": "Beckn Registry API - Lookup Specification",
@@ -1035,9 +954,7 @@
       "post": {
         "summary": "Trigger Subscription",
         "description": "Trigger a subscription request to the ONDC registry.\n\nThis endpoint sends the tenant's registration details to the ONDC registry to initiate or refresh network subscription.\n\n**Flow:**\n1. Builds subscription payload with tenant details (GST, PAN, keys)\n2. Signs and sends request to ONDC registry\n3. Registry responds with ACK and triggers on_subscribe callback",
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "operationId": "subscribe",
         "directoryConfig": {
           "title": "Trigger Subscription",
@@ -1064,9 +981,7 @@
       "post": {
         "summary": "Handle Subscription Challenge",
         "description": "Callback endpoint for ONDC subscription challenge-response verification.\n\nThis endpoint is called by the ONDC registry during the subscription process to verify that the subscriber controls the claimed domain.\n\n**Flow:**\n1. Registry sends encrypted challenge\n2. Service decrypts using shared secret (Diffie-Hellman derived)\n3. Returns plaintext answer to prove key possession",
-        "tags": [
-          "Registry"
-        ],
+        "tags": ["Registry"],
         "operationId": "onSubscribe",
         "requestBody": {
           "required": true,
@@ -1103,9 +1018,7 @@
       "post": {
         "summary": "Search Insurance",
         "description": "Initiate a search for insurance products on the ONDC network.\n\nThis endpoint broadcasts a search request to the ONDC gateway, which routes it to all registered insurance providers.\n\n**Flow:**\n1. Generates transaction and message IDs\n2. Creates search payload for health insurance\n3. Sends signed request to ONDC gateway\n4. Returns transaction ID to poll for results",
-        "tags": [
-          "Gateway"
-        ],
+        "tags": ["Gateway"],
         "operationId": "search",
         "directoryConfig": {
           "title": "Search Insurance",
@@ -1132,9 +1045,7 @@
       "post": {
         "summary": "Select Insurance Item",
         "description": "Select a specific insurance item to get a quote.\n\nThis endpoint sends a select request to the BPP (seller) to get pricing details for a specific item.\n\n**Flow:**\n1. Receives item selection with provider and item IDs\n2. Optionally includes XInput form submission for eligibility\n3. Sends signed request directly to BPP\n4. Returns transaction ID to poll for quote via on_select callback",
-        "tags": [
-          "Gateway"
-        ],
+        "tags": ["Gateway"],
         "operationId": "select",
         "directoryConfig": {
           "title": "Select Item",
@@ -1183,9 +1094,7 @@
       "post": {
         "summary": "Receive Search Results",
         "description": "Callback endpoint for receiving search results from BPPs.\n\nThis endpoint is called by BPPs (seller platforms) in response to a search request broadcast by the gateway.\n\n**Flow:**\n1. BPP sends catalog with matching providers and items\n2. Service stores the response keyed by transaction_id\n3. Returns ACK to confirm receipt\n4. Results can be polled via /api/ondc/search-results",
-        "tags": [
-          "Gateway"
-        ],
+        "tags": ["Gateway"],
         "operationId": "onSearch",
         "requestBody": {
           "required": true,
@@ -1219,9 +1128,7 @@
       "post": {
         "summary": "Receive Quote",
         "description": "Callback endpoint for receiving quotes from BPPs.\n\nThis endpoint is called by BPPs (seller platforms) in response to a select request with pricing details.\n\n**Flow:**\n1. BPP sends order quote with price breakup\n2. Service stores the response keyed by transaction_id and message_id\n3. Returns ACK to confirm receipt\n4. Quote can be polled via /api/ondc/select-results",
-        "tags": [
-          "Gateway"
-        ],
+        "tags": ["Gateway"],
         "operationId": "onSelect",
         "requestBody": {
           "required": true,
@@ -1255,9 +1162,7 @@
       "get": {
         "summary": "Poll Search Results",
         "description": "Polling endpoint to fetch aggregated search results for a transaction.\n\nCalled by the frontend to retrieve on_search responses collected from BPPs.\n\n**Flow:**\n1. Client polls with transaction_id from initial search\n2. Returns all collected on_search responses\n3. Includes provider summary with item counts\n4. Poll until desired providers respond or timeout",
-        "tags": [
-          "Internal"
-        ],
+        "tags": ["Internal"],
         "operationId": "getSearchResults",
         "directoryConfig": {
           "title": "Poll Search Results",
@@ -1301,9 +1206,7 @@
       "get": {
         "summary": "Poll Quote Results",
         "description": "Polling endpoint to fetch quote (select) results for a transaction.\n\nCalled by the frontend to retrieve on_select response with pricing details.\n\n**Flow:**\n1. Client polls with transaction_id and message_id from initial select\n2. Returns quote with price breakup when available\n3. May include XInput form for additional data collection\n4. Poll until response received or timeout",
-        "tags": [
-          "Internal"
-        ],
+        "tags": ["Internal"],
         "operationId": "getSelectResults",
         "directoryConfig": {
           "title": "Poll Quote Results",

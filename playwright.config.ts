@@ -9,7 +9,14 @@ import path from "path";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const baseURL = `https://${process.env.SUBSCRIBER_ID||(()=>{})()}.ngrok-free.app`
+const baseURL = `https://${
+  process.env.SUBSCRIBER_ID ||
+  (
+    () => {
+      throw new Error("SUBSCRIBER_ID is not defined in environment variables");
+    }
+  )()
+}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
