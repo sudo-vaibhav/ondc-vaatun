@@ -118,7 +118,7 @@ This endpoint sends a select request to the BPP (seller) to get pricing details 
 type SelectRequestBody = z.infer<typeof SelectRequestSchema>;
 
 export const POST = createONDCHandler(
-  async (request, { tenant, ondcClient }) => {
+  async (request, { tenant, ondcClient, kv }) => {
     try {
       const body: SelectRequestBody = await request.json();
 
@@ -213,7 +213,8 @@ export const POST = createONDCHandler(
         ? `${body.bppUri}select`
         : `${body.bppUri}/select`;
 
-      createSelectEntry(
+      await createSelectEntry(
+        kv,
         body.transactionId,
         messageId,
         body.itemId,

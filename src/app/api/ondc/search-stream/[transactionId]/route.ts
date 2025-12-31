@@ -1,7 +1,7 @@
+import { getContext, withONDCContext } from "@/lib/context";
 import {
   getSearchEntry,
   getSearchResults,
-  type SearchEntry,
   subscribeToSearch,
 } from "@/lib/search-store";
 
@@ -44,8 +44,9 @@ export async function GET(
     await writer.write(encoder.encode(message));
   };
 
-  // Start the streaming logic
-  (async () => {
+  // Start the streaming logic within ONDC context
+  withONDCContext(async () => {
+    const { kv } = getContext();
     let unsubscribe: (() => void) | null = null;
     let ttlCheckInterval: NodeJS.Timeout | null = null;
 
@@ -54,8 +55,8 @@ export async function GET(
       await sendEvent("connected", { transactionId, timestamp: Date.now() });
 
       // Get initial state
-      const initialEntry = getSearchEntry(transactionId);
-      const initialResults = getSearchResults(transactionId);
+      const initialEntry = await getSearchEntry(kv, transactionId);
+      const initialResults = await getSearchResults(kv, transactionId);
 
       if (!initialEntry) {
         await sendEvent("error", {
@@ -84,32 +85,29 @@ export async function GET(
       }
 
       // Subscribe to updates
-      unsubscribe = subscribeToSearch(
-        transactionId,
-        async (_txnId: string, _entry: SearchEntry) => {
-          const results = getSearchResults(transactionId);
-          await sendEvent("update", {
-            ...results,
+      unsubscribe = subscribeToSearch(kv, transactionId, async () => {
+        const results = await getSearchResults(kv, transactionId);
+        await sendEvent("update", {
+          ...results,
+          timestamp: Date.now(),
+        });
+
+        // Check if complete after update
+        if (results?.isComplete) {
+          await sendEvent("complete", {
+            transactionId,
+            responseCount: results.responseCount,
             timestamp: Date.now(),
           });
-
-          // Check if complete after update
-          if (results?.isComplete) {
-            await sendEvent("complete", {
-              transactionId,
-              responseCount: results.responseCount,
-              timestamp: Date.now(),
-            });
-            if (unsubscribe) unsubscribe();
-            if (ttlCheckInterval) clearInterval(ttlCheckInterval);
-            await writer.close();
-          }
-        },
-      );
+          if (unsubscribe) unsubscribe();
+          if (ttlCheckInterval) clearInterval(ttlCheckInterval);
+          await writer.close();
+        }
+      });
 
       // Set up TTL check interval (check every second)
       ttlCheckInterval = setInterval(async () => {
-        const entry = getSearchEntry(transactionId);
+        const entry = await getSearchEntry(kv, transactionId);
         if (!entry) {
           if (unsubscribe) unsubscribe();
           if (ttlCheckInterval) clearInterval(ttlCheckInterval);
@@ -122,7 +120,7 @@ export async function GET(
         }
 
         if (Date.now() > entry.ttlExpiresAt) {
-          const results = getSearchResults(transactionId);
+          const results = await getSearchResults(kv, transactionId);
           await sendEvent("complete", {
             transactionId,
             responseCount: results?.responseCount ?? 0,
@@ -156,7 +154,7 @@ export async function GET(
         // Ignore close errors
       }
     }
-  })();
+  });
 
   return new Response(stream.readable, { headers });
 }

@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createONDCHandler } from "@/lib/context";
 import {
   createErrorResponse,
   createResponse,
@@ -111,7 +112,7 @@ Called by the frontend to retrieve on_search responses collected from BPPs.
  * Polling endpoint to fetch aggregated search results for a transaction.
  * Called by the frontend to get on_search responses.
  */
-export async function GET(request: NextRequest) {
+export const GET = createONDCHandler(async (request, { kv }) => {
   try {
     const { searchParams } = new URL(request.url);
     const transactionId = searchParams.get("transaction_id");
@@ -123,7 +124,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const results = getSearchResults(transactionId);
+    const results = await getSearchResults(kv, transactionId);
 
     if (!results) {
       return NextResponse.json(
@@ -147,4 +148,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

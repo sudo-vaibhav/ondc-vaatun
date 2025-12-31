@@ -1,12 +1,16 @@
 /**
- * In-memory store for ONDC select results
- * Stores on_select responses for quote display
+ * Select Store - Uses TenantKeyValueStore for ONDC select results
  *
- * Note: This is a temporary in-memory solution.
- * For production, consider using Redis or a database.
+ * Stores on_select responses for quote display.
+ * Supports SSE via Pub/Sub for real-time updates.
  */
 
-// Type definitions for on_select responses
+import { keyFormatter, type TenantKeyValueStore } from "./kv";
+
+// ============================================
+// Type Definitions
+// ============================================
+
 export interface OnSelectContext {
   domain: string;
   action: string;
@@ -127,162 +131,10 @@ export interface SelectEntry {
   bppId: string;
   bppUri: string;
   selectTimestamp: string;
-  response: OnSelectResponse | null;
   createdAt: number;
 }
 
-// TTL in milliseconds (10 minutes)
-const STORE_TTL_MS = 10 * 60 * 1000;
-
-// Cleanup interval (every 2 minutes)
-const CLEANUP_INTERVAL_MS = 2 * 60 * 1000;
-
-// In-memory store - key format: {transaction_id}_{message_id}
-const selectStore = new Map<string, SelectEntry>();
-
-// Cleanup old entries periodically
-let cleanupInterval: NodeJS.Timeout | null = null;
-
-function startCleanupInterval() {
-  if (cleanupInterval) return;
-
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    let cleaned = 0;
-
-    for (const [key, entry] of selectStore.entries()) {
-      if (now - entry.createdAt > STORE_TTL_MS) {
-        selectStore.delete(key);
-        cleaned++;
-      }
-    }
-
-    if (cleaned > 0) {
-      console.log(`[SelectStore] Cleaned up ${cleaned} expired entries`);
-    }
-  }, CLEANUP_INTERVAL_MS);
-}
-
-// Start cleanup on module load
-startCleanupInterval();
-
-/**
- * Generate store key from transaction_id and message_id
- */
-function getStoreKey(transactionId: string, messageId: string): string {
-  return `${transactionId}_${messageId}`;
-}
-
-/**
- * Create a new select entry when initiating a select request
- */
-export function createSelectEntry(
-  transactionId: string,
-  messageId: string,
-  itemId: string,
-  providerId: string,
-  bppId: string,
-  bppUri: string,
-): SelectEntry {
-  const key = getStoreKey(transactionId, messageId);
-
-  const entry: SelectEntry = {
-    transactionId,
-    messageId,
-    itemId,
-    providerId,
-    bppId,
-    bppUri,
-    selectTimestamp: new Date().toISOString(),
-    response: null,
-    createdAt: Date.now(),
-  };
-
-  selectStore.set(key, entry);
-  console.log(`[SelectStore] Created entry: ${key}`);
-
-  return entry;
-}
-
-/**
- * Add an on_select response to an existing select entry
- */
-export function addSelectResponse(
-  transactionId: string,
-  messageId: string,
-  response: Omit<OnSelectResponse, "_receivedAt">,
-): boolean {
-  const key = getStoreKey(transactionId, messageId);
-  const entry = selectStore.get(key);
-
-  if (!entry) {
-    // Create entry if it doesn't exist (for late responses)
-    console.warn(`[SelectStore] No entry found for: ${key}, creating new`);
-    const newEntry: SelectEntry = {
-      transactionId,
-      messageId,
-      itemId: response.message?.order?.items?.[0]?.id || "unknown",
-      providerId: response.message?.order?.provider?.id || "unknown",
-      bppId: response.context.bpp_id,
-      bppUri: response.context.bpp_uri,
-      selectTimestamp: response.context.timestamp,
-      response: {
-        ...response,
-        _receivedAt: new Date().toISOString(),
-      } as OnSelectResponse,
-      createdAt: Date.now(),
-    };
-    selectStore.set(key, newEntry);
-    return true;
-  }
-
-  // Add response with received timestamp
-  entry.response = {
-    ...response,
-    _receivedAt: new Date().toISOString(),
-  } as OnSelectResponse;
-
-  console.log(`[SelectStore] Added response for: ${key}`);
-  return true;
-}
-
-/**
- * Get a select entry by transaction_id and message_id
- */
-export function getSelectEntry(
-  transactionId: string,
-  messageId: string,
-): SelectEntry | null {
-  const key = getStoreKey(transactionId, messageId);
-  return selectStore.get(key) || null;
-}
-
-/**
- * Find select entries by transaction_id (returns most recent)
- */
-export function findSelectByTransaction(
-  transactionId: string,
-): SelectEntry | null {
-  let latestEntry: SelectEntry | null = null;
-
-  for (const [_key, entry] of selectStore.entries()) {
-    if (entry.transactionId === transactionId) {
-      if (!latestEntry || entry.createdAt > latestEntry.createdAt) {
-        latestEntry = entry;
-      }
-    }
-  }
-
-  return latestEntry;
-}
-
-/**
- * Get select result for API response
- */
-export function getSelectResult(
-  transactionId: string,
-  messageId: string,
-): {
+export interface SelectResult {
   found: boolean;
   transactionId: string;
   messageId: string;
@@ -294,8 +146,205 @@ export function getSelectResult(
   item?: SelectItem;
   xinput?: SelectItem["xinput"];
   error?: { code?: string; message?: string };
-} {
-  const entry = getSelectEntry(transactionId, messageId);
+}
+
+// Default TTL: 10 minutes
+const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+
+// ============================================
+// Store Operations (require KV instance)
+// ============================================
+
+/**
+ * Create a new select entry when initiating a select request
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function createSelectEntry(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+  itemId: string,
+  providerId: string,
+  bppId: string,
+  bppUri: string,
+): Promise<SelectEntry> {
+  const entry: SelectEntry = {
+    transactionId,
+    messageId,
+    itemId,
+    providerId,
+    bppId,
+    bppUri,
+    selectTimestamp: new Date().toISOString(),
+    createdAt: Date.now(),
+  };
+
+  const key = keyFormatter.select(transactionId, messageId);
+  await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
+
+  console.log(`[SelectStore] Created entry: ${transactionId}:${messageId}`);
+
+  return entry;
+}
+
+/**
+ * Add an on_select response to an existing select entry
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function addSelectResponse(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+  response: Omit<OnSelectResponse, "_receivedAt">,
+): Promise<boolean> {
+  const key = keyFormatter.select(transactionId, messageId);
+  let entry = await kv.get<SelectEntry>(key);
+
+  if (!entry) {
+    console.warn(
+      `[SelectStore] No entry found for: ${transactionId}:${messageId}, creating new`,
+    );
+    entry = {
+      transactionId,
+      messageId,
+      itemId: response.message?.order?.items?.[0]?.id || "unknown",
+      providerId: response.message?.order?.provider?.id || "unknown",
+      bppId: response.context.bpp_id,
+      bppUri: response.context.bpp_uri,
+      selectTimestamp: response.context.timestamp,
+      createdAt: Date.now(),
+    };
+  }
+
+  // Store the response with received timestamp
+  const responseWithTimestamp: OnSelectResponse = {
+    ...response,
+    _receivedAt: new Date().toISOString(),
+  } as OnSelectResponse;
+
+  // Store both entry and response
+  const responseKey = `${key}:response`;
+  await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
+  await kv.set(responseKey, responseWithTimestamp, {
+    ttlMs: DEFAULT_STORE_TTL_MS,
+  });
+
+  console.log(
+    `[SelectStore] Added response for: ${transactionId}:${messageId}`,
+  );
+
+  // Publish update event for SSE subscribers
+  const channel = keyFormatter.selectChannel(transactionId, messageId);
+  await kv.publish(channel, {
+    type: "response_received",
+    transactionId,
+    messageId,
+  });
+
+  return true;
+}
+
+/**
+ * Get a select entry by transaction_id and message_id
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function getSelectEntry(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+): Promise<SelectEntry | null> {
+  const key = keyFormatter.select(transactionId, messageId);
+  return kv.get<SelectEntry>(key);
+}
+
+/**
+ * Get select response by transaction_id and message_id
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function getSelectResponse(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+): Promise<OnSelectResponse | null> {
+  const key = keyFormatter.select(transactionId, messageId);
+  const responseKey = `${key}:response`;
+  return kv.get<OnSelectResponse>(responseKey);
+}
+
+/**
+ * Subscribe to select updates (for SSE)
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @returns Unsubscribe function
+ */
+export function subscribeToSelect(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+  callback: (data: {
+    type: string;
+    transactionId: string;
+    messageId: string;
+  }) => void,
+): () => void {
+  const channel = keyFormatter.selectChannel(transactionId, messageId);
+  return kv.subscribe(channel, (_channel, data) => {
+    callback(
+      data as { type: string; transactionId: string; messageId: string },
+    );
+  });
+}
+
+/**
+ * Find the most recent select entry by transaction_id
+ * Note: This scans all keys, so use sparingly
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function findSelectByTransaction(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+): Promise<SelectEntry | null> {
+  const keys = await kv.keys(`select:${transactionId}:*`);
+
+  // Filter out response keys
+  const entryKeys = keys.filter(
+    (k) => !k.endsWith(":response") && !k.endsWith(":updates"),
+  );
+
+  if (entryKeys.length === 0) {
+    return null;
+  }
+
+  // Get all entries and find the most recent
+  let latestEntry: SelectEntry | null = null;
+
+  for (const key of entryKeys) {
+    const entry = await kv.get<SelectEntry>(key);
+    if (entry && (!latestEntry || entry.createdAt > latestEntry.createdAt)) {
+      latestEntry = entry;
+    }
+  }
+
+  return latestEntry;
+}
+
+/**
+ * Get select result for API response
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ */
+export async function getSelectResult(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+): Promise<SelectResult> {
+  const entry = await getSelectEntry(kv, transactionId, messageId);
+  const response = await getSelectResponse(kv, transactionId, messageId);
 
   if (!entry) {
     return {
@@ -306,7 +355,6 @@ export function getSelectResult(
     };
   }
 
-  const response = entry.response;
   const order = response?.message?.order;
 
   return {

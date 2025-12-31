@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createONDCHandler } from "@/lib/context";
 import {
   createErrorResponse,
   createRequestBody,
@@ -125,7 +126,7 @@ This endpoint is called by BPPs (seller platforms) in response to a search reque
   },
 };
 
-export async function POST(request: NextRequest) {
+export const POST = createONDCHandler(async (request, { kv }) => {
   try {
     const body = await request.json();
     console.log(
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     if (transactionId) {
       // Store the response for later retrieval
-      addSearchResponse(transactionId, body);
+      await addSearchResponse(kv, transactionId, body);
     } else {
       console.warn("[on_search] No transaction_id found in context");
     }
@@ -172,4 +173,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

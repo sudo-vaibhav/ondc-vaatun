@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createONDCHandler } from "@/lib/context";
 import {
   createErrorResponse,
   createResponse,
@@ -176,7 +177,7 @@ Called by the frontend to retrieve on_select response with pricing details.
  * Polling endpoint to fetch select results (quote) for a transaction.
  * Called by the frontend to get on_select response.
  */
-export async function GET(request: NextRequest) {
+export const GET = createONDCHandler(async (request, { kv }) => {
   try {
     const { searchParams } = new URL(request.url);
     const transactionId = searchParams.get("transaction_id");
@@ -189,7 +190,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const result = getSelectResult(transactionId, messageId);
+    const result = await getSelectResult(kv, transactionId, messageId);
 
     if (!result.found) {
       return NextResponse.json(
@@ -212,4 +213,4 @@ export async function GET(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

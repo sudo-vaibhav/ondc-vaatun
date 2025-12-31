@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { createONDCHandler } from "@/lib/context";
 import {
   createErrorResponse,
   createRequestBody,
@@ -149,7 +150,7 @@ This endpoint is called by BPPs (seller platforms) in response to a select reque
  * Handler for ONDC on_select callback
  * BPPs call this endpoint after processing a select request
  */
-export async function POST(request: NextRequest) {
+export const POST = createONDCHandler(async (request, { kv }) => {
   try {
     const body = await request.json();
     console.log(
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
 
     // Store the on_select response
     if (transactionId && messageId) {
-      addSelectResponse(transactionId, messageId, body);
+      await addSelectResponse(kv, transactionId, messageId, body);
     } else {
       console.warn("[on_select] Missing transaction_id or message_id");
     }
@@ -212,4 +213,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     );
   }
-}
+});

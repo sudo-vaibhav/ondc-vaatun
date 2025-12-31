@@ -3,6 +3,7 @@ import {
   __internal_do_not_import_getTenant,
   type Tenant,
 } from "@/entities/tenant";
+import { TenantKeyValueStore } from "./kv";
 import { ONDCClient } from "./ondc/client";
 
 /**
@@ -11,6 +12,8 @@ import { ONDCClient } from "./ondc/client";
 export interface Context {
   tenant: Tenant;
   ondcClient: ONDCClient;
+  /** Tenant-scoped key-value store for search/select results */
+  kv: TenantKeyValueStore;
 }
 
 const contextStorage = new AsyncLocalStorage<Context>();
@@ -34,6 +37,7 @@ export function withONDCContext<T>(fn: () => T | Promise<T>): T | Promise<T> {
   const context: Context = {
     tenant,
     ondcClient: new ONDCClient(tenant),
+    kv: TenantKeyValueStore.create(tenant.subscriberId),
   };
   return contextStorage.run(context, fn);
 }

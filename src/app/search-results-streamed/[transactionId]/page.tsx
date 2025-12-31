@@ -454,7 +454,6 @@ export default function StreamedSearchResultsPage() {
           </div>
         )}
       </main>
-
     </div>
   );
 }

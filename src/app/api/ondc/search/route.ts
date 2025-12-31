@@ -59,13 +59,13 @@ This endpoint broadcasts a search request to the ONDC gateway, which routes it t
 };
 
 export const POST = createONDCHandler(
-  async (_request, { tenant, ondcClient }) => {
+  async (_request, { tenant, ondcClient, kv }) => {
     try {
       const transactionId = uuidv7();
       const messageId = uuidv7();
       const categoryCode = "HEALTH_INSURANCE";
 
-      createSearchEntry(transactionId, messageId, categoryCode);
+      await createSearchEntry(kv, transactionId, messageId, categoryCode);
 
       const payload = createSearchPayload(transactionId, messageId);
       const gatewayUrl = new URL("search", tenant.gatewayUrl);

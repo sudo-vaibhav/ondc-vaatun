@@ -1,0 +1,101 @@
+# Business Source License 1.1
+
+**Licensor:** Vaatun Technologies Private Limited
+**Licensed Work:** ONDC Vaatun (Insurance – FIS13)
+**Version:** 1.0
+**Change Date:** January 1, 2028
+*(Two (2) years from first public release)*
+**Change License:** GNU Affero General Public License v3.0 (AGPL-3.0)
+
+---
+
+## 1. Grant of Rights
+
+Subject to the terms of this License, the Licensor hereby grants you a non-exclusive, non-transferable, non-sublicensable license to copy, modify, create derivative works of, and use the Licensed Work for **Permitted Uses** only.
+
+All rights not expressly granted are reserved by the Licensor.
+
+---
+
+## 2. Permitted Use
+
+You **may**:
+
+1. **Self-host and run the Licensed Work for your own internal or first-party business purposes**, including operating your own insurance storefront, ONDC Buyer App, or related insurance distribution workflows.
+
+2. Modify the Licensed Work to integrate it into your own internal systems or customer-facing products **where you are the direct provider of the insurance or storefront**, and not acting as a service provider to third parties.
+
+3. Deploy the Licensed Work in production for your own business, subsidiaries, or group entities, provided no third party is offered access to the Licensed Work as a service.
+
+---
+
+## 3. Prohibited Use (Additional Use Grant Restriction)
+
+You **may not**, directly or indirectly:
+
+1. **Offer the Licensed Work, or any derivative thereof, as a hosted service, managed service, platform, or product to third parties**, whether for a fee or free of charge.
+
+2. Act as a **Technical Service Provider (TSP)**, platform provider, systems integrator, SaaS vendor, or intermediary that enables **multiple unrelated third parties** to use the Licensed Work as their storefront, ONDC Buyer App, or insurance distribution infrastructure.
+
+3. Provide “storefront-as-a-service”, “ONDC-as-a-service”, “insurance distribution-as-a-service”, or any functionally equivalent offering built on the Licensed Work.
+
+4. Circumvent this restriction by:
+
+   * Multi-tenant deployments
+   * White-labeling
+   * Reselling access
+   * API-only exposure
+   * Hosting while claiming the third party is the “operator”
+
+**In short:**
+You can run this **for yourself**.
+You cannot run this **for others**.
+
+---
+
+## 4. Change Date and Conversion
+
+On the Change Date stated above, this Licensed Work will automatically be made available under the **GNU Affero General Public License v3.0 (AGPL-3.0)**, and all use of this software will thereafter be governed solely by the AGPL-3.0.
+
+No additional action is required for this conversion to take effect.
+
+---
+
+## 5. No Warranty
+
+THE LICENSED WORK IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NON-INFRINGEMENT.
+
+---
+
+## 6. Limitation of Liability
+
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, IN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY DAMAGES, INCLUDING WITHOUT LIMITATION LOSS OF PROFITS, LOSS OF DATA, BUSINESS INTERRUPTION, OR OTHER COMMERCIAL DAMAGES OR LOSSES, ARISING OUT OF OR RELATED TO THE LICENSED WORK OR THIS LICENSE.
+
+---
+
+## 7. Termination
+
+Any use of the Licensed Work in violation of this License automatically terminates your rights under this License.
+
+Upon termination, you must cease all use and destroy all copies of the Licensed Work.
+
+---
+
+## 8. Interpretation
+
+This License shall be interpreted narrowly in favor of protecting the Licensor’s right to operate and commercialize the Licensed Work prior to the Change Date.
+
+Ambiguities shall not be construed to permit Prohibited Use.
+
+---
+
+## 9. Governing Law
+
+This License shall be governed by and construed in accordance with the laws of India, without regard to conflict of law principles.
+
+---
+
+## 10. Contact
+
+For commercial licensing, partnerships, or clarifications:
+**[legal@vaatun.com](mailto:legal@vaatun.com)**

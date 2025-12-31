@@ -1,12 +1,16 @@
 /**
- * In-memory store for ONDC search results
- * Groups on_search responses by transaction_id for aggregation
+ * Search Store - Uses TenantKeyValueStore for ONDC search results
  *
- * Note: This is a temporary in-memory solution.
- * For production, consider using Redis or a database.
+ * Groups on_search responses by transaction_id for aggregation.
+ * Supports SSE via Pub/Sub for real-time updates.
  */
 
-// Type definitions for on_search responses
+import { keyFormatter, type TenantKeyValueStore } from "./kv";
+
+// ============================================
+// Type Definitions
+// ============================================
+
 export interface OnSearchContext {
   domain: string;
   action: string;
@@ -96,7 +100,6 @@ export interface OnSearchResponse {
     code?: string;
     message?: string;
   };
-  // Metadata added by our store
   _receivedAt: string;
 }
 
@@ -105,191 +108,9 @@ export interface SearchEntry {
   messageId: string;
   searchTimestamp: string;
   categoryCode: string;
-  responses: OnSearchResponse[];
-  createdAt: number; // For TTL cleanup
-  ttlMs: number; // TTL duration in milliseconds
-  ttlExpiresAt: number; // Timestamp when collection is complete
-}
-
-// Event listeners for SSE subscriptions
-type SearchEventCallback = (transactionId: string, entry: SearchEntry) => void;
-const eventListeners = new Map<string, Set<SearchEventCallback>>();
-
-/**
- * Subscribe to updates for a specific transaction
- */
-export function subscribeToSearch(
-  transactionId: string,
-  callback: SearchEventCallback,
-): () => void {
-  let listeners = eventListeners.get(transactionId);
-  if (!listeners) {
-    listeners = new Set();
-    eventListeners.set(transactionId, listeners);
-  }
-  listeners.add(callback);
-
-  // Return unsubscribe function
-  return () => {
-    const listeners = eventListeners.get(transactionId);
-    if (listeners) {
-      listeners.delete(callback);
-      if (listeners.size === 0) {
-        eventListeners.delete(transactionId);
-      }
-    }
-  };
-}
-
-/**
- * Notify all subscribers of an update
- */
-function notifySubscribers(transactionId: string, entry: SearchEntry): void {
-  const listeners = eventListeners.get(transactionId);
-  if (listeners) {
-    for (const callback of listeners) {
-      try {
-        callback(transactionId, entry);
-      } catch (error) {
-        console.error("[SearchStore] Error in event callback:", error);
-      }
-    }
-  }
-}
-
-/**
- * Parse ISO 8601 duration to milliseconds
- * Supports: PT5M (5 minutes), PT30S (30 seconds), PT1H (1 hour)
- */
-export function parseTtlToMs(ttl: string): number {
-  const match = ttl.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i);
-  if (!match) {
-    // Default to 5 minutes if parsing fails
-    return 5 * 60 * 1000;
-  }
-  const hours = Number.parseInt(match[1] || "0", 10);
-  const minutes = Number.parseInt(match[2] || "0", 10);
-  const seconds = Number.parseInt(match[3] || "0", 10);
-  return (hours * 3600 + minutes * 60 + seconds) * 1000;
-}
-
-// TTL in milliseconds (10 minutes)
-const STORE_TTL_MS = 10 * 60 * 1000;
-
-// Cleanup interval (every 2 minutes)
-const CLEANUP_INTERVAL_MS = 2 * 60 * 1000;
-
-// In-memory store
-const searchStore = new Map<string, SearchEntry>();
-
-// Cleanup old entries periodically
-let cleanupInterval: NodeJS.Timeout | null = null;
-
-function startCleanupInterval() {
-  if (cleanupInterval) return;
-
-  cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    let cleaned = 0;
-
-    for (const [transactionId, entry] of searchStore.entries()) {
-      if (now - entry.createdAt > STORE_TTL_MS) {
-        searchStore.delete(transactionId);
-        cleaned++;
-      }
-    }
-
-    if (cleaned > 0) {
-      console.log(`[SearchStore] Cleaned up ${cleaned} expired entries`);
-    }
-  }, CLEANUP_INTERVAL_MS);
-}
-
-// Start cleanup on module load
-startCleanupInterval();
-
-/**
- * Create a new search entry when initiating a search
- * @param ttl - ISO 8601 duration string (e.g., "PT5M" for 5 minutes)
- */
-export function createSearchEntry(
-  transactionId: string,
-  messageId: string,
-  categoryCode: string,
-  ttl = "PT5M",
-): SearchEntry {
-  const now = Date.now();
-  const ttlMs = parseTtlToMs(ttl);
-
-  const entry: SearchEntry = {
-    transactionId,
-    messageId,
-    searchTimestamp: new Date().toISOString(),
-    categoryCode,
-    responses: [],
-    createdAt: now,
-    ttlMs,
-    ttlExpiresAt: now + ttlMs,
-  };
-
-  searchStore.set(transactionId, entry);
-  console.log(
-    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl}, expires: ${new Date(entry.ttlExpiresAt).toISOString()})`,
-  );
-
-  return entry;
-}
-
-/**
- * Add an on_search response to an existing search entry
- */
-export function addSearchResponse(
-  transactionId: string,
-  response: Omit<OnSearchResponse, "_receivedAt">,
-): boolean {
-  let entry = searchStore.get(transactionId);
-
-  if (!entry) {
-    console.warn(
-      `[SearchStore] No entry found for transaction: ${transactionId}`,
-    );
-    // Create a new entry if it doesn't exist (for late responses)
-    const now = Date.now();
-    const ttlMs = parseTtlToMs(response.context.ttl || "PT5M");
-    entry = {
-      transactionId,
-      messageId: response.context.message_id,
-      searchTimestamp: response.context.timestamp,
-      categoryCode: "UNKNOWN",
-      responses: [],
-      createdAt: now,
-      ttlMs,
-      ttlExpiresAt: now + ttlMs,
-    };
-    searchStore.set(transactionId, entry);
-  }
-
-  // Add response with received timestamp
-  entry.responses.push({
-    ...response,
-    _receivedAt: new Date().toISOString(),
-  } as OnSearchResponse);
-
-  console.log(
-    `[SearchStore] Added response for transaction: ${transactionId} (total: ${entry.responses.length})`,
-  );
-
-  // Notify SSE subscribers of the update
-  notifySubscribers(transactionId, entry);
-
-  return true;
-}
-
-/**
- * Get a search entry by transaction ID
- */
-export function getSearchEntry(transactionId: string): SearchEntry | null {
-  return searchStore.get(transactionId) || null;
+  createdAt: number;
+  ttlMs: number;
+  ttlExpiresAt: number;
 }
 
 export interface SearchResultsResponse {
@@ -311,13 +132,190 @@ export interface SearchResultsResponse {
   responses: OnSearchResponse[];
 }
 
+// ============================================
+// Helper Functions
+// ============================================
+
+/**
+ * Parse ISO 8601 duration to milliseconds
+ * Supports: PT5M (5 minutes), PT30S (30 seconds), PT1H (1 hour)
+ */
+export function parseTtlToMs(ttl: string): number {
+  const match = ttl.match(/^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i);
+  if (!match) {
+    return 5 * 60 * 1000; // Default to 5 minutes
+  }
+  const hours = Number.parseInt(match[1] || "0", 10);
+  const minutes = Number.parseInt(match[2] || "0", 10);
+  const seconds = Number.parseInt(match[3] || "0", 10);
+  return (hours * 3600 + minutes * 60 + seconds) * 1000;
+}
+
+// Default TTL: 10 minutes
+const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+
+// ============================================
+// Store Operations (require KV instance)
+// ============================================
+
+/**
+ * Create a new search entry when initiating a search
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Unique transaction ID
+ * @param messageId - Message ID for the search
+ * @param categoryCode - Category being searched
+ * @param ttl - ISO 8601 duration string (e.g., "PT5M" for 5 minutes)
+ */
+export async function createSearchEntry(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  messageId: string,
+  categoryCode: string,
+  ttl = "PT5M",
+): Promise<SearchEntry> {
+  const now = Date.now();
+  const ttlMs = parseTtlToMs(ttl);
+
+  const entry: SearchEntry = {
+    transactionId,
+    messageId,
+    searchTimestamp: new Date().toISOString(),
+    categoryCode,
+    createdAt: now,
+    ttlMs,
+    ttlExpiresAt: now + ttlMs,
+  };
+
+  const key = keyFormatter.search(transactionId);
+  await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
+
+  console.log(
+    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl}, expires: ${new Date(entry.ttlExpiresAt).toISOString()})`,
+  );
+
+  return entry;
+}
+
+/**
+ * Add an on_search response to an existing search entry
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Transaction ID to add response to
+ * @param response - The on_search response (without _receivedAt)
+ */
+export async function addSearchResponse(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  response: Omit<OnSearchResponse, "_receivedAt">,
+): Promise<boolean> {
+  const key = keyFormatter.search(transactionId);
+  let entry = await kv.get<SearchEntry>(key);
+
+  if (!entry) {
+    console.warn(
+      `[SearchStore] No entry found for transaction: ${transactionId}, creating new`,
+    );
+    const now = Date.now();
+    const ttlMs = parseTtlToMs(response.context.ttl || "PT5M");
+    entry = {
+      transactionId,
+      messageId: response.context.message_id,
+      searchTimestamp: response.context.timestamp,
+      categoryCode: "UNKNOWN",
+      createdAt: now,
+      ttlMs,
+      ttlExpiresAt: now + ttlMs,
+    };
+    await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
+  }
+
+  // Add response with received timestamp to the responses list
+  const responseWithTimestamp: OnSearchResponse = {
+    ...response,
+    _receivedAt: new Date().toISOString(),
+  } as OnSearchResponse;
+
+  const responsesKey = keyFormatter.searchResponses(transactionId);
+  const count = await kv.listPush(responsesKey, responseWithTimestamp);
+
+  console.log(
+    `[SearchStore] Added response for transaction: ${transactionId} (total: ${count})`,
+  );
+
+  // Publish update event for SSE subscribers
+  const channel = keyFormatter.searchChannel(transactionId);
+  await kv.publish(channel, {
+    type: "response_added",
+    transactionId,
+    responseCount: count,
+  });
+
+  return true;
+}
+
+/**
+ * Get a search entry by transaction ID
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Transaction ID to look up
+ */
+export async function getSearchEntry(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+): Promise<SearchEntry | null> {
+  const key = keyFormatter.search(transactionId);
+  return kv.get<SearchEntry>(key);
+}
+
+/**
+ * Get all responses for a search transaction
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Transaction ID to get responses for
+ */
+export async function getSearchResponses(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+): Promise<OnSearchResponse[]> {
+  const responsesKey = keyFormatter.searchResponses(transactionId);
+  return kv.listGetAll<OnSearchResponse>(responsesKey);
+}
+
+/**
+ * Subscribe to search updates (for SSE)
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Transaction ID to subscribe to
+ * @param callback - Callback function for updates
+ * @returns Unsubscribe function
+ */
+export function subscribeToSearch(
+  kv: TenantKeyValueStore,
+  transactionId: string,
+  callback: (
+    transactionId: string,
+    data: { type: string; responseCount: number },
+  ) => void,
+): () => void {
+  const channel = keyFormatter.searchChannel(transactionId);
+  return kv.subscribe(channel, (_channel, data) => {
+    callback(transactionId, data as { type: string; responseCount: number });
+  });
+}
+
 /**
  * Get aggregated results for a transaction
+ *
+ * @param kv - TenantKeyValueStore instance from context
+ * @param transactionId - Transaction ID to get results for
  */
-export function getSearchResults(
+export async function getSearchResults(
+  kv: TenantKeyValueStore,
   transactionId: string,
-): SearchResultsResponse | null {
-  const entry = searchStore.get(transactionId);
+): Promise<SearchResultsResponse | null> {
+  const entry = await getSearchEntry(kv, transactionId);
+  const responses = await getSearchResponses(kv, transactionId);
 
   if (!entry) {
     return null;
@@ -335,7 +333,7 @@ export function getSearchResults(
     }
   >();
 
-  for (const response of entry.responses) {
+  for (const response of responses) {
     const bppId = response.context.bpp_id || "unknown";
 
     if (!providerMap.has(bppId)) {
@@ -364,25 +362,35 @@ export function getSearchResults(
     messageId: entry.messageId,
     searchTimestamp: entry.searchTimestamp,
     categoryCode: entry.categoryCode,
-    responseCount: entry.responses.length,
+    responseCount: responses.length,
     isComplete: Date.now() > entry.ttlExpiresAt,
     ttlExpiresAt: entry.ttlExpiresAt,
     providers: Array.from(providerMap.values()),
-    responses: entry.responses,
+    responses,
   };
 }
 
 /**
- * Get all active transaction IDs (for debugging)
+ * Get all active transaction IDs for this tenant
+ *
+ * @param kv - TenantKeyValueStore instance from context
  */
-export function getAllTransactionIds(): string[] {
-  return Array.from(searchStore.keys());
+export async function getAllTransactionIds(
+  kv: TenantKeyValueStore,
+): Promise<string[]> {
+  const keys = await kv.keys("search:*");
+  // Filter out response keys and extract transaction IDs
+  return keys
+    .filter((k) => !k.includes(":responses") && !k.includes(":updates"))
+    .map((k) => k.replace("search:", ""));
 }
 
 /**
- * Clear all entries (for testing)
+ * Clear all search entries for this tenant
+ *
+ * @param kv - TenantKeyValueStore instance from context
  */
-export function clearStore(): void {
-  searchStore.clear();
+export async function clearStore(kv: TenantKeyValueStore): Promise<void> {
+  await kv.clear();
   console.log("[SearchStore] Store cleared");
 }
