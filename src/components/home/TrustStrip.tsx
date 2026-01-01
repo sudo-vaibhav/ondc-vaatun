@@ -221,41 +221,6 @@ export function TrustStrip() {
               : "Searching for insurers on the network..."}
         </p>
       </div>
-
-      {/* CSS for marquee animation */}
-      <style jsx global>{`
-        @keyframes marquee {
-          0% {
-            transform: translateX(0);
-          }
-          100% {
-            transform: translateX(-50%);
-          }
-        }
-
-        .animate-marquee {
-          animation: marquee 30s linear infinite;
-        }
-
-        .animate-marquee:hover {
-          animation-play-state: paused;
-        }
-
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-in {
-          animation: fade-up 0.6s ease-out forwards;
-        }
-      `}</style>
     </section>
   );
 }

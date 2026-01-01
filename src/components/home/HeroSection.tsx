@@ -191,24 +191,6 @@ export function HeroSection({
 
       {/* Bottom fade */}
       <div className="absolute bottom-0 left-0 right-0 h-32 z-2 bg-linear-to-t from-background to-transparent" />
-
-      {/* CSS for animations */}
-      <style jsx global>{`
-        @keyframes fade-up {
-          from {
-            opacity: 0;
-            transform: translateY(12px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .animate-in {
-          animation: fade-up 0.6s ease-out forwards;
-        }
-      `}</style>
     </section>
   );
 }
