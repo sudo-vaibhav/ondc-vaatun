@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
-import {
-  createErrorResponse,
-  createResponse,
-  type RouteConfig,
-} from "@/lib/openapi";
 import { z } from "@/lib/zod";
 
 /**
@@ -14,41 +9,22 @@ export const SubscribeResponseSchema = z
   .object({
     message: z.object({
       ack: z.object({
-        status: z.string().openapi({ example: "ACK" }),
+        status: z.string(),
       }),
     }),
   })
-  .passthrough()
-  .openapi("SubscribeResponse");
+  .passthrough();
 
-/**
- * OpenAPI route configuration
+/*
+ * OpenAPI route configuration - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * export const routeConfig: RouteConfig = { ... };
  */
-export const routeConfig: RouteConfig = {
-  method: "post",
-  path: "/api/ondc/subscribe",
-  summary: "Trigger Subscription",
-  description: `Trigger a subscription request to the ONDC registry.
-
-This endpoint sends the tenant's registration details to the ONDC registry to initiate or refresh network subscription.
-
-**Flow:**
-1. Builds subscription payload with tenant details (GST, PAN, keys)
-2. Signs and sends request to ONDC registry
-3. Registry responds with ACK and triggers on_subscribe callback`,
-  tags: ["Registry"],
-  operationId: "subscribe",
-  responses: {
-    200: createResponse(SubscribeResponseSchema, {
-      description: "Subscription request accepted",
-    }),
-    500: createErrorResponse("Server error"),
-  },
-  directoryConfig: {
-    title: "Trigger Subscription",
-    description: "Send subscription request to ONDC registry",
-  },
-};
 
 export const POST = createONDCHandler(
   async (_request, { tenant, ondcClient }) => {

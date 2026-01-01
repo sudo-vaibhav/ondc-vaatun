@@ -1,249 +1,57 @@
-import {
-  BookOpen,
-  CheckCircle2,
-  Code2,
-  FolderOpen,
-  Lock,
-  Server,
-  Shield,
-  Zap,
-} from "lucide-react";
-import Link from "next/link";
+"use client";
+
+import { useRef } from "react";
+
 import { Header } from "@/components/header";
-import RotatingText from "@/components/RotatingText";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
+  CTABanner,
+  HeroSection,
+  HowItWorks,
+  InsuranceCards,
+  LiveSearchProvider,
+  TrustStrip,
+  WhyONDC,
+} from "@/components/home";
 
 export default function Home() {
+  const howItWorksRef = useRef<HTMLDivElement>(null);
+
+  const scrollToHowItWorks = () => {
+    howItWorksRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
+    <LiveSearchProvider>
+      <div className="min-h-screen bg-background">
+        <Header />
 
-      {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24">
-        <div className="mx-auto max-w-4xl text-center">
-          <Badge
-            variant="secondary"
-            className="mb-4 border-2 border-foreground px-4 py-1"
-          >
-            ONDC Network Integration
-          </Badge>
-          <h1 className="mb-6 text-5xl font-bold tracking-tight md:text-7xl">
-            ONDC Vaatun
-          </h1>
-          <p className="mb-4 text-xl text-muted-foreground md:text-2xl">
-            A Next.js service for integrating with the{" "}
-            <a
-              href="https://ondc.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-foreground underline decoration-2 underline-offset-4"
-            >
-              Open Network for Digital Commerce
-            </a>
-            . Handle subscription verification, domain ownership, and
-            cryptographic operations with ease.
-          </p>
-          <p className="mb-8 text-base text-muted-foreground md:text-lg">
-            Built by{" "}
-            <a
-              href="https://www.vaatun.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-foreground underline decoration-2 underline-offset-4"
-            >
-              Vaatun
-            </a>
-          </p>
-          <div className="flex flex-col gap-4 sm:flex-row sm:justify-center">
-            <Button
-              size="lg"
-              asChild
-              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
-            >
-              <Link href="/api/reference" className="flex items-center gap-2">
-                <BookOpen className="h-5 w-5" />
-                API Documentation
-              </Link>
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
-            >
-              <a
-                href="https://www.vaatun.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center gap-2"
-              >
-                <Code2 className="h-5 w-5" />
-                Learn about Vaatun
-              </a>
-            </Button>
-          </div>
+        {/* Hero Section with Spline 3D */}
+        <HeroSection
+          onGetQuoteClick={scrollToTop}
+          onLearnMoreClick={scrollToHowItWorks}
+        />
+
+        {/* Trust Indicators - uses live data from context */}
+        <TrustStrip />
+
+        {/* Insurance Vertical Cards */}
+        <InsuranceCards />
+
+        {/* How It Works */}
+        <div ref={howItWorksRef}>
+          <HowItWorks />
         </div>
-      </section>
 
-      <Separator className="my-8 border-2 border-foreground" />
+        {/* Why ONDC */}
+        <WhyONDC />
 
-      {/* What is ONDC Section */}
-      <section className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-3xl">
-          <h2 className="mb-4 text-3xl font-bold">What is ONDC?</h2>
-          <p className="text-lg text-muted-foreground">
-            The{" "}
-            <a
-              href="https://ondc.org/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-primary underline decoration-2 underline-offset-4"
-            >
-              Open Network for Digital Commerce (ONDC)
-            </a>{" "}
-            is a Government of India initiative to democratize e-commerce by
-            creating an open, interoperable network. It enables buyers and
-            sellers to transact regardless of the platform they use, breaking
-            down digital commerce silos.
-          </p>
-        </div>
-      </section>
-
-      <Separator className="my-8 border-2 border-foreground" />
-
-      {/* Features Section */}
-      <section id="features" className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-6xl">
-          <h2 className="mb-12 text-center text-4xl font-bold">Features</h2>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <Shield className="mb-2 h-10 w-10" />
-                <CardTitle>Subscription Verification</CardTitle>
-                <CardDescription>
-                  Handle ONDC challenge-response verification using AES-256-ECB
-                  encryption
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <CheckCircle2 className="mb-2 h-10 w-10" />
-                <CardTitle>Domain Verification</CardTitle>
-                <CardDescription>
-                  Serve signed verification pages to prove domain ownership with
-                  Ed25519 signatures
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <Lock className="mb-2 h-10 w-10" />
-                <CardTitle>Secure Key Management</CardTitle>
-                <CardDescription>
-                  Environment-based configuration for X25519 and Ed25519 private
-                  keys
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <Server className="mb-2 h-10 w-10" />
-                <CardTitle>Health Monitoring</CardTitle>
-                <CardDescription>
-                  Built-in health check endpoints for monitoring service
-                  availability
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <Code2 className="mb-2 h-10 w-10" />
-                <CardTitle>TypeScript</CardTitle>
-                <CardDescription>
-                  Full type safety throughout the application with modern
-                  Next.js 16
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
-              <CardHeader>
-                <Zap className="mb-2 h-10 w-10" />
-                <CardTitle>High Performance</CardTitle>
-                <CardDescription>
-                  Pre-computed Diffie-Hellman shared secrets for fast
-                  cryptographic operations
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* API Directory Section */}
-      <section id="api-directory" className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-3xl text-center">
-          <FolderOpen className="mx-auto mb-4 h-12 w-12" />
-          <h2 className="mb-4 text-3xl font-bold">API Directory</h2>
-          <p className="mb-8 text-lg text-muted-foreground">
-            Test API endpoints directly from your browser with preset payloads.
-            No curl required.
-          </p>
-          <Button
-            size="lg"
-            asChild
-            className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)] transition-all hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,1)] dark:hover:shadow-[2px_2px_0px_0px_rgba(255,255,255,1)] hover:translate-x-[2px] hover:translate-y-[2px]"
-          >
-            <Link href="/directory">
-              <Zap className="mr-2 h-5 w-5" />
-              Open Directory
-            </Link>
-          </Button>
-        </div>
-      </section>
-
-      <Separator className="my-8 border-2 border-foreground" />
-
-      {/* Tech Stack Section */}
-      <section id="tech-stack" className="container mx-auto px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <div className="flex items-center justify-center gap-3 text-3xl md:text-5xl font-bold">
-            <span>made with</span>
-            <Badge
-              variant="default"
-              className="border-2 border-foreground px-6 py-3 text-2xl md:text-4xl shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]"
-            >
-              <RotatingText
-                texts={[
-                  "Next.js 16",
-                  "React 19",
-                  "TypeScript",
-                  "shadcn/ui",
-                  "Tailwind CSS",
-                  "libsodium",
-                  "Node.js Crypto",
-                  "Biome",
-                  "Lucide Icons",
-                ]}
-                rotationInterval={3000}
-                staggerDuration={0.02}
-              />
-            </Badge>
-          </div>
-        </div>
-      </section>
-    </div>
+        {/* Final CTA */}
+        <CTABanner onGetQuoteClick={scrollToTop} />
+      </div>
+    </LiveSearchProvider>
   );
 }

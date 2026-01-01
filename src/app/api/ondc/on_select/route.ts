@@ -1,11 +1,5 @@
-import { type NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
-import {
-  createErrorResponse,
-  createRequestBody,
-  createResponse,
-  type RouteConfig,
-} from "@/lib/openapi";
 import { addSelectResponse } from "@/lib/select-store";
 import { z } from "@/lib/zod";
 
@@ -15,37 +9,16 @@ import { z } from "@/lib/zod";
  */
 const BecknContextSchema = z
   .object({
-    domain: z.string().optional().openapi({ example: "ONDC:FIS13" }),
-    action: z.string().optional().openapi({ example: "on_select" }),
-    bap_id: z
-      .string()
-      .optional()
-      .openapi({ example: "ondc-staging.vaatun.com" }),
-    bap_uri: z
-      .string()
-      .optional()
-      .openapi({ example: "https://ondc-staging.vaatun.com/api/ondc" }),
-    bpp_id: z
-      .string()
-      .optional()
-      .openapi({ example: "ondc-mock-server.example.com" }),
-    bpp_uri: z
-      .string()
-      .optional()
-      .openapi({ example: "https://ondc-mock-server.example.com" }),
-    transaction_id: z
-      .string()
-      .optional()
-      .openapi({ example: "019abc12-3456-7890-abcd-ef1234567890" }),
-    message_id: z
-      .string()
-      .optional()
-      .openapi({ example: "019abc12-3456-7890-abcd-ef1234567891" }),
-    timestamp: z
-      .string()
-      .optional()
-      .openapi({ example: "2024-01-01T00:00:00.000Z" }),
-    version: z.string().optional().openapi({ example: "2.0.1" }),
+    domain: z.string().optional(),
+    action: z.string().optional(),
+    bap_id: z.string().optional(),
+    bap_uri: z.string().optional(),
+    bpp_id: z.string().optional(),
+    bpp_uri: z.string().optional(),
+    transaction_id: z.string().optional(),
+    message_id: z.string().optional(),
+    timestamp: z.string().optional(),
+    version: z.string().optional(),
   })
   .passthrough();
 
@@ -54,8 +27,8 @@ const BecknContextSchema = z
  */
 const QuotePriceSchema = z
   .object({
-    currency: z.string().optional().openapi({ example: "INR" }),
-    value: z.string().optional().openapi({ example: "1000.00" }),
+    currency: z.string().optional(),
+    value: z.string().optional(),
   })
   .passthrough();
 
@@ -94,57 +67,36 @@ export const OnSelectRequestSchema = z
       .passthrough()
       .optional(),
   })
-  .passthrough()
-  .openapi("OnSelectRequest");
+  .passthrough();
 
 /**
  * Schema for ACK response
  */
-export const AckResponseSchema = z
-  .object({
-    message: z.object({
-      ack: z.object({
-        status: z.enum(["ACK", "NACK"]).openapi({ example: "ACK" }),
-      }),
+export const AckResponseSchema = z.object({
+  message: z.object({
+    ack: z.object({
+      status: z.enum(["ACK", "NACK"]),
     }),
-    error: z
-      .object({
-        type: z.string().optional(),
-        code: z.string().optional(),
-        message: z.string().optional(),
-      })
-      .optional(),
-  })
-  .openapi("OnSelectAckResponse");
-
-/**
- * OpenAPI route configuration
- */
-export const routeConfig: RouteConfig = {
-  method: "post",
-  path: "/api/ondc/on_select",
-  summary: "Receive Quote",
-  description: `Callback endpoint for receiving quotes from BPPs.
-
-This endpoint is called by BPPs (seller platforms) in response to a select request with pricing details.
-
-**Flow:**
-1. BPP sends order quote with price breakup
-2. Service stores the response keyed by transaction_id and message_id
-3. Returns ACK to confirm receipt
-4. Quote can be polled via /api/ondc/select-results`,
-  tags: ["Gateway"],
-  operationId: "onSelect",
-  request: createRequestBody(OnSelectRequestSchema, {
-    description: "Quote from BPP",
   }),
-  responses: {
-    200: createResponse(AckResponseSchema, {
-      description: "Quote acknowledged",
-    }),
-    500: createErrorResponse("Internal server error"),
-  },
-};
+  error: z
+    .object({
+      type: z.string().optional(),
+      code: z.string().optional(),
+      message: z.string().optional(),
+    })
+    .optional(),
+});
+
+/*
+ * OpenAPI route configuration - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * export const routeConfig: RouteConfig = { ... };
+ */
 
 /**
  * Handler for ONDC on_select callback

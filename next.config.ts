@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
         "https://www.abcinsurance.com/content/dam/abc/india/assets/images/**",
       ),
       new URL("https://usgi.ai/JanSurakshaPortal/images/**"),
+      new URL(
+        "https://www.autoconinsurance.com/content/dam/autocon/india/assets/**",
+      ),
     ],
   },
   allowedDevOrigins: ["moved-starfish-rapid.ngrok-free.app"],

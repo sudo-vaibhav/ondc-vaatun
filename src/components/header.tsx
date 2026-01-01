@@ -5,9 +5,14 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 
-const navLinks = [
-  { href: "/reference", label: "API Reference" },
-  { href: "/directory", label: "Directory" },
+const navLinks: {
+  href: string;
+  label: string;
+}[] = [
+  // API Reference link disabled - OpenAPI generation removed due to
+  // zod-to-openapi not working in a type-safe way with Zod v4
+  // { href: "/reference", label: "API Reference" },
+  // { href: "/directory", label: "Directory" },
 ];
 
 export function Header() {
@@ -19,7 +24,7 @@ export function Header() {
   }, []);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b-2 border-foreground bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <Link href="/" className="text-xl font-bold">
           ONDC Vaatun

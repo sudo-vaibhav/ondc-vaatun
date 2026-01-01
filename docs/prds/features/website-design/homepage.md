@@ -2,8 +2,9 @@
 
 ## Document Information
 
-**Version**: 1.0
+**Version**: 2.0
 **Created**: 2025-12-24
+**Updated**: 2026-01-01
 **Status**: Draft
 **Parent PRD**: [Homepage Insurance Redesign](../homepage-insurance-redesign.md)
 
@@ -12,8 +13,23 @@
 ## Page Overview
 
 **Route**: `/`
-**Purpose**: Primary landing page converting visitors into insurance quote requests
+**Purpose**: Marketing-first landing page that showcases live network activity while converting visitors into insurance quote requests
 **Target Conversion**: Quote form submissions (Health or Motor)
+
+### Key Differentiator: Live Network Data
+
+Unlike static landing pages, our homepage demonstrates the power of ONDC by showing **real-time data from the network**. When a user lands on the page:
+
+1. A background search is automatically initiated
+2. Results stream in via Server-Sent Events (SSE)
+3. Insurer names and product names are extracted and displayed in a trust carousel
+4. This creates a "living" page that proves the network is active and responsive
+
+This approach:
+- Builds trust by showing real insurers responding in real-time
+- Demonstrates the speed and breadth of the ONDC network
+- Creates urgency and engagement without being pushy
+- Differentiates us from static aggregator pages
 
 ---
 
@@ -31,11 +47,20 @@
 │  └─────────────────────────────┴──────────────────────────────┘   │
 │                                                                     │
 ├────────────────────────────────────────────────────────────────────┤
-│  SECTION 2: TRUST INDICATORS (horizontal strip)                    │
-│  [ 10+ Insurers ] [ ₹0 Fees ] [ IRDAI Regulated ] [ ONDC ]        │
+│  SECTION 2: LIVE NETWORK CAROUSEL (dynamic, real-time)             │
+│  ┌────────────────────────────────────────────────────────────┐   │
+│  │  🔴 LIVE   "Available now on ONDC"                          │   │
+│  │  ← [HDFC: Family Health] [Star: Senior Care] [Bajaj: ...] → │   │
+│  │     (auto-populated from streaming search results)           │   │
+│  └────────────────────────────────────────────────────────────┘   │
+│                                                                     │
+├────────────────────────────────────────────────────────────────────┤
+│  SECTION 3: TRUST INDICATORS (horizontal strip)                    │
+│  [ {N} Insurers ] [ ₹0 Fees ] [ IRDAI Regulated ] [ ONDC ]        │
+│  (insurer count dynamically updated from live data)                │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  SECTION 3: INSURANCE VERTICALS                                    │
+│  SECTION 4: INSURANCE VERTICALS                                    │
 │  ┌────────────────────────┐  ┌────────────────────────┐           │
 │  │    HEALTH INSURANCE    │  │    MOTOR INSURANCE     │           │
 │  │    - Benefits          │  │    - Benefits          │           │
@@ -43,11 +68,11 @@
 │  └────────────────────────┘  └────────────────────────┘           │
 │                                                                     │
 ├────────────────────────────────────────────────────────────────────┤
-│  SECTION 4: HOW IT WORKS (4-step horizontal timeline)              │
+│  SECTION 5: HOW IT WORKS (4-step horizontal timeline)              │
 │  [1. Tell Us] → [2. We Search] → [3. Compare] → [4. Get Covered]  │
 ├────────────────────────────────────────────────────────────────────┤
 │                                                                     │
-│  SECTION 5: WHY ONDC (2x2 feature grid)                            │
+│  SECTION 6: WHY ONDC (2x2 feature grid)                            │
 │  ┌──────────────┐ ┌──────────────┐                                │
 │  │ Open Network │ │ Transparent  │                                │
 │  └──────────────┘ └──────────────┘                                │
@@ -57,13 +82,13 @@
 │  └──────────────┘ └──────────────┘                                │
 │                                                                     │
 ├────────────────────────────────────────────────────────────────────┤
-│  SECTION 6: TESTIMONIALS (carousel)                                │
+│  SECTION 7: TESTIMONIALS (carousel)                                │
 │  ◀ [ Testimonial Card ] ▶                                         │
 │  [ Trust Metrics Strip ]                                           │
 ├────────────────────────────────────────────────────────────────────┤
-│  SECTION 7: FAQ (accordion, 4-5 questions)                         │
+│  SECTION 8: FAQ (accordion, 4-5 questions)                         │
 ├────────────────────────────────────────────────────────────────────┤
-│  SECTION 8: FINAL CTA (full-width banner)                          │
+│  SECTION 9: FINAL CTA (full-width banner)                          │
 │  "Ready to Find Your Perfect Policy?" [Get Quote]                  │
 ├────────────────────────────────────────────────────────────────────┤
 │                         FOOTER                                      │
@@ -188,7 +213,124 @@ export function HeroAnimation() {
 
 ---
 
-### Section 2: Trust Indicators
+### Section 2: Live Network Carousel
+
+**Purpose**: Showcase real-time product availability from ONDC network to build trust and demonstrate network activity.
+
+**Layout**: Full-width horizontal carousel/marquee
+**Background**: Subtle accent color or gradient
+**Mobile**: Same, possibly slower scroll speed
+
+#### Visual Design
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│  🔴 LIVE                                                                │
+│  ───────────────────────────────────────────────────────────────────── │
+│  "Insurance products available right now on ONDC"                       │
+│                                                                         │
+│  ← ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ →  │
+│    │ HDFC Ergo   │ │ Star Health │ │ Bajaj       │ │ ICICI       │     │
+│    │ ─────────── │ │ ─────────── │ │ ─────────── │ │ ─────────── │     │
+│    │ Family      │ │ Senior      │ │ Health      │ │ Complete    │     │
+│    │ Health Plan │ │ Citizen     │ │ Guard       │ │ Health      │     │
+│    └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘     │
+│                                                                         │
+│  {N} products from {M} insurers responding now                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Data Source
+
+This section is populated **dynamically** from live search results:
+
+1. **On Page Load**: A search request is automatically initiated via `POST /api/ondc/search`
+2. **Streaming**: Results stream in via SSE from `/api/ondc/search-stream/{transactionId}`
+3. **Data Extraction**: From each `on_search` response, we extract:
+   - **Insurer Name**: `message.catalog.bpp/providers[].descriptor.name` or BPP descriptor
+   - **Product Name**: `message.catalog.bpp/providers[].items[].descriptor.name`
+4. **Display**: Products are added to the carousel as they arrive
+
+#### Carousel Item Structure
+
+Each carousel item displays:
+
+| Field | Source | Example |
+|-------|--------|---------|
+| Insurer Name | Provider/BPP name | "HDFC Ergo" |
+| Product Name | Item descriptor name | "Optima Secure" |
+| Category Badge | Item category | "Health" |
+
+**Styling**:
+- Clean card design with insurer logo (if available) or text
+- Product name prominently displayed
+- Subtle animation on entry (fade in from right)
+- Infinite scroll marquee when multiple items
+
+#### States
+
+| State | Display |
+|-------|---------|
+| **Loading** | Skeleton cards with subtle pulse animation |
+| **Live** | Cards animate in as they arrive + 🔴 LIVE indicator pulsing |
+| **Populated** | Carousel scrolling with all discovered products + "{N} products available" |
+| **Fallback** | Static insurer logos + "Our network partners" (used when no live data) |
+
+**Note**: All states should feel natural and marketing-oriented. Never show technical states like "searching", "connecting", or "timeout" to users. The transition between states should be smooth and imperceptible.
+
+#### Interaction
+
+- **Hover/Touch**: Pause marquee scroll
+- **Click on Card**: Navigate to quote form with pre-selected category
+- **View All CTA**: "See all {N} products →" links to full search results
+
+#### Technical Implementation
+
+```typescript
+// Data structure for carousel items
+interface LiveProduct {
+  id: string;
+  insurerName: string;
+  insurerLogo?: string;
+  productName: string;
+  category: 'health' | 'motor';
+  bppId: string;
+  providerId: string;
+  itemId: string;
+}
+
+// Extract from on_search response
+function extractProducts(response: OnSearchResponse): LiveProduct[] {
+  const products: LiveProduct[] = [];
+  const bppName = response.message?.catalog?.['bpp/descriptor']?.name;
+
+  for (const provider of response.message?.catalog?.['bpp/providers'] || []) {
+    for (const item of provider.items || []) {
+      products.push({
+        id: `${response.context.bpp_id}-${provider.id}-${item.id}`,
+        insurerName: provider.descriptor?.name || bppName || 'Unknown',
+        productName: item.descriptor?.name || 'Insurance Plan',
+        category: 'health', // derived from search context
+        bppId: response.context.bpp_id,
+        providerId: provider.id,
+        itemId: item.id,
+      });
+    }
+  }
+  return products;
+}
+```
+
+#### Performance Considerations
+
+- **Lazy Load**: Don't block page render; show skeleton first
+- **Limit Display**: Show max 10-15 items in carousel, even if more available
+- **Dedupe**: Avoid showing duplicate insurer/product combinations
+- **Graceful Fallback**: Always have static content ready if streaming fails
+
+---
+
+### Section 3: Trust Indicators
 
 **Layout**: Horizontal strip, centered, 4 items
 **Background**: Subtle contrast from hero (light gray or off-white)
@@ -196,21 +338,27 @@ export function HeroAnimation() {
 
 **Items**:
 
-| Icon | Stat | Label |
-|------|------|-------|
-| Building icon | 10+ | Insurers on Network |
-| Rupee icon | ₹0 | Platform Fees |
-| Shield-check icon | IRDAI | Regulated Insurers |
-| ONDC logo | — | Powered by ONDC |
+| Icon | Stat | Label | Dynamic? |
+|------|------|-------|----------|
+| Building icon | {N}+ | Insurers on Network | Yes - from live data |
+| Rupee icon | ₹0 | Platform Fees | Static |
+| Shield-check icon | IRDAI | Regulated Insurers | Static |
+| ONDC logo | — | Powered by ONDC | Static |
 
-**Insurer Logo Strip** (optional, below stats):
-- Scrolling row of insurer logos
-- Grayscale, subtle
-- "And more..." at end
+**Dynamic Insurer Count**:
+- Default shows "10+" as fallback
+- Once live data arrives, update to actual count: "{N} Insurers responding"
+- Animate the number change with count-up effect
+
+**Insurer Logo Strip** (below stats):
+- **Dynamic**: Show logos of insurers that responded in live search
+- **Fallback**: Show static partner logos if no live data
+- Scrolling marquee, grayscale or subtle color
+- "And more on the network..." at end
 
 ---
 
-### Section 3: Insurance Verticals
+### Section 4: Insurance Verticals
 
 **Layout**: Two equal-width cards, side by side
 **Mobile**: Stack vertically
@@ -272,7 +420,7 @@ Starting ₹2,000/year
 
 ---
 
-### Section 4: How It Works
+### Section 5: How It Works
 
 **Layout**: Horizontal stepper/timeline with 4 steps
 **Mobile**: Vertical timeline
@@ -312,7 +460,7 @@ A transparent, open marketplace where you're always in control
 
 ---
 
-### Section 5: Why ONDC
+### Section 6: Why ONDC
 
 **Layout**: 2x2 grid of feature cards
 **Mobile**: Single column stack
@@ -352,7 +500,7 @@ A Government of India initiative transforming how India buys and sells
 
 ---
 
-### Section 6: Social Proof
+### Section 7: Social Proof
 
 **Layout**: Testimonial carousel + trust metrics strip
 **Mobile**: Swipeable cards
@@ -405,7 +553,7 @@ commercial vehicles. Policy issued same day."
 
 ---
 
-### Section 7: FAQ
+### Section 8: FAQ
 
 **Layout**: Accordion, collapsed by default
 **Mobile**: Same, full-width
@@ -459,7 +607,7 @@ through your options without any sales pressure.
 
 ---
 
-### Section 8: Final CTA
+### Section 9: Final CTA
 
 **Layout**: Full-width banner
 **Background**: Primary color gradient or branded pattern
@@ -496,8 +644,9 @@ No spam. No obligations. Just honest quotes.
 
 | Component | Location | Description |
 |-----------|----------|-------------|
+| `LiveNetworkCarousel` | `src/components/home/LiveNetworkCarousel.tsx` | **Key component** - Real-time product carousel from SSE stream |
 | `QuoteWidget` | `src/components/home/QuoteWidget.tsx` | Tabbed form for Health/Motor quotes |
-| `TrustStrip` | `src/components/home/TrustStrip.tsx` | Stats + optional insurer logos |
+| `TrustStrip` | `src/components/home/TrustStrip.tsx` | Stats + optional insurer logos (with dynamic count) |
 | `InsuranceCard` | `src/components/home/InsuranceCard.tsx` | Vertical card for insurance type |
 | `HowItWorks` | `src/components/home/HowItWorks.tsx` | Stepper timeline |
 | `FeatureGrid` | `src/components/home/FeatureGrid.tsx` | 2x2 ONDC features |
@@ -760,6 +909,8 @@ npx 21st add <component-name>
 | Event | Trigger | Properties |
 |-------|---------|------------|
 | `page_view` | Page load | — |
+| `live_carousel_loaded` | First product appears in carousel | `product_count`, `insurer_count` |
+| `live_carousel_interaction` | User clicks/hovers carousel | `product_id`, `insurer_name` |
 | `quote_form_start` | User interacts with form | `type: health|motor` |
 | `quote_form_submit` | Form submission | `type`, `fields_completed` |
 | `cta_click` | Any CTA clicked | `cta_label`, `section` |
@@ -767,10 +918,21 @@ npx 21st add <component-name>
 | `testimonial_view` | Testimonial becomes visible | `testimonial_id` |
 | `scroll_depth` | 25%, 50%, 75%, 100% | `depth` |
 
+### Live Data Analytics
+
+Track the effectiveness of the live network carousel:
+
+| Metric | Description |
+|--------|-------------|
+| `live_data_success_rate` | % of page loads where live data successfully displayed |
+| `time_to_first_product` | Seconds from page load to first carousel item |
+| `carousel_engagement` | Clicks/hovers on live carousel vs static |
+| `live_vs_static_conversion` | Quote submissions when live data shown vs fallback |
+
 ### Conversion Funnel
 
 ```
-Page View → Form Interaction → Form Submit → Quote Results → Policy Purchase
+Page View → Live Data Engagement → Form Interaction → Form Submit → Quote Results → Policy Purchase
 ```
 
 ---
@@ -789,6 +951,77 @@ Page View → Form Interaction → Form Submit → Quote Results → Policy Purc
 ---
 
 ## Implementation Notes
+
+### Live Network Data Architecture
+
+The homepage uses a **background streaming pattern** to fetch live data while presenting a marketing-first experience:
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│                         HOMEPAGE ARCHITECTURE                            │
+├─────────────────────────────────────────────────────────────────────────┤
+│                                                                          │
+│  1. PAGE LOAD                                                           │
+│     └── React useEffect triggers background search                       │
+│                                                                          │
+│  2. SEARCH INITIATION (invisible to user)                               │
+│     └── POST /api/ondc/search                                           │
+│     └── Returns: { transactionId, messageId }                           │
+│                                                                          │
+│  3. SSE CONNECTION (invisible to user)                                  │
+│     └── EventSource(/api/ondc/search-stream/{transactionId})            │
+│     └── Events: connected → initial → update* → complete                │
+│                                                                          │
+│  4. DATA EXTRACTION (for marketing display)                             │
+│     └── Extract insurer names + product names from responses            │
+│     └── Update LiveNetworkCarousel with new items                       │
+│     └── Update TrustStrip with insurer count                            │
+│                                                                          │
+│  5. GRACEFUL HANDLING                                                   │
+│     └── Show skeleton/placeholder while loading                         │
+│     └── Fallback to static content on error                             │
+│     └── Never show technical errors to users                            │
+│                                                                          │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Key Principles
+
+1. **Marketing First**: The user sees a beautiful landing page, not a "search results" interface
+2. **Progressive Enhancement**: Page works without live data; live data enhances trust
+3. **Silent Background Work**: No loading spinners, no "searching..." messages in main UI
+4. **Graceful Degradation**: Static fallback content always available
+5. **No Technical Jargon**: Never show "timeout", "error", "stream", etc. to users
+
+#### State Management
+
+```typescript
+// Homepage state (simplified)
+interface HomepageState {
+  // Live data (populated from background search)
+  liveProducts: LiveProduct[];       // For carousel
+  liveInsurerCount: number;          // For trust strip
+  isLiveDataAvailable: boolean;      // Controls which UI to show
+
+  // UI state (marketing-friendly, no technical details)
+  carouselStatus: 'loading' | 'live' | 'populated' | 'fallback';
+}
+
+// Carousel status transitions (invisible to user):
+// loading → live (first product arrives)
+// live → populated (products stabilize)
+// any → fallback (on error, silently)
+```
+
+#### What Users See vs What Happens
+
+| User Sees | Behind the Scenes |
+|-----------|-------------------|
+| Skeleton cards animating | Search request being sent |
+| "🔴 LIVE" indicator | SSE stream connected |
+| Cards appearing one by one | on_search responses arriving |
+| Static carousel | Stream complete or error (fallback) |
+| "{N} insurers" count | Count of unique BPPs in responses |
 
 ### Data Requirements
 
@@ -928,10 +1161,26 @@ A visual representation of the homepage with actual content:
 ┃                                                                               ┃
 ┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
 ┃                                                                               ┃
+┃   ┌───────────────────────────────────────────────────────────────────────┐  ┃
+┃   │  🔴 LIVE   Insurance products available right now on ONDC             │  ┃
+┃   │  ─────────────────────────────────────────────────────────────────── │  ┃
+┃   │                                                                       │  ┃
+┃   │  ← ┌────────────┐ ┌────────────┐ ┌────────────┐ ┌────────────┐ →    │  ┃
+┃   │    │ HDFC Ergo  │ │ Star Health│ │ Bajaj      │ │ ICICI      │       │  ┃
+┃   │    │ ────────── │ │ ────────── │ │ ────────── │ │ ────────── │       │  ┃
+┃   │    │ Optima     │ │ Family     │ │ Health     │ │ Complete   │       │  ┃
+┃   │    │ Secure     │ │ Health     │ │ Guard      │ │ Health     │       │  ┃
+┃   │    └────────────┘ └────────────┘ └────────────┘ └────────────┘       │  ┃
+┃   │                                                                       │  ┃
+┃   │  12 products from 4 insurers                    See all products →   │  ┃
+┃   └───────────────────────────────────────────────────────────────────────┘  ┃
+┃                                                                               ┃
+┣━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┫
+┃                                                                               ┃
 ┃   ┌──────────────┐ ┌──────────────┐ ┌──────────────┐ ┌──────────────┐        ┃
-┃   │   🏢 10+     │ │    ₹0       │ │   🛡️ IRDAI   │ │  Powered by  │        ┃
+┃   │   🏢 4       │ │    ₹0       │ │   🛡️ IRDAI   │ │  Powered by  │        ┃
 ┃   │   Insurers   │ │ Platform    │ │  Regulated   │ │    ONDC      │        ┃
-┃   │  on Network  │ │   Fees      │ │   Insurers   │ │              │        ┃
+┃   │  responding  │ │   Fees      │ │   Insurers   │ │              │        ┃
 ┃   └──────────────┘ └──────────────┘ └──────────────┘ └──────────────┘        ┃
 ┃                                                                               ┃
 ┃   ←  [HDFC ERGO]  [ICICI Lombard]  [Star Health]  [Bajaj Allianz]  [+more] → ┃

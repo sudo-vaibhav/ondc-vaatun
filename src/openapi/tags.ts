@@ -1,18 +1,13 @@
 /**
- * OpenAPI tag organization
+ * OpenAPI Tags - DISABLED
  *
- * Current tags in /public/openapi.json:
- * - Registry (ONDC registry operations)
- * - Beckn Protocol (transaction flows)
- * - Callbacks (callback endpoints)
- * - Verification (domain verification)
- * - Health (health monitoring)
- *
- * New organization (3 groups per user requirements):
- * - Registry: All registry operations + callbacks (lookup, subscribe, on_subscribe)
- * - Gateway: All gateway operations + callbacks (search, select, on_search, on_select)
- * - Internal: Utilities (health, search-results, select-results)
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
  */
+
+/*
 export const tags = [
   {
     name: "Registry",
@@ -38,3 +33,6 @@ export const tags = [
       "Utility endpoints for health checks, result polling, and internal operations. These endpoints are not part of the ONDC protocol.",
   },
 ];
+*/
+
+export const tags: unknown[] = [];

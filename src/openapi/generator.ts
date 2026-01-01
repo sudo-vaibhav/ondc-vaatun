@@ -1,3 +1,20 @@
+/**
+ * OpenAPI Generator - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * If you need to run this in the future, uncomment the code below.
+ * You'll also need to re-enable the OpenAPI extensions in:
+ * - src/lib/zod.ts
+ * - src/lib/openapi.ts
+ * - src/lib/routes-registry.ts
+ * - All route files that export routeConfig
+ */
+
+/*
 import { writeFileSync } from "node:fs";
 import {
   OpenAPIRegistry,
@@ -12,9 +29,6 @@ import { tags } from "./tags";
 const registry = new OpenAPIRegistry();
 
 // Register all routes from the centralized registry
-// This automatically:
-// 1. Registers the Zod schemas as components
-// 2. Creates the path definitions with proper $ref references
 for (const route of routeConfigs) {
   registry.registerPath(route);
 }
@@ -44,3 +58,6 @@ console.log(`🏷️  Total tags: ${tags.length}`);
 console.log(
   `📦 Total schemas: ${Object.keys(openapi.components?.schemas || {}).length}`,
 );
+*/
+
+console.log("OpenAPI generation is disabled. See comment at top of file.");

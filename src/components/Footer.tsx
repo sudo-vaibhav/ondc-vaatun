@@ -1,9 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import SearchTrigger from "@/components/SearchTrigger";
-import StreamedSearchTrigger from "@/components/StreamedSearchTrigger";
-import SubscriptionTrigger from "@/components/SubscriptionTrigger";
 import { Separator } from "@/components/ui/separator";
 
 export function Footer() {
@@ -32,16 +28,8 @@ export function Footer() {
               Open Network for Digital Commerce
             </a>
           </p>
-          <div className="mt-2 flex gap-2 flex-wrap">
-            <SubscriptionTrigger />
-            <SearchTrigger />
-            <StreamedSearchTrigger />
-          </div>
         </div>
         <div className="flex gap-4">
-          <Link href="/api/reference" className="hover:text-foreground">
-            API Docs
-          </Link>
           <a
             href="https://ondc.org/"
             target="_blank"
@@ -49,14 +37,6 @@ export function Footer() {
             className="hover:text-foreground"
           >
             ONDC Site
-          </a>
-          <a
-            href="https://nextjs.org/docs"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-foreground"
-          >
-            Next.js Docs
           </a>
           <a
             href="https://github.com/ONDC-Official/developer-docs"

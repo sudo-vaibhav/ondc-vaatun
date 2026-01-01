@@ -1,10 +1,5 @@
 import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
-import {
-  createErrorResponse,
-  createResponse,
-  type RouteConfig,
-} from "@/lib/openapi";
 import { z } from "@/lib/zod";
 
 /**
@@ -13,61 +8,36 @@ import { z } from "@/lib/zod";
  */
 export const SubscriberSchema = z
   .object({
-    subscriber_id: z.string().openapi({ example: "ondc-staging.vaatun.com" }),
+    subscriber_id: z.string(),
     subscriber_url: z.string().optional(),
-    type: z.string().openapi({ example: "bap" }),
-    domain: z.string().openapi({ example: "ONDC:FIS13" }),
-    city: z.string().optional().openapi({ example: "std:080" }),
-    country: z.string().optional().openapi({ example: "IND" }),
-    signing_public_key: z.string().openapi({ example: "MCowBQYDK2VwAyEA..." }),
-    encr_public_key: z.string().openapi({ example: "MCowBQYDK2VuAyEA..." }),
-    valid_from: z.string().openapi({ example: "2024-01-01T00:00:00.000Z" }),
-    valid_until: z.string().openapi({ example: "2025-12-31T23:59:59.999Z" }),
+    type: z.string(),
+    domain: z.string(),
+    city: z.string().optional(),
+    country: z.string().optional(),
+    signing_public_key: z.string(),
+    encr_public_key: z.string(),
+    valid_from: z.string(),
+    valid_until: z.string(),
     status: z.string().optional(),
     created: z.string().optional(),
     updated: z.string().optional(),
   })
-  .passthrough()
-  .openapi("Subscriber");
+  .passthrough();
 
-export const LookupResponseSchema = z
-  .array(SubscriberSchema)
-  .openapi("LookupResponse");
+export const LookupResponseSchema = z.array(SubscriberSchema);
 
 export type SubscriberDetails = z.infer<typeof SubscriberSchema>;
 
-/**
- * OpenAPI route configuration
+/*
+ * OpenAPI route configuration - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * export const routeConfig: RouteConfig = { ... };
  */
-export const routeConfig: RouteConfig = {
-  method: "get",
-  path: "/api/ondc/lookup",
-  summary: "Lookup Tenant Subscription",
-  description: `Look up the current tenant's subscription in the ONDC registry.
-
-This endpoint queries the ONDC Registry using the configured tenant's subscriber ID and domain code to retrieve registration details.
-
-**Use Cases:**
-- Verify tenant registration status
-- Retrieve public keys for the tenant
-- Check subscription validity`,
-  tags: ["Registry"],
-  operationId: "lookup",
-  externalDocs: {
-    description: "Beckn Registry API - Lookup Specification",
-    url: "https://developers.becknprotocol.io/docs/registry-api-reference/registry/lookup",
-  },
-  responses: {
-    200: createResponse(LookupResponseSchema, {
-      description: "Successful lookup",
-    }),
-    500: createErrorResponse("Server error"),
-  },
-  directoryConfig: {
-    title: "Registry Lookup",
-    description: "Look up tenant subscription in the ONDC registry",
-  },
-};
 
 /**
  * GET /api/ondc/lookup

@@ -1,0 +1,13 @@
+{
+  "name": "claude-skill-image-generation",
+  "version": "1.0.0",
+  "description": "Claude Code skill for AI image generation using Google Gemini",
+  "type": "module",
+  "scripts": {
+    "generate": "node generate.mjs"
+  },
+  "dependencies": {
+    "@google/genai": "^1.0.1",
+    "dotenv": "^16.4.5"
+  }
+}

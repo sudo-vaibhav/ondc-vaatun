@@ -4,7 +4,7 @@ import { createONDCHandler } from "@/lib/context";
 export const GET = createONDCHandler(async (_request, { tenant }) => {
   const subscriberId = tenant.subscriberId; // Ensure tenant is initialized
   // Sign the subscribe request ID using tenant's signing key
-  const signedContent = await tenant.signSubscribeRequestId();
+  const signedContent = tenant.signSubscribeRequestId();
 
   // HTML template with signed content
   const htmlContent = `<!DOCTYPE html>

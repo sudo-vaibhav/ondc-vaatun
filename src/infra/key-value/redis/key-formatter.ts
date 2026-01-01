@@ -1,10 +1,14 @@
 /**
  * Key formatter utilities for tenant-scoped key-value store
  *
- * Key structure: {tenantId}:{prefix}:{identifier}
+ * Key structure: {prefix}:{identifier}
+ * (Tenant prefix is added automatically by TenantKeyValueStore)
  */
 
-import { KEY_PREFIXES } from "./types";
+const KEY_PREFIXES = {
+  SEARCH: "search",
+  SELECT: "select",
+} as const;
 
 /**
  * Format a search entry key
@@ -45,24 +49,6 @@ export function selectChannel(
 }
 
 /**
- * Parse a key to extract its components
- */
-export function parseKey(key: string): {
-  tenantId: string;
-  prefix: string;
-  identifier: string;
-  rest: string[];
-} {
-  const parts = key.split(":");
-  return {
-    tenantId: parts[0] || "",
-    prefix: parts[1] || "",
-    identifier: parts[2] || "",
-    rest: parts.slice(3),
-  };
-}
-
-/**
  * Key formatter object for convenient access
  */
 export const keyFormatter = {
@@ -71,5 +57,4 @@ export const keyFormatter = {
   searchChannel,
   select: selectKey,
   selectChannel,
-  parse: parseKey,
 } as const;

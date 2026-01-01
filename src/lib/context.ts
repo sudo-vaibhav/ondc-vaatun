@@ -3,7 +3,7 @@ import {
   __internal_do_not_import_getTenant,
   type Tenant,
 } from "@/entities/tenant";
-import { TenantKeyValueStore } from "./kv";
+import { TenantKeyValueStore } from "@/infra/key-value/redis";
 import { ONDCClient } from "./ondc/client";
 
 /**
@@ -32,13 +32,24 @@ const contextStorage = new AsyncLocalStorage<Context>();
  * }
  * ```
  */
-export function withONDCContext<T>(fn: () => T | Promise<T>): T | Promise<T> {
+export async function withONDCContext<T>(fn: () => T | Promise<T>): Promise<T> {
   const tenant = __internal_do_not_import_getTenant();
+  const redisUrl = process.env.REDIS_URL;
+
+  if (!redisUrl) {
+    throw new Error(
+      "[withONDCContext] REDIS_URL environment variable is required",
+    );
+  }
+
+  const kv = await TenantKeyValueStore.create(tenant, redisUrl);
+
   const context: Context = {
     tenant,
     ondcClient: new ONDCClient(tenant),
-    kv: TenantKeyValueStore.create(tenant.subscriberId),
+    kv,
   };
+
   return contextStorage.run(context, fn);
 }
 
@@ -98,10 +109,10 @@ type NextRouteHandler<T = Response> = (
 export function createONDCHandler<T = Response>(
   handler: ONDCHandlerFn<T>,
 ): NextRouteHandler<T> {
-  return (request) => {
-    return withONDCContext(() => {
+  return async (request) => {
+    return withONDCContext(async () => {
       const ctx = getContext();
       return handler(request, ctx);
-    }) as Promise<T>;
+    });
   };
 }

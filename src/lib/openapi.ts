@@ -1,42 +1,39 @@
+/**
+ * OpenAPI utilities - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * If OpenAPI documentation is needed in the future, consider:
+ * - Writing OpenAPI specs manually
+ * - Using a different approach that doesn't rely on Zod type augmentation
+ * - Waiting for better Zod v4 support in zod-to-openapi
+ */
+
+/*
 import {
   type RouteConfig as BaseRouteConfig,
   OpenAPIRegistry,
+  type ResponseConfig,
 } from "@asteasolutions/zod-to-openapi";
-import type { z } from "./zod";
 
 // Re-export registry for use in routes
 export { OpenAPIRegistry };
 
-/**
- * Configuration for displaying a route in the API Directory page.
- * Routes with this config will be shown in the directory UI.
- */
 export interface DirectoryConfig {
-  /** Display title for the directory card */
   title: string;
-  /** Short description for the directory card */
   description: string;
-  /** Default payload for POST requests (optional) */
   payload?: object;
 }
 
-/**
- * Extended RouteConfig with optional directory display settings.
- * Extends the base RouteConfig from zod-to-openapi.
- */
 export interface RouteConfig extends BaseRouteConfig {
-  /** If present, route will be shown in the API Directory page */
   directoryConfig?: DirectoryConfig;
 }
 
-/**
- * Create a typed request body configuration for RouteConfig.
- * Returns the structure expected by registerPath's request property.
- *
- * Field-level examples come from the Zod schema's .openapi({ example: ... })
- */
-export function createRequestBody<T extends z.ZodType>(
-  schema: T,
+export function createRequestBody(
+  schema: any,
   options?: {
     required?: boolean;
     description?: string;
@@ -52,20 +49,15 @@ export function createRequestBody<T extends z.ZodType>(
         },
       },
     },
-  };
+  } as RouteConfig["request"];
 }
 
-/**
- * Create a typed response configuration.
- *
- * Field-level examples come from the Zod schema's .openapi({ example: ... })
- */
-export function createResponse<T extends z.ZodType>(
-  schema: T,
+export function createResponse(
+  schema: any,
   options?: {
     description?: string;
   },
-) {
+): ResponseConfig {
   return {
     description: options?.description ?? "Success",
     content: {
@@ -73,12 +65,18 @@ export function createResponse<T extends z.ZodType>(
         schema,
       },
     },
-  };
+  } as ResponseConfig;
 }
 
-/**
- * Create a simple response without a schema (for errors, etc.)
- */
 export function createErrorResponse(description: string) {
   return { description };
 }
+*/
+
+// Stub exports to prevent import errors during transition
+// These can be removed once all route files are updated
+export type RouteConfig = Record<string, unknown>;
+export type DirectoryConfig = Record<string, unknown>;
+export const createRequestBody = () => ({});
+export const createResponse = () => ({});
+export const createErrorResponse = () => ({});

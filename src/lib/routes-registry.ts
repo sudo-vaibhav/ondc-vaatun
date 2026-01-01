@@ -1,3 +1,16 @@
+/**
+ * Routes Registry - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * This file was used to collect route configurations for OpenAPI generation.
+ * It is no longer needed since we're not generating OpenAPI specs from code.
+ */
+
+/*
 import { routeConfig as healthRoute } from "@/app/api/ondc/health/route";
 import { routeConfig as lookupRoute } from "@/app/api/ondc/lookup/route";
 import { routeConfig as onSearchRoute } from "@/app/api/ondc/on_search/route";
@@ -10,42 +23,23 @@ import { routeConfig as selectResultsRoute } from "@/app/api/ondc/select-results
 import { routeConfig as subscribeRoute } from "@/app/api/ondc/subscribe/route";
 import type { DirectoryConfig, RouteConfig } from "./openapi";
 
-/**
- * Centralized registry of all API route configurations.
- * Used by both OpenAPI generator and directory page.
- *
- * Add new routes here as they're created with routeConfig exports.
- */
 export const routeConfigs: RouteConfig[] = [
-  // Health & Registry
   healthRoute,
   lookupRoute,
   subscribeRoute,
   onSubscribeRoute,
-  // Gateway (outbound)
   searchRoute,
   selectRoute,
-  // Callbacks (inbound from BPPs)
   onSearchRoute,
   onSelectRoute,
-  // Polling endpoints
   searchResultsRoute,
   selectResultsRoute,
 ];
 
-/**
- * Route config with directoryConfig guaranteed to be present.
- */
 export type DirectoryRouteConfig = RouteConfig & {
   directoryConfig: DirectoryConfig;
 };
 
-/**
- * Get routes that should be displayed in the API Directory,
- * grouped by their OpenAPI tag.
- *
- * Only routes with `directoryConfig` defined will be included.
- */
 export function getDirectoryRoutes(): Record<string, DirectoryRouteConfig[]> {
   return routeConfigs
     .filter(
@@ -62,3 +56,8 @@ export function getDirectoryRoutes(): Record<string, DirectoryRouteConfig[]> {
       {} as Record<string, DirectoryRouteConfig[]>,
     );
 }
+*/
+
+// Stub exports for compatibility
+// export const routeConfigs: unknown[] = [];
+// export const getDirectoryRoutes = () => ({});

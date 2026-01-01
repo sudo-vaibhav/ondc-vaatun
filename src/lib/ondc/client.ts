@@ -29,7 +29,7 @@ export class ONDCClient {
   // biome-ignore lint/suspicious/noExplicitAny: ignore
   async createAuthorizationHeader(body: any): Promise<string> {
     // 1. Calculate Digest
-    const digest = await calculateDigest(body);
+    const digest = calculateDigest(body);
 
     // 2. Create Signing String
     // Use timestamp from body.context if available to ensure consistency
@@ -67,7 +67,7 @@ export class ONDCClient {
     );
 
     // 3. Sign the string
-    const signature = await this.tenant.signMessage(signingString);
+    const signature = this.tenant.signMessage(signingString);
 
     // 4. Construct Header
     // keyId format: "subscriber_id|unique_key_id|algo"

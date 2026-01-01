@@ -1,3 +1,16 @@
+/**
+ * OpenAPI Security Schemes - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * The Ed25519 signature documentation below is still useful reference material
+ * for implementing ONDC authentication, even though it's not used in the OpenAPI spec.
+ */
+
+/*
 export const securitySchemes = {
   Ed25519Signature: {
     type: "apiKey",
@@ -33,13 +46,23 @@ const signingString =
 
 ### Step 3: Sign with Ed25519
 \`\`\`typescript
-import sodium from "libsodium-wrappers";
+import crypto from "node:crypto";
 
-await sodium.ready;
+// Raw key is 64 bytes (32-byte seed + 32-byte public key)
+const rawKey = Buffer.from(process.env.SIGNING_PRIVATE_KEY, "base64");
 
-const privateKey = sodium.from_base64(process.env.SIGNING_PRIVATE_KEY);
-const signature = sodium.crypto_sign_detached(signingString, privateKey);
-const signatureBase64 = sodium.to_base64(signature);
+// Create Ed25519 private key from the 32-byte seed
+const privateKey = crypto.createPrivateKey({
+  key: Buffer.concat([
+    Buffer.from("302e020100300506032b657004220420", "hex"), // PKCS8 prefix
+    rawKey.subarray(0, 32),
+  ]),
+  format: "der",
+  type: "pkcs8",
+});
+
+const signature = crypto.sign(null, Buffer.from(signingString), privateKey);
+const signatureBase64 = signature.toString("base64");
 \`\`\`
 
 ### Step 4: Construct Authorization Header
@@ -96,3 +119,7 @@ See full implementation in:
 };
 
 export const security = [{ Ed25519Signature: [] }];
+*/
+
+export const securitySchemes = {};
+export const security: unknown[] = [];

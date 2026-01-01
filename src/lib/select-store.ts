@@ -5,7 +5,10 @@
  * Supports SSE via Pub/Sub for real-time updates.
  */
 
-import { keyFormatter, type TenantKeyValueStore } from "./kv";
+import {
+  keyFormatter,
+  type TenantKeyValueStore,
+} from "@/infra/key-value/redis";
 
 // ============================================
 // Type Definitions
@@ -292,7 +295,7 @@ export function subscribeToSelect(
   }) => void,
 ): () => void {
   const channel = keyFormatter.selectChannel(transactionId, messageId);
-  return kv.subscribe(channel, (_channel, data) => {
+  return kv.subscribe(channel, (data) => {
     callback(
       data as { type: string; transactionId: string; messageId: string },
     );

@@ -1,45 +1,32 @@
 import { NextResponse } from "next/server";
 import { createONDCHandler } from "@/lib/context";
-import { createResponse, type RouteConfig } from "@/lib/openapi";
 import { z } from "@/lib/zod";
 
 /**
  * Schema for health check response
  */
-export const HealthResponseSchema = z
-  .object({
-    status: z.string().openapi({ example: "Health OK!!" }),
-    ready: z.boolean().openapi({ example: true }),
-  })
-  .openapi("HealthResponse");
+export const HealthResponseSchema = z.object({
+  status: z.string(),
+  ready: z.boolean(),
+});
 
 export type HealthResponse = z.infer<typeof HealthResponseSchema>;
 
-/**
- * OpenAPI route configuration.
- * Field-level examples come from .openapi({ example: ... }) in the schema.
+/*
+ * OpenAPI route configuration - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * export const routeConfig: RouteConfig = {
+ *   method: "get",
+ *   path: "/api/ondc/health",
+ *   summary: "Health Check",
+ *   ...
+ * };
  */
-export const routeConfig: RouteConfig = {
-  method: "get",
-  path: "/api/ondc/health",
-  summary: "Health Check",
-  description:
-    "Service health monitoring endpoint. Returns service status and readiness. Verifies that tenant configuration is loaded and ONDC client is initialized.",
-  tags: ["Internal"],
-  operationId: "healthCheck",
-  responses: {
-    200: createResponse(HealthResponseSchema, {
-      description: "Service is healthy and ready",
-    }),
-    503: createResponse(HealthResponseSchema, {
-      description: "Service is not ready",
-    }),
-  },
-  directoryConfig: {
-    title: "Health Check",
-    description: "Check if the service is running",
-  },
-};
 
 export const GET = createONDCHandler(async (_request, _ctx) => {
   try {

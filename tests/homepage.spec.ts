@@ -26,10 +26,8 @@ test.describe("Homepage", () => {
   test("should have working navigation links", async ({ page }) => {
     await page.goto("/");
 
-    // Check API Documentation button
-    const apiDocsLink = page.getByRole("link", { name: /API Documentation/i });
-    await expect(apiDocsLink).toBeVisible();
-    await expect(apiDocsLink).toHaveAttribute("href", "/api/reference");
+    // Note: API Documentation link removed - OpenAPI docs disabled due to
+    // zod-to-openapi not working in a type-safe way with Zod v4
 
     // Check Open Directory button
     const directoryLink = page.getByRole("link", { name: /Open Directory/i });

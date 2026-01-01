@@ -1,11 +1,6 @@
 import { NextResponse } from "next/server";
 import { v7 as uuidv7 } from "uuid";
 import { createONDCHandler } from "@/lib/context";
-import {
-  createErrorResponse,
-  createResponse,
-  type RouteConfig,
-} from "@/lib/openapi";
 import { createSearchEntry } from "@/lib/search-store";
 import { z } from "@/lib/zod";
 import { createSearchPayload } from "./payload";
@@ -18,45 +13,25 @@ export const SearchResponseSchema = z
     message: z
       .object({
         ack: z.object({
-          status: z.string().openapi({ example: "ACK" }),
+          status: z.string(),
         }),
       })
       .optional(),
-    transactionId: z.string().uuid().openapi({ example: "019abc12-..." }),
-    messageId: z.string().uuid().openapi({ example: "019abc12-..." }),
+    transactionId: z.string().uuid(),
+    messageId: z.string().uuid(),
   })
-  .passthrough()
-  .openapi("SearchResponse");
+  .passthrough();
 
-/**
- * OpenAPI route configuration
+/*
+ * OpenAPI route configuration - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ *
+ * export const routeConfig: RouteConfig = { ... };
  */
-export const routeConfig: RouteConfig = {
-  method: "post",
-  path: "/api/ondc/search",
-  summary: "Search Insurance",
-  description: `Initiate a search for insurance products on the ONDC network.
-
-This endpoint broadcasts a search request to the ONDC gateway, which routes it to all registered insurance providers.
-
-**Flow:**
-1. Generates transaction and message IDs
-2. Creates search payload for health insurance
-3. Sends signed request to ONDC gateway
-4. Returns transaction ID to poll for results`,
-  tags: ["Gateway"],
-  operationId: "search",
-  responses: {
-    200: createResponse(SearchResponseSchema, {
-      description: "Search request accepted",
-    }),
-    503: createErrorResponse("Service unavailable"),
-  },
-  directoryConfig: {
-    title: "Search Insurance",
-    description: "Search for insurance products on ONDC network",
-  },
-};
 
 export const POST = createONDCHandler(
   async (_request, { tenant, ondcClient, kv }) => {

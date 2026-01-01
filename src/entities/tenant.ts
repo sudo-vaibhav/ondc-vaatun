@@ -1,6 +1,5 @@
 import crypto from "node:crypto";
 import { URL } from "node:url";
-import _sodium from "libsodium-wrappers";
 import { z } from "zod";
 import { Id } from "@/value-objects/id";
 import { UUID } from "@/value-objects/uuid";
@@ -240,30 +239,31 @@ export class Tenant {
   }
 
   /**
-   * Sign a message using Ed25519 (libsodium)
+   * Sign a message using Ed25519 (Node.js crypto)
    *
    * @param message - Message to sign
    * @returns Base64 encoded signature
    */
-  public async signMessage(message: string): Promise<string> {
+  public signMessage(message: string): string {
     try {
-      await _sodium.ready;
-      const sodium = _sodium;
+      // Decode base64 private key (libsodium format: 64 bytes = 32-byte seed + 32-byte public key)
+      const rawKey = Buffer.from(this.signingPrivateKey, "base64");
 
-      const signedMessage = sodium.crypto_sign_detached(
-        message,
-        sodium.from_base64(
-          this.signingPrivateKey,
-          _sodium.base64_variants.ORIGINAL,
-        ),
-      );
+      // Create Ed25519 private key from the 32-byte seed
+      const privateKey = crypto.createPrivateKey({
+        key: Buffer.concat([
+          // Ed25519 PKCS8 prefix for 32-byte seed
+          Buffer.from("302e020100300506032b657004220420", "hex"),
+          rawKey.subarray(0, 32), // First 32 bytes are the seed
+        ]),
+        format: "der",
+        type: "pkcs8",
+      });
 
-      const signature = sodium.to_base64(
-        signedMessage,
-        _sodium.base64_variants.ORIGINAL,
-      );
+      // Sign the message
+      const signature = crypto.sign(null, Buffer.from(message), privateKey);
 
-      return signature;
+      return signature.toString("base64");
     } catch (error) {
       console.error("[Tenant] Signing failed:", error);
       throw new Error("Failed to sign message");
@@ -275,7 +275,7 @@ export class Tenant {
    *
    * @returns Base64 encoded signature of STATIC_SUBSCRIBE_REQUEST_ID
    */
-  public async signSubscribeRequestId(): Promise<string> {
+  public signSubscribeRequestId(): string {
     return this.signMessage(this.subscribeRequestId.value);
   }
 }

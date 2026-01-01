@@ -264,20 +264,34 @@ All keys must be base64-encoded in DER format.
 
 ## Development Workflow
 
+### Runtime
+
+This project uses **Bun** as the JavaScript runtime. Bun is typically installed at `~/.bun/bin/bun`.
+
+```bash
+# Run scripts with bun
+~/.bun/bin/bun run dev           # Start dev server
+~/.bun/bin/bun run lint          # Run Biome linter
+~/.bun/bin/bun run biome check src/  # Check specific files
+
+# Or add to PATH in your shell profile:
+# export PATH="$HOME/.bun/bin:$PATH"
+```
+
 ### Local Development
 
 ```bash
-npm install              # Install dependencies
+bun install              # Install dependencies (or pnpm install)
 cp .env.example .env     # Create environment file
 # Add actual keys to .env
-npm run dev              # Start dev server on :3000
+bun run dev              # Start dev server on :3000
 ```
 
 ### Code Quality
 
 ```bash
-npm run lint             # Run Biome linter
-npm run format           # Format code with Biome
+bun run lint             # Run Biome linter
+bun run format           # Format code with Biome
 ```
 
 ### Testing

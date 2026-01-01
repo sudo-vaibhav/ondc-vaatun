@@ -1,15 +1,12 @@
-// import crypto from "crypto";
-import _sodium from "libsodium-wrappers";
+import crypto from "node:crypto";
 
 /**
  * Calculate Blake2b-512 digest of the request body
  */
-export async function calculateDigest(body: object): Promise<string> {
-  await _sodium.ready;
-  const sodium = _sodium;
+export function calculateDigest(body: object): string {
   const data = JSON.stringify(body);
-  const hash = sodium.crypto_generichash(64, data);
-  return sodium.to_base64(hash, _sodium.base64_variants.ORIGINAL);
+  const hash = crypto.createHash("blake2b512").update(data).digest();
+  return hash.toString("base64");
 }
 
 /**

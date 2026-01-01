@@ -1,3 +1,13 @@
+/**
+ * OpenAPI Base Document - DISABLED
+ *
+ * NOTE: OpenAPI spec generation has been disabled.
+ * The zod-to-openapi integration was not working in a type-safe way with Zod v4,
+ * and the technical benefit of generating OpenAPI specs from Zod schemas
+ * did not justify the complexity and type gymnastics required.
+ */
+
+/*
 export const baseDocument = {
   openapi: "3.1.0",
   info: {
@@ -59,3 +69,6 @@ ONDC/BPPs sign their requests to you. Your app should verify their signatures us
     },
   ],
 };
+*/
+
+export const baseDocument = {};
