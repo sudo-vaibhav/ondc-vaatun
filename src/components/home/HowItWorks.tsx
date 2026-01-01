@@ -37,7 +37,7 @@ export function HowItWorks() {
   return (
     <section className="py-16 md:py-24 relative overflow-hidden">
       {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-primary/5 via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-linear-to-b from-primary/5 via-transparent to-transparent" />
 
       <div className="container mx-auto px-4 relative">
         {/* Section Header */}
@@ -53,7 +53,7 @@ export function HowItWorks() {
         {/* Steps - Desktop Timeline */}
         <div className="hidden md:block max-w-5xl mx-auto">
           {/* Connecting line */}
-          <div className="absolute top-[50%] left-[10%] right-[10%] h-0.5 bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20 -translate-y-1/2" />
+          <div className="absolute top-[50%] left-[10%] right-[10%] h-0.5 bg-linear-to-r from-primary/20 via-primary/40 to-primary/20 -translate-y-1/2" />
 
           <div className="grid grid-cols-4 gap-6 relative">
             {steps.map((step, index) => (
@@ -125,7 +125,7 @@ export function HowItWorks() {
               {/* Step circle */}
               <div
                 className="
-                relative z-10 flex-shrink-0
+                relative z-10 shrink-0
                 w-14 h-14 rounded-full
                 bg-primary
                 flex items-center justify-center

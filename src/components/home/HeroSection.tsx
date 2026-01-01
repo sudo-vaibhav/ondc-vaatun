@@ -98,7 +98,9 @@ export function HeroSection({
                 }}
               >
                 <span className="block">Insurance,</span>
-                <span className="block text-primary drop-shadow-sm">Unchained.</span>
+                <span className="block text-primary drop-shadow-sm">
+                  Unchained.
+                </span>
               </h1>
 
               <p
@@ -150,7 +152,12 @@ export function HeroSection({
                 <ArrowRight className="ml-2 w-5 h-5 transition-transform group-hover:translate-x-1" />
               </Button>
 
-              <Button variant="outline" size="lg" onClick={onLearnMoreClick} className="bg-background/80 backdrop-blur-sm">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={onLearnMoreClick}
+                className="bg-background/80 backdrop-blur-sm"
+              >
                 See How It Works
                 <ChevronDown className="ml-2 w-5 h-5" />
               </Button>

@@ -42,7 +42,7 @@ export function InsuranceCards({
             className="
               group relative
               p-8 rounded-2xl
-              bg-gradient-to-br from-primary/5 via-background to-accent/5
+              bg-linear-to-br from-primary/5 via-background to-accent/5
               border-2 border-foreground/10
               hover:border-primary/30
               shadow-lg hover:shadow-xl
@@ -84,7 +84,7 @@ export function InsuranceCards({
                   key={benefit.text}
                   className="flex items-center gap-3 text-sm"
                 >
-                  <benefit.icon className="w-4 h-4 text-primary flex-shrink-0" />
+                  <benefit.icon className="w-4 h-4 text-primary shrink-0" />
                   <span>{benefit.text}</span>
                 </li>
               ))}
@@ -169,7 +169,7 @@ export function InsuranceCards({
                 border-2 border-blue-700 dark:border-blue-600
                 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]
                 hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]
-                hover:translate-x-[2px] hover:translate-y-[2px]
+                hover:translate-x-0.5 hover:translate-y-0.5
                 transition-all duration-150
               "
             >

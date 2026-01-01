@@ -11,11 +11,11 @@
  *   node generate.mjs --prompt "Abstract art" --ratio 16:9 --output custom.png
  */
 
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
 
 // Get directory paths
 const __filename = fileURLToPath(import.meta.url);
@@ -453,7 +453,7 @@ async function generateImage(prompt, ratio, outputFilename, outputDir) {
     console.log(`Created output directory: ${OUTPUT_DIR}`);
   }
 
-  console.log("\n" + "=".repeat(60));
+  console.log(`\n${"=".repeat(60)}`);
   console.log("AI Image Generator");
   console.log("=".repeat(60));
   console.log(`\nModel: ${MODEL}`);
@@ -551,14 +551,14 @@ async function main() {
   // Validate color theme
   if (!COLOR_THEMES[options.theme]) {
     console.error(`\nError: Unknown color theme "${options.theme}"`);
-    console.log("Available themes: " + Object.keys(COLOR_THEMES).join(", "));
+    console.log(`Available themes: ${Object.keys(COLOR_THEMES).join(", ")}`);
     process.exit(1);
   }
 
   // Validate style theme
   if (!STYLE_THEMES[options.style]) {
     console.error(`\nError: Unknown style theme "${options.style}"`);
-    console.log("Available styles: " + Object.keys(STYLE_THEMES).join(", "));
+    console.log(`Available styles: ${Object.keys(STYLE_THEMES).join(", ")}`);
     process.exit(1);
   }
 
@@ -571,7 +571,7 @@ async function main() {
     const preset = PRESETS[options.preset];
     if (!preset) {
       console.error(`\nError: Unknown preset "${options.preset}"`);
-      console.log("Available presets: " + Object.keys(PRESETS).join(", "));
+      console.log(`Available presets: ${Object.keys(PRESETS).join(", ")}`);
       process.exit(1);
     }
     prompt = preset.prompt;
