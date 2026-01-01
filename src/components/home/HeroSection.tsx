@@ -27,15 +27,20 @@ export function HeroSection({
 
   return (
     <section className="relative min-h-[90vh] overflow-hidden">
-      {/* Full-screen Spline 3D Background */}
-      <div className="absolute inset-0 z-0">
-        <Suspense fallback={<SplineLoader />}>
-          <Spline
-            scene="https://prod.spline.design/dzIB-QyTBgg0GsRl/scene.splinecode"
-            onLoad={() => setSplineLoaded(true)}
-            className="w-full h-full"
-          />
-        </Suspense>
+      {/* Spline 3D - positioned right and scaled up */}
+      <div className="absolute top-0 right-0 bottom-0 w-[70%] z-0 overflow-hidden">
+        <div className="absolute inset-0 scale-[3.1] origin-center translate-x-[10%]">
+          <Suspense fallback={<SplineLoader />}>
+            <Spline
+              scene="https://prod.spline.design/dzIB-QyTBgg0GsRl/scene.splinecode"
+              onLoad={() => setSplineLoaded(true)}
+              className="w-full h-full"
+            />
+          </Suspense>
+        </div>
+
+        {/* Left edge fade to blend with background */}
+        <div className="absolute inset-0 pointer-events-none bg-linear-to-r from-background via-background/50 to-transparent" />
 
         {/* Loading overlay that fades out */}
         <div
