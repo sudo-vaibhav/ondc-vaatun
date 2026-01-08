@@ -109,7 +109,11 @@ test.describe("Polling API", () => {
       const searchStatus = searchResponse.status();
       const searchBody = await searchResponse.text();
       await test.info().attach("search-response", {
-        body: JSON.stringify({ status: searchStatus, body: searchBody }, null, 2),
+        body: JSON.stringify(
+          { status: searchStatus, body: searchBody },
+          null,
+          2,
+        ),
         contentType: "application/json",
       });
 

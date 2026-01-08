@@ -1,6 +1,6 @@
 "use client";
 
-import Spline from "@splinetool/react-spline";
+// import Spline from "@splinetool/react-spline";
 import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { Component, type ReactNode, Suspense, useState } from "react";
 import { Badge } from "@/components/ui/badge";
@@ -66,7 +66,6 @@ export function HeroSection({
                 onLoad={() => setSplineLoaded(true)}
                 className="w-full h-full"
               /> */}
-
             </Suspense>
           </SplineErrorBoundary>
         </div>
