@@ -2,9 +2,10 @@
 
 import Spline from "@splinetool/react-spline";
 import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
-import { Suspense, useState } from "react";
+import { Component, type ReactNode, Suspense, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 function SplineLoader() {
   return (
@@ -12,6 +13,34 @@ function SplineLoader() {
       <div className="w-16 h-16 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
     </div>
   );
+}
+
+// Error Boundary to catch Spline loading errors gracefully
+class SplineErrorBoundary extends Component<
+  { children: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error: Error) {
+    // Log error but don't crash the app
+    console.warn("[Spline] Failed to load 3D scene:", error.message);
+  }
+
+  render() {
+    if (this.state.hasError) {
+      // Fallback: show nothing (the gradient overlays still provide visual interest)
+      return null;
+    }
+    return this.props.children;
+  }
 }
 
 interface HeroSectionProps {
@@ -30,13 +59,16 @@ export function HeroSection({
       {/* Spline 3D - positioned right and scaled up */}
       <div className="absolute top-0 right-0 bottom-0 w-[70%] z-0 overflow-hidden">
         <div className="absolute inset-0 scale-[3.1] origin-center translate-x-[10%]">
-          <Suspense fallback={<SplineLoader />}>
-            <Spline
-              scene="https://prod.spline.design/dzIB-QyTBgg0GsRl/scene.splinecode"
-              onLoad={() => setSplineLoaded(true)}
-              className="w-full h-full"
-            />
-          </Suspense>
+          <SplineErrorBoundary>
+            <Suspense fallback={<SplineLoader />}>
+              {/* <Spline
+                scene="https://prod.spline.design/dzIB-QyTBgg0GsRl/scene.splinecode"
+                onLoad={() => setSplineLoaded(true)}
+                className="w-full h-full"
+              /> */}
+
+            </Suspense>
+          </SplineErrorBoundary>
         </div>
 
         {/* Left edge fade to blend with background */}
@@ -69,14 +101,14 @@ export function HeroSection({
             >
               <Badge
                 variant="outline"
-                className="
-                  inline-flex items-center gap-2 px-4 py-2
-                  text-xs font-semibold tracking-widest uppercase
-                  border-2 border-primary/30
-                  bg-background/80 backdrop-blur-sm
-                  text-primary
-                  rounded-full
-                "
+                className={cn(
+                  "inline-flex items-center gap-2 px-4 py-2",
+                  "text-xs font-semibold tracking-widest uppercase",
+                  "border-2 border-primary/30",
+                  "bg-background/80 backdrop-blur-sm",
+                  "text-primary",
+                  "rounded-full",
+                )}
               >
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 Powered by ONDC
@@ -86,12 +118,12 @@ export function HeroSection({
             {/* Headline */}
             <div className="space-y-4">
               <h1
-                className="
-                  animate-in opacity-0
-                  text-5xl sm:text-6xl lg:text-7xl
-                  font-black tracking-tight
-                  leading-[0.95]
-                "
+                className={cn(
+                  "animate-in opacity-0",
+                  "text-5xl sm:text-6xl lg:text-7xl",
+                  "font-black tracking-tight",
+                  "leading-[0.95]",
+                )}
                 style={{
                   animationDelay: "100ms",
                   animationFillMode: "forwards",
@@ -104,14 +136,14 @@ export function HeroSection({
               </h1>
 
               <p
-                className="
-                  animate-in opacity-0
-                  text-lg sm:text-xl lg:text-2xl
-                  font-light tracking-wide
-                  text-muted-foreground
-                  max-w-lg
-                  leading-relaxed
-                "
+                className={cn(
+                  "animate-in opacity-0",
+                  "text-lg sm:text-xl lg:text-2xl",
+                  "font-light tracking-wide",
+                  "text-muted-foreground",
+                  "max-w-lg",
+                  "leading-relaxed",
+                )}
                 style={{
                   animationDelay: "200ms",
                   animationFillMode: "forwards",
@@ -128,11 +160,11 @@ export function HeroSection({
 
             {/* Supporting text */}
             <p
-              className="
-                animate-in opacity-0
-                text-sm text-muted-foreground/80
-                flex items-center gap-2
-              "
+              className={cn(
+                "animate-in opacity-0",
+                "text-sm text-muted-foreground/80",
+                "flex items-center gap-2",
+              )}
               style={{ animationDelay: "300ms", animationFillMode: "forwards" }}
             >
               <Sparkles className="w-4 h-4 text-primary" />
@@ -141,10 +173,10 @@ export function HeroSection({
 
             {/* CTAs */}
             <div
-              className="
-                animate-in opacity-0
-                flex flex-col sm:flex-row gap-4 pt-4
-              "
+              className={cn(
+                "animate-in opacity-0",
+                "flex flex-col sm:flex-row gap-4 pt-4",
+              )}
               style={{ animationDelay: "400ms", animationFillMode: "forwards" }}
             >
               <Button size="lg" onClick={onGetQuoteClick}>
@@ -165,11 +197,11 @@ export function HeroSection({
 
             {/* Trust indicators mini */}
             <div
-              className="
-                animate-in opacity-0
-                flex items-center gap-6 pt-8
-                text-sm text-muted-foreground
-              "
+              className={cn(
+                "animate-in opacity-0",
+                "flex items-center gap-6 pt-8",
+                "text-sm text-muted-foreground",
+              )}
               style={{ animationDelay: "500ms", animationFillMode: "forwards" }}
             >
               <div className="flex items-center gap-2">

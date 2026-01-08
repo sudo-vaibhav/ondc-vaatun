@@ -1,6 +1,7 @@
 "use client";
 
 import { ClipboardList, Globe, Scale, ShieldCheck } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const steps = [
   {
@@ -59,10 +60,10 @@ export function HowItWorks() {
             {steps.map((step, index) => (
               <div
                 key={step.number}
-                className="
-                  relative flex flex-col items-center text-center
-                  animate-in opacity-0
-                "
+                className={cn(
+                  "relative flex flex-col items-center text-center",
+                  "animate-in opacity-0",
+                )}
                 style={{
                   animationDelay: `${index * 150}ms`,
                   animationFillMode: "forwards",
@@ -70,22 +71,22 @@ export function HowItWorks() {
               >
                 {/* Step number circle */}
                 <div
-                  className="
-                  relative z-10
-                  w-16 h-16 rounded-full
-                  bg-background
-                  border-2 border-primary/30
-                  flex items-center justify-center
-                  mb-6
-                  shadow-lg shadow-primary/10
-                "
+                  className={cn(
+                    "relative z-10",
+                    "w-16 h-16 rounded-full",
+                    "bg-background",
+                    "border-2 border-primary/30",
+                    "flex items-center justify-center",
+                    "mb-6",
+                    "shadow-lg shadow-primary/10",
+                  )}
                 >
                   <div
-                    className="
-                    w-12 h-12 rounded-full
-                    bg-primary
-                    flex items-center justify-center
-                  "
+                    className={cn(
+                      "w-12 h-12 rounded-full",
+                      "bg-primary",
+                      "flex items-center justify-center",
+                    )}
                   >
                     <step.icon className="w-6 h-6 text-white" />
                   </div>
@@ -124,13 +125,13 @@ export function HowItWorks() {
 
               {/* Step circle */}
               <div
-                className="
-                relative z-10 shrink-0
-                w-14 h-14 rounded-full
-                bg-primary
-                flex items-center justify-center
-                shadow-lg shadow-primary/20
-              "
+                className={cn(
+                  "relative z-10 shrink-0",
+                  "w-14 h-14 rounded-full",
+                  "bg-primary",
+                  "flex items-center justify-center",
+                  "shadow-lg shadow-primary/20",
+                )}
               >
                 <step.icon className="w-6 h-6 text-white" />
               </div>

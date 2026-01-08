@@ -1,6 +1,7 @@
 "use client";
 
 import { ArrowRightLeft, Globe2, Lock, Receipt } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const features = [
   {
@@ -64,7 +65,7 @@ export function WhyONDC() {
   return (
     <section className="py-16 md:py-24 relative">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background via-foreground/[0.02] to-background" />
+      <div className="absolute inset-0 bg-linear-to-b from-background via-foreground/2 to-background" />
 
       <div className="container mx-auto px-4 relative">
         {/* Section Header */}
@@ -86,15 +87,16 @@ export function WhyONDC() {
             return (
               <div
                 key={feature.title}
-                className={`
-                  group relative
-                  p-6 rounded-xl
-                  bg-background
-                  border ${colors.border}
-                  transition-all duration-300
-                  hover:shadow-lg
-                  animate-in opacity-0
-                `}
+                className={cn(
+                  "group relative",
+                  "p-6 rounded-xl",
+                  "bg-background",
+                  "border",
+                  colors.border,
+                  "transition-all duration-300",
+                  "hover:shadow-lg",
+                  "animate-in opacity-0",
+                )}
                 style={{
                   animationDelay: `${index * 100}ms`,
                   animationFillMode: "forwards",
@@ -102,24 +104,27 @@ export function WhyONDC() {
               >
                 {/* Glow effect on hover */}
                 <div
-                  className={`
-                  absolute inset-0 rounded-xl
-                  bg-gradient-to-br ${colors.glow} to-transparent
-                  opacity-0 group-hover:opacity-100
-                  transition-opacity duration-300
-                `}
+                  className={cn(
+                    "absolute inset-0 rounded-xl",
+                    "bg-linear-to-br",
+                    colors.glow,
+                    "to-transparent",
+                    "opacity-0 group-hover:opacity-100",
+                    "transition-opacity duration-300",
+                  )}
                 />
 
                 <div className="relative">
                   {/* Icon */}
                   <div
-                    className={`
-                    w-12 h-12 rounded-lg ${colors.bg}
-                    flex items-center justify-center
-                    mb-4
-                  `}
+                    className={cn(
+                      "w-12 h-12 rounded-lg",
+                      colors.bg,
+                      "flex items-center justify-center",
+                      "mb-4",
+                    )}
                   >
-                    <feature.icon className={`w-6 h-6 ${colors.icon}`} />
+                    <feature.icon className={cn("w-6 h-6", colors.icon)} />
                   </div>
 
                   {/* Content */}

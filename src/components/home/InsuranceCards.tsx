@@ -11,6 +11,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface InsuranceCardsProps {
   onHealthClick?: () => void;
@@ -39,27 +40,27 @@ export function InsuranceCards({
         <div className="grid md:grid-cols-2 gap-6 lg:gap-8 max-w-5xl mx-auto">
           {/* Health Insurance Card */}
           <div
-            className="
-              group relative
-              p-8 rounded-2xl
-              bg-linear-to-br from-primary/5 via-background to-accent/5
-              border-2 border-foreground/10
-              hover:border-primary/30
-              shadow-lg hover:shadow-xl
-              transition-all duration-300
-            "
+            className={cn(
+              "group relative",
+              "p-8 rounded-2xl",
+              "bg-linear-to-br from-primary/5 via-background to-accent/5",
+              "border-2 border-foreground/10",
+              "hover:border-primary/30",
+              "shadow-lg hover:shadow-xl",
+              "transition-all duration-300",
+            )}
           >
             {/* Accent gradient */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-primary rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Icon */}
             <div
-              className="
-              w-14 h-14 rounded-xl
-              bg-primary/10
-              flex items-center justify-center
-              mb-6
-            "
+              className={cn(
+                "w-14 h-14 rounded-xl",
+                "bg-primary/10",
+                "flex items-center justify-center",
+                "mb-6",
+              )}
             >
               <HeartPulse className="w-7 h-7 text-primary" />
             </div>
@@ -108,27 +109,27 @@ export function InsuranceCards({
 
           {/* Motor Insurance Card */}
           <div
-            className="
-              group relative
-              p-8 rounded-2xl
-              bg-gradient-to-br from-blue-500/5 via-background to-cyan-500/5
-              border-2 border-foreground/10
-              hover:border-blue-500/30
-              shadow-lg hover:shadow-xl
-              transition-all duration-300
-            "
+            className={cn(
+              "group relative",
+              "p-8 rounded-2xl",
+              "bg-linear-to-br from-blue-500/5 via-background to-cyan-500/5",
+              "border-2 border-foreground/10",
+              "hover:border-blue-500/30",
+              "shadow-lg hover:shadow-xl",
+              "transition-all duration-300",
+            )}
           >
             {/* Accent gradient */}
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-blue-500 to-cyan-500 rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity" />
 
             {/* Icon */}
             <div
-              className="
-              w-14 h-14 rounded-xl
-              bg-blue-500/10
-              flex items-center justify-center
-              mb-6
-            "
+              className={cn(
+                "w-14 h-14 rounded-xl",
+                "bg-blue-500/10",
+                "flex items-center justify-center",
+                "mb-6",
+              )}
             >
               <Car className="w-7 h-7 text-blue-500" />
             </div>
@@ -152,7 +153,7 @@ export function InsuranceCards({
                   key={benefit.text}
                   className="flex items-center gap-3 text-sm"
                 >
-                  <benefit.icon className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                  <benefit.icon className="w-4 h-4 text-blue-500 shrink-0" />
                   <span>{benefit.text}</span>
                 </li>
               ))}
@@ -161,17 +162,17 @@ export function InsuranceCards({
             {/* CTA */}
             <Button
               onClick={onMotorClick}
-              className="
-                w-full h-12
-                bg-blue-600 hover:bg-blue-500
-                dark:bg-blue-500 dark:hover:bg-blue-400
-                text-white font-semibold
-                border-2 border-blue-700 dark:border-blue-600
-                shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]
-                hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]
-                hover:translate-x-0.5 hover:translate-y-0.5
-                transition-all duration-150
-              "
+              className={cn(
+                "w-full h-12",
+                "bg-blue-600 hover:bg-blue-500",
+                "dark:bg-blue-500 dark:hover:bg-blue-400",
+                "text-white font-semibold",
+                "border-2 border-blue-700 dark:border-blue-600",
+                "shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]",
+                "hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]",
+                "hover:translate-x-0.5 hover:translate-y-0.5",
+                "transition-all duration-150",
+              )}
             >
               Explore Motor Plans
               <ArrowRight className="ml-2 w-4 h-4" />

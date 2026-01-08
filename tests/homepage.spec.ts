@@ -5,82 +5,116 @@ test.describe("Homepage", () => {
     // Navigate to the homepage
     await page.goto("/");
 
-    // Check that the page title contains "ONDC Vaatun"
+    // Wait for DOM to be ready (not networkidle as SSE connections stay open)
+    await page.waitForLoadState("domcontentloaded");
+
+    // Check that the header contains "ONDC Vaatun" link
+    await expect(page.getByRole("link", { name: "ONDC Vaatun" })).toBeVisible();
+
+    // Verify the hero badge is present
+    await expect(page.getByText("Powered by ONDC")).toBeVisible();
+
+    // Check the main headline
     await expect(
-      page.getByRole("heading", { name: "ONDC Vaatun", level: 1 }),
+      page.getByRole("heading", { name: /Insurance/i, level: 1 }),
     ).toBeVisible();
 
-    // Verify the main badge is present
-    await expect(page.getByText("ONDC Network Integration")).toBeVisible();
-
-    // Check for key sections
+    // Check for key section headings (use heading role for more specificity)
     await expect(
-      page.getByRole("heading", { name: "What is ONDC?" }),
-    ).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Features" })).toBeVisible();
-    await expect(
-      page.getByRole("heading", { name: "API Directory" }),
-    ).toBeVisible();
-  });
-
-  test("should have working navigation links", async ({ page }) => {
-    await page.goto("/");
-
-    // Note: API Documentation link removed - OpenAPI docs disabled due to
-    // zod-to-openapi not working in a type-safe way with Zod v4
-
-    // Check Open Directory button
-    const directoryLink = page.getByRole("link", { name: /Open Directory/i });
-    await expect(directoryLink).toBeVisible();
-    await expect(directoryLink).toHaveAttribute("href", "/directory");
-  });
-
-  test("should display all feature cards", async ({ page }) => {
-    await page.goto("/");
-
-    // Verify all 6 feature cards are present
-    await expect(
-      page.getByText("Subscription Verification", { exact: true }),
+      page.getByRole("heading", { name: "Choose Your Coverage", level: 2 }),
     ).toBeVisible();
     await expect(
-      page.getByText("Domain Verification", { exact: true }),
+      page.getByRole("heading", {
+        name: /How Buying Insurance on ONDC Works/i,
+        level: 2,
+      }),
     ).toBeVisible();
     await expect(
-      page.getByText("Secure Key Management", { exact: true }),
-    ).toBeVisible();
-    await expect(
-      page.getByText("Health Monitoring", { exact: true }),
-    ).toBeVisible();
-    await expect(page.getByText("TypeScript", { exact: true })).toBeVisible();
-    await expect(
-      page.getByText("High Performance", { exact: true }),
+      page.getByRole("heading", { name: "The ONDC Advantage", level: 2 }),
     ).toBeVisible();
   });
 
-  test("should have external links with correct attributes", async ({
-    page,
-  }) => {
+  test("should have working navigation and CTA buttons", async ({ page }) => {
     await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
 
-    // Check ONDC website link
-    const ondcLink = page
-      .getByRole("link", { name: "Open Network for Digital Commerce" })
-      .first();
-    await expect(ondcLink).toHaveAttribute("href", "https://ondc.org/");
-    await expect(ondcLink).toHaveAttribute("target", "_blank");
-    await expect(ondcLink).toHaveAttribute("rel", "noopener noreferrer");
+    // Check Get Instant Quotes button in hero
+    await expect(
+      page.getByRole("button", { name: /Get Instant Quotes/i }),
+    ).toBeVisible();
 
-    // Check Vaatun website link in the footer (skip the header logo)
-    const vaatunLinks = page.getByRole("link", { name: "Vaatun" });
-    const footerVaatunLink = vaatunLinks.nth(1); // Second occurrence is in footer
-    await expect(footerVaatunLink).toHaveAttribute(
-      "href",
-      "https://www.vaatun.com",
-    );
-    await expect(footerVaatunLink).toHaveAttribute("target", "_blank");
-    await expect(footerVaatunLink).toHaveAttribute(
-      "rel",
-      "noopener noreferrer",
-    );
+    // Check See How It Works button
+    await expect(
+      page.getByRole("button", { name: /See How It Works/i }),
+    ).toBeVisible();
+  });
+
+  test("should display insurance cards", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    // Verify insurance type cards are present (use level 3 for card headings)
+    await expect(
+      page.getByRole("heading", { name: "Health Insurance", level: 3 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Motor Insurance", level: 3 }),
+    ).toBeVisible();
+
+    // Verify CTA buttons for each insurance type
+    await expect(
+      page.getByRole("button", { name: /Explore Health Plans/i }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: /Explore Motor Plans/i }),
+    ).toBeVisible();
+  });
+
+  test("should display ONDC advantage features", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    // Verify ONDC advantage feature headings (level 3)
+    await expect(
+      page.getByRole("heading", { name: "Truly Open Marketplace", level: 3 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", {
+        name: "What You See Is What You Pay",
+        level: 3,
+      }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Privacy by Design", level: 3 }),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Freedom to Switch", level: 3 }),
+    ).toBeVisible();
+  });
+
+  test("should display how it works steps", async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+
+    // Verify how it works step headings (level 3) - use first() for desktop view
+    // (mobile view also has these headings but hidden via CSS)
+    await expect(
+      page
+        .getByRole("heading", { name: "Tell Us What You Need", level: 3 })
+        .first(),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("heading", { name: "We Search the Network", level: 3 })
+        .first(),
+    ).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "Compare & Choose", level: 3 }).first(),
+    ).toBeVisible();
+    await expect(
+      page
+        .getByRole("heading", { name: "Get Covered Instantly", level: 3 })
+        .first(),
+    ).toBeVisible();
   });
 });

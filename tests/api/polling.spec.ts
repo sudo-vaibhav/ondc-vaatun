@@ -105,13 +105,17 @@ test.describe("Polling API", () => {
       // Step 1: Initiate a search (may fail to reach gateway, but should create entry)
       const searchResponse = await request.post("/api/ondc/search");
 
-      // Skip integration test if gateway is unreachable
-      if (searchResponse.status() !== 200) {
-        test.skip();
-        return;
-      }
+      // Attach response to HTML report for debugging
+      const searchStatus = searchResponse.status();
+      const searchBody = await searchResponse.text();
+      await test.info().attach("search-response", {
+        body: JSON.stringify({ status: searchStatus, body: searchBody }, null, 2),
+        contentType: "application/json",
+      });
 
-      const searchData = await searchResponse.json();
+      expect(searchStatus, `Search failed: ${searchBody}`).toBe(200);
+
+      const searchData = JSON.parse(searchBody);
       const { transactionId, messageId } = searchData;
 
       expect(transactionId).toBeDefined();
