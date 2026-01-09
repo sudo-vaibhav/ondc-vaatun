@@ -25,7 +25,7 @@ const nextConfig: NextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors https://*.prishapolicy.com https://prishapolicy.com https://*.vaatun.com https://vaatun.com https://*.vantage.vaatun.com",
+              "frame-ancestors https://*.prishapolicy.com https://prishapolicy.com https://*.vaatun.com https://vaatun.com https://*.vantage.vaatun.com https://ondc-staging.vaatun.com http://localhost:3000 http://localhost:4200",
           },
         ],
       },
