@@ -17,6 +17,20 @@ const nextConfig: NextConfig = {
     ],
   },
   allowedDevOrigins: ["moved-starfish-rapid.ngrok-free.app"],
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Content-Security-Policy",
+            value:
+              "frame-ancestors https://*.prishapolicy.com https://prishapolicy.com https://*.vaatun.com https://vaatun.com https://*.vantage.vaatun.com",
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
