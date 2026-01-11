@@ -1,6 +1,7 @@
 "use client";
 
-import { useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useRef, useState } from "react";
 
 import { Header } from "@/components/header";
 import {
@@ -14,7 +15,9 @@ import {
 } from "@/components/home";
 
 export default function Home() {
+  const router = useRouter();
   const howItWorksRef = useRef<HTMLDivElement>(null);
+  const [isNavigating, setIsNavigating] = useState<"health" | "motor" | null>(null);
 
   const scrollToHowItWorks = () => {
     howItWorksRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -22,6 +25,42 @@ export default function Home() {
 
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const handleHealthClick = async () => {
+    if (isNavigating) return;
+    setIsNavigating("health");
+    try {
+      const response = await fetch("/api/ondc/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryCode: "HEALTH_INSURANCE" }),
+      });
+      if (!response.ok) throw new Error("Search failed");
+      const { transactionId } = await response.json();
+      router.push(`/health/${transactionId}`);
+    } catch (error) {
+      console.error("Failed to initiate health search:", error);
+      setIsNavigating(null);
+    }
+  };
+
+  const handleMotorClick = async () => {
+    if (isNavigating) return;
+    setIsNavigating("motor");
+    try {
+      const response = await fetch("/api/ondc/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ categoryCode: "MOTOR_INSURANCE" }),
+      });
+      if (!response.ok) throw new Error("Search failed");
+      const { transactionId } = await response.json();
+      router.push(`/motor/${transactionId}`);
+    } catch (error) {
+      console.error("Failed to initiate motor search:", error);
+      setIsNavigating(null);
+    }
   };
 
   return (
@@ -39,7 +78,10 @@ export default function Home() {
         <TrustStrip />
 
         {/* Insurance Vertical Cards */}
-        <InsuranceCards />
+        <InsuranceCards
+          onHealthClick={handleHealthClick}
+          onMotorClick={handleMotorClick}
+        />
 
         {/* How It Works */}
         <div ref={howItWorksRef}>

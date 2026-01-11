@@ -110,7 +110,7 @@ export interface SearchEntry {
   transactionId: string;
   messageId: string;
   searchTimestamp: string;
-  categoryCode: string;
+  categoryCode?: string;
   createdAt: number;
   ttlMs: number;
   ttlExpiresAt: number;
@@ -174,7 +174,7 @@ export async function createSearchEntry(
   kv: TenantKeyValueStore,
   transactionId: string,
   messageId: string,
-  categoryCode: string,
+  categoryCode?: string,
   ttl = "PT5M",
 ): Promise<SearchEntry> {
   const now = Date.now();

@@ -320,6 +320,33 @@ pnpm test:e2e:chromium -- --grep "subscribe"
 - Modifying a single endpoint
 - Quick iteration during development
 
+**Gateway Error Handling in Tests**:
+
+IMPORTANT: Never use `test.skip()` to skip tests when external gateways (ONDC registry, BPPs) return errors like 500, 502, or 503. Gateway errors are valid responses in our use case and tests should handle them properly.
+
+Instead of skipping:
+```typescript
+// BAD - Don't do this
+if (response.status() !== 200) {
+  test.skip();
+  return;
+}
+
+// GOOD - Accept gateway errors as valid responses
+expect([200, 502, 503]).toContain(response.status());
+
+const data = await response.json();
+// The API should still return tracking IDs even on gateway errors
+expect(data).toHaveProperty("transactionId");
+expect(data).toHaveProperty("messageId");
+```
+
+Why this matters:
+- Gateway errors (502, 503) indicate external service issues, not bugs in our code
+- Our API should handle these gracefully and still return tracking IDs
+- Skipping tests hides potential issues and gives false confidence
+- Tests should verify correct behavior regardless of external service availability
+
 ### Production Build
 
 ```bash

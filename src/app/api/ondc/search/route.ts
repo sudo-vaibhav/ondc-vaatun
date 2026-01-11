@@ -33,16 +33,23 @@ export const SearchResponseSchema = z
  * export const routeConfig: RouteConfig = { ... };
  */
 
+const SearchRequestSchema = z.object({
+  categoryCode: z.string().optional(),
+});
+
 export const POST = createONDCHandler(
-  async (_request, { tenant, ondcClient, kv }) => {
+  async (request, { tenant, ondcClient, kv }) => {
     try {
+      const body = await request.json().catch(() => ({}));
+      const parsed = SearchRequestSchema.safeParse(body);
+      const categoryCode = parsed.success ? parsed.data.categoryCode : undefined;
+
       const transactionId = uuidv7();
       const messageId = uuidv7();
-      const categoryCode = "HEALTH_INSURANCE";
 
       await createSearchEntry(kv, transactionId, messageId, categoryCode);
 
-      const payload = createSearchPayload(transactionId, messageId);
+      const payload = createSearchPayload(transactionId, messageId, categoryCode);
       const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
       console.log("[Search] Sending request to:", gatewayUrl);

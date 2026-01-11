@@ -199,14 +199,12 @@ test.describe("Polling API", () => {
         },
       });
 
-      // Skip if select fails (BPP unreachable is expected)
-      if (selectResponse.status() !== 200) {
-        // Still test on_select and polling independently
-        test.skip();
-        return;
-      }
+      // Accept both 200 (success) and 502/503 (BPP unreachable) as valid responses
+      // The API should still return a messageId for tracking
+      expect([200, 502, 503]).toContain(selectResponse.status());
 
       const selectData = await selectResponse.json();
+      expect(selectData).toHaveProperty("messageId");
       const { messageId } = selectData;
 
       // Step 2: Poll for results (should find entry, no response yet)

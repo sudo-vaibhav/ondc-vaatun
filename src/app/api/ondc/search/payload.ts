@@ -1,15 +1,24 @@
 import { getContext } from "@/lib/context";
 
-export function createSearchPayload(transactionId: string, messageId: string) {
+export function createSearchPayload(
+  transactionId: string,
+  messageId: string,
+  categoryCode?: string,
+) {
   return {
     context: createPayloadContext(transactionId, messageId),
     message: {
       intent: {
-        category: {
-          descriptor: {
-            code: "HEALTH_INSURANCE", // Type of insurance (health, marine, motor)
+        // Only include category filter when categoryCode is provided
+        // Without category: returns all insurers (used by homepage)
+        // With category: returns filtered results (used by product pages)
+        ...(categoryCode && {
+          category: {
+            descriptor: {
+              code: categoryCode,
+            },
           },
-        },
+        }),
         payment: {
           collected_by: "BAP", // Indicates who is the collector of payment
           tags: [
