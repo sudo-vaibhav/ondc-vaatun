@@ -4,6 +4,10 @@ import { Building2, Car, Package, Search } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
+import { MotorItemCard } from "@/components/product/MotorItemCard";
+import { ProductHeader } from "@/components/product/ProductHeader";
+import { useProductSearch } from "@/components/product/useProductSearch";
+import type { SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -13,10 +17,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { MotorItemCard } from "@/components/product/MotorItemCard";
-import { ProductHeader } from "@/components/product/ProductHeader";
-import { useProductSearch } from "@/components/product/useProductSearch";
-import type { SelectionData } from "@/components/search/ItemCard";
 import type { OnSearchResponse } from "@/lib/search-store";
 
 export default function MotorSearchPage() {
@@ -63,7 +63,9 @@ export default function MotorSearchPage() {
   // Count total items across all responses
   const totalItems = responses.reduce((sum, response) => {
     const providers = response.message?.catalog?.providers || [];
-    return sum + providers.reduce((pSum, p) => pSum + (p.items?.length || 0), 0);
+    return (
+      sum + providers.reduce((pSum, p) => pSum + (p.items?.length || 0), 0)
+    );
   }, 0);
 
   return (

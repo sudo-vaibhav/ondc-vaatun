@@ -1,13 +1,7 @@
 "use client";
 
-import {
-  ArrowRight,
-  Car,
-  Clock,
-  Loader2,
-  Shield,
-  Wrench,
-} from "lucide-react";
+import { ArrowRight, Car, Clock, Loader2, Shield, Wrench } from "lucide-react";
+import type { ItemData, SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +11,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { ItemData, SelectionData } from "@/components/search/ItemCard";
 
 interface MotorItemCardProps {
   item: ItemData;
@@ -41,7 +34,12 @@ const MOTOR_TAGS = [
 ];
 
 function formatMotorTagValue(code: string, value: string): string {
-  if (code === "IDV" || code === "THIRD_PARTY_COVER" || code === "OWN_DAMAGE_COVER" || code === "PERSONAL_ACCIDENT_COVER") {
+  if (
+    code === "IDV" ||
+    code === "THIRD_PARTY_COVER" ||
+    code === "OWN_DAMAGE_COVER" ||
+    code === "PERSONAL_ACCIDENT_COVER"
+  ) {
     const num = Number.parseInt(value, 10);
     if (num >= 100000) {
       return `₹${(num / 100000).toFixed(num % 100000 === 0 ? 0 : 1)}L`;
@@ -74,7 +72,13 @@ function formatTagLabel(code: string): string {
     ZERO_DEPRECIATION: "Zero Dep",
     CASHLESS_GARAGES: "Garages",
   };
-  return labels[code] || code.split("_").map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ");
+  return (
+    labels[code] ||
+    code
+      .split("_")
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(" ")
+  );
 }
 
 function parseDuration(duration: string): string {
@@ -100,8 +104,7 @@ export function MotorItemCard({
   );
   const displayTags =
     generalInfoTags?.list?.filter(
-      (tag) =>
-        tag.descriptor?.code && MOTOR_TAGS.includes(tag.descriptor.code),
+      (tag) => tag.descriptor?.code && MOTOR_TAGS.includes(tag.descriptor.code),
     ) || [];
 
   const tenure = item.time?.duration ? parseDuration(item.time.duration) : null;
@@ -174,7 +177,10 @@ export function MotorItemCard({
         {displayTags.length > 0 && (
           <div className="grid grid-cols-2 gap-2 mb-3 p-3 rounded-lg bg-blue-500/5 border border-blue-500/10">
             {displayTags
-              .filter((t) => t.descriptor?.code !== "IDV" && t.descriptor?.code !== "NCB")
+              .filter(
+                (t) =>
+                  t.descriptor?.code !== "IDV" && t.descriptor?.code !== "NCB",
+              )
               .slice(0, 4)
               .map((tag) => (
                 <div key={tag.descriptor?.code} className="text-xs">

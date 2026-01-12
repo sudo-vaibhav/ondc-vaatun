@@ -15,13 +15,9 @@ import { cn } from "@/lib/utils";
 
 interface InsuranceCardsProps {
   onHealthClick?: () => void;
-  onMotorClick?: () => void;
 }
 
-export function InsuranceCards({
-  onHealthClick,
-  onMotorClick,
-}: InsuranceCardsProps) {
+export function InsuranceCards({ onHealthClick }: InsuranceCardsProps) {
   return (
     <section className="py-16 md:py-24">
       <div className="container mx-auto px-4">
@@ -161,21 +157,17 @@ export function InsuranceCards({
 
             {/* CTA */}
             <Button
-              onClick={onMotorClick}
+              disabled
               className={cn(
                 "w-full h-12",
-                "bg-blue-600 hover:bg-blue-500",
-                "dark:bg-blue-500 dark:hover:bg-blue-400",
-                "text-white font-semibold",
-                "border-2 border-blue-700 dark:border-blue-600",
-                "shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]",
-                "hover:shadow-[2px_2px_0px_0px_rgba(0,0,0,0.15)]",
-                "hover:translate-x-0.5 hover:translate-y-0.5",
-                "transition-all duration-150",
+                "bg-blue-600/50",
+                "dark:bg-blue-500/50",
+                "text-white/70 font-semibold",
+                "border-2 border-blue-700/50 dark:border-blue-600/50",
+                "cursor-not-allowed",
               )}
             >
-              Explore Motor Plans
-              <ArrowRight className="ml-2 w-4 h-4" />
+              Coming Soon
             </Button>
 
             {/* Price hint */}

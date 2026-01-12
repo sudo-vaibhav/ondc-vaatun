@@ -55,11 +55,7 @@ function getStatusBadge(status: SearchStatus, responseCount: number) {
         </Badge>
       );
     case "error":
-      return (
-        <Badge variant="destructive">
-          Connection Error
-        </Badge>
-      );
+      return <Badge variant="destructive">Connection Error</Badge>;
   }
 }
 

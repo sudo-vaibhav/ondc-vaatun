@@ -8,6 +8,7 @@ import {
   Loader2,
   Shield,
 } from "lucide-react";
+import type { ItemData, SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -17,7 +18,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import type { ItemData, SelectionData } from "@/components/search/ItemCard";
 
 interface HealthItemCardProps {
   item: ItemData;
@@ -70,7 +70,13 @@ function formatTagLabel(code: string): string {
     ROOM_RENT_CAP: "Room Rent Cap",
     MATERNITY_COVERAGE: "Maternity",
   };
-  return labels[code] || code.split("_").map((w) => w.charAt(0) + w.slice(1).toLowerCase()).join(" ");
+  return (
+    labels[code] ||
+    code
+      .split("_")
+      .map((w) => w.charAt(0) + w.slice(1).toLowerCase())
+      .join(" ")
+  );
 }
 
 function parseDuration(duration: string): string {
@@ -192,7 +198,9 @@ export function HealthItemCard({
         )}
 
         {/* Cashless hospitals badge */}
-        {displayTags.some((t) => t.descriptor?.code === "CASHLESS_HOSPITALS") && (
+        {displayTags.some(
+          (t) => t.descriptor?.code === "CASHLESS_HOSPITALS",
+        ) && (
           <div className="flex items-center gap-1 text-xs text-muted-foreground mb-3">
             <Building2 className="h-3 w-3 text-primary" />
             <span>Cashless at network hospitals</span>

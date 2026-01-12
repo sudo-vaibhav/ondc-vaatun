@@ -42,14 +42,20 @@ export const POST = createONDCHandler(
     try {
       const body = await request.json().catch(() => ({}));
       const parsed = SearchRequestSchema.safeParse(body);
-      const categoryCode = parsed.success ? parsed.data.categoryCode : undefined;
+      const categoryCode = parsed.success
+        ? parsed.data.categoryCode
+        : undefined;
 
       const transactionId = uuidv7();
       const messageId = uuidv7();
 
       await createSearchEntry(kv, transactionId, messageId, categoryCode);
 
-      const payload = createSearchPayload(transactionId, messageId, categoryCode);
+      const payload = createSearchPayload(
+        transactionId,
+        messageId,
+        categoryCode,
+      );
       const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
       console.log("[Search] Sending request to:", gatewayUrl);

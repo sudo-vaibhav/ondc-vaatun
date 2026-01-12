@@ -1,9 +1,20 @@
 "use client";
 
-import { AlertTriangle, Building2, HeartPulse, Package, Search } from "lucide-react";
+import {
+  AlertTriangle,
+  Building2,
+  HeartPulse,
+  Package,
+  Search,
+} from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { HealthItemCard } from "@/components/product/HealthItemCard";
+import { ProductHeader } from "@/components/product/ProductHeader";
+import { useProductSearch } from "@/components/product/useProductSearch";
+import { PurchaserInfoDialog } from "@/components/purchaser/PurchaserInfoDialog";
+import type { SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -18,10 +29,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Separator } from "@/components/ui/separator";
-import { HealthItemCard } from "@/components/product/HealthItemCard";
-import { ProductHeader } from "@/components/product/ProductHeader";
-import { useProductSearch } from "@/components/product/useProductSearch";
-import type { SelectionData } from "@/components/search/ItemCard";
 import type { OnSearchResponse } from "@/lib/search-store";
 
 export default function HealthSearchPage() {
@@ -29,10 +36,16 @@ export default function HealthSearchPage() {
   const router = useRouter();
   const searchId = params.searchId as string;
   const [selectingItemId, setSelectingItemId] = useState<string | null>(null);
+  const [showPurchaserDialog, setShowPurchaserDialog] = useState(false);
 
   const { status, responses, responseCount, reconnect } = useProductSearch({
     transactionId: searchId,
   });
+
+  // Show purchaser info dialog on mount for confirmation
+  useEffect(() => {
+    setShowPurchaserDialog(true);
+  }, []);
 
   const handleItemSelect = useCallback(
     async (data: SelectionData) => {
@@ -86,11 +99,18 @@ export default function HealthSearchPage() {
   // Count total items across valid responses only
   const totalItems = validResponses.reduce((sum, response) => {
     const providers = response.message?.catalog?.providers || [];
-    return sum + providers.reduce((pSum, p) => pSum + (p.items?.length || 0), 0);
+    return (
+      sum + providers.reduce((pSum, p) => pSum + (p.items?.length || 0), 0)
+    );
   }, 0);
 
   return (
     <div className="min-h-screen bg-background">
+      <PurchaserInfoDialog
+        open={showPurchaserDialog}
+        onOpenChange={setShowPurchaserDialog}
+      />
+
       <ProductHeader
         productType="health"
         transactionId={searchId}
@@ -130,10 +150,14 @@ export default function HealthSearchPage() {
               <Separator orientation="vertical" className="h-6" />
               <HoverCard>
                 <HoverCardTrigger asChild>
-                  <button className="flex items-center gap-2 text-destructive hover:underline cursor-pointer">
+                  <button
+                    type="button"
+                    className="flex items-center gap-2 text-destructive hover:underline cursor-pointer"
+                  >
                     <AlertTriangle className="h-4 w-4" />
                     <span className="text-sm">
-                      {errorResponses.length} provider{errorResponses.length !== 1 ? "s" : ""} failed
+                      {errorResponses.length} provider
+                      {errorResponses.length !== 1 ? "s" : ""} failed
                     </span>
                   </button>
                 </HoverCardTrigger>
@@ -153,7 +177,8 @@ export default function HealthSearchPage() {
                             {response.context.bpp_id}
                           </p>
                           <p className="text-xs text-muted-foreground">
-                            Error {response.error?.code}: {response.error?.message || "Unknown error"}
+                            Error {response.error?.code}:{" "}
+                            {response.error?.message || "Unknown error"}
                           </p>
                         </div>
                       ))}
