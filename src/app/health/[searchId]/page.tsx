@@ -321,7 +321,7 @@ function HealthProviderCard({
       <CardHeader className="bg-gradient-to-r from-primary/5 to-transparent">
         <div className="flex items-center gap-3">
           {bppLogo ? (
-            <Image
+            <img
               width={48}
               height={48}
               src={bppLogo}
