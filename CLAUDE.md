@@ -296,29 +296,43 @@ bun run format           # Format code with Biome
 
 ### Testing
 
-**IMPORTANT**: Run only the specific test file you changed, not the entire test suite.
+**IMPORTANT**:
+1. Run only the specific test file you changed, NOT the entire test suite
+2. Always use timeouts to prevent hanging tests
+3. Tests require dev server + ngrok running (configured in playwright.config.ts)
 
 ```bash
-# Run a specific test file
-pnpm test:e2e:chromium -- tests/api/registry.spec.ts
+# Run a specific test file with timeout (PREFERRED)
+bun run test:e2e -- tests/api/health.spec.ts --timeout=30000
 
 # Run a specific test by line number
-pnpm test:e2e:chromium -- tests/api/registry.spec.ts:28
+bun run test:e2e -- tests/api/registry.spec.ts:28 --timeout=30000
 
 # Run tests matching a pattern
-pnpm test:e2e:chromium -- --grep "subscribe"
+bun run test:e2e -- --grep "health" --timeout=30000
+
+# Run with headed browser for debugging
+bun run test:e2e:headed -- tests/api/health.spec.ts --timeout=60000
 ```
 
-**When to run full test suite**:
-- Major refactors affecting multiple files
-- New feature additions that touch shared code
-- Before creating a PR
-- When explicitly requested
+**Available test commands**:
+- `bun run test:e2e` - Run playwright tests (headless)
+- `bun run test:e2e:headed` - Run with visible browser
+- `bun run test:e2e:ui` - Run with Playwright UI
+- `bun run test:e2e:report` - Show HTML report
+
+**NEVER run full test suite** unless explicitly requested. Always target specific files. (generally if user says, run the e2e tests without saying full or complete, they mean the current feature or fix in question).
 
 **When to run specific tests**:
 - Fixing a single test
 - Modifying a single endpoint
 - Quick iteration during development
+- Verifying a fix works
+
+**When full suite might be needed** (ask user first):
+- Major refactors affecting multiple files
+- Before creating a PR
+- When explicitly requested
 
 **Gateway Error Handling in Tests**:
 
