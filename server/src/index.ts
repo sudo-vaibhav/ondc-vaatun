@@ -10,8 +10,9 @@ app.listen(PORT, async () => {
   console.log(`[Server] Health check: http://localhost:${PORT}/health`);
   console.log(`[Server] API docs: http://localhost:${PORT}/api/reference`);
 
-  // Start ngrok tunnel if authtoken is configured
-  if (process.env.NGROK_AUTHTOKEN) {
+  // Start ngrok tunnel in non-production environments if authtoken is configured
+  const isProduction = process.env.NODE_ENV === "production";
+  if (!isProduction && process.env.NGROK_AUTHTOKEN) {
     try {
       const listener = await ngrok.connect({
         addr: PORT,
@@ -22,5 +23,7 @@ app.listen(PORT, async () => {
     } catch (err) {
       console.error("[ngrok] Failed to establish tunnel:", err);
     }
+  } else if (isProduction) {
+    console.log("[ngrok] Skipped in production environment");
   }
 });
