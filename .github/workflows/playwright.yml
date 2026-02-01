@@ -4,6 +4,14 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
+# Sets permissions for GitHub Pages deployment
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  pull-requests: write
+
 jobs:
   test:
     timeout-minutes: 60
@@ -44,3 +52,71 @@ jobs:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+
+    # Deploy report to GitHub Pages (PR only)
+    - name: Setup Pages
+      if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+      uses: actions/configure-pages@v4
+
+    - name: Upload Pages artifact
+      if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: playwright-report/
+
+  # Separate job for deploying to GitHub Pages
+  deploy-report:
+    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+    - name: Comment PR with report link
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const url = '${{ steps.deployment.outputs.page_url }}';
+          const body = `## 📊 Playwright Test Report
+
+          The test report has been deployed to GitHub Pages:
+
+          🔗 **[View Test Report](${url})**
+
+          This report includes:
+          - Test results summary
+          - Screenshots from failed tests
+          - Trace files for debugging`;
+
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(comment =>
+            comment.user.type === 'Bot' &&
+            comment.body.includes('Playwright Test Report')
+          );
+
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
