@@ -6,14 +6,17 @@ test.describe("Gateway API", () => {
       request,
     }) => {
       const response = await request.post("/api/ondc/search");
+      const body = await response.text();
 
       // May return 200 or 503 depending on gateway availability
-      expect([200, 503]).toContain(response.status());
-
-      const data = await response.json();
-      expect(data).toBeDefined();
+      expect(
+        [200, 503].includes(response.status()),
+        `Expected 200 or 503 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(true);
 
       if (response.status() === 200) {
+        const data = JSON.parse(body);
+        expect(data).toBeDefined();
         expect(data).toHaveProperty("transactionId");
         expect(data).toHaveProperty("messageId");
         // Verify UUID format
@@ -28,7 +31,12 @@ test.describe("Gateway API", () => {
 
     test("returns JSON content type", async ({ request }) => {
       const response = await request.post("/api/ondc/search");
-      expect(response.headers()["content-type"]).toContain("application/json");
+      const body = await response.text();
+
+      expect(
+        response.headers()["content-type"],
+        `Expected JSON content-type. Response body: ${body}`,
+      ).toContain("application/json");
     });
   });
 
@@ -39,10 +47,14 @@ test.describe("Gateway API", () => {
       const response = await request.post("/api/ondc/select", {
         data: {},
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(400);
+      expect(
+        response.status(),
+        `Expected 400 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(400);
 
-      const data = await response.json();
+      const data = JSON.parse(body);
       expect(data).toHaveProperty("error");
       expect(data.error).toBe("Missing required fields");
       expect(data).toHaveProperty("required");
@@ -61,8 +73,12 @@ test.describe("Gateway API", () => {
           // Missing bppUri, providerId, itemId
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(400);
+      expect(
+        response.status(),
+        `Expected 400 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(400);
     });
 
     test("accepts valid request payload structure", async ({ request }) => {
@@ -76,14 +92,17 @@ test.describe("Gateway API", () => {
           parentItemId: "item-001",
         },
       });
+      const body = await response.text();
 
       // Will fail to reach BPP but should accept the request
-      expect([200, 503]).toContain(response.status());
-
-      const data = await response.json();
-      expect(data).toBeDefined();
+      expect(
+        [200, 503].includes(response.status()),
+        `Expected 200 or 503 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(true);
 
       if (response.status() === 200) {
+        const data = JSON.parse(body);
+        expect(data).toBeDefined();
         expect(data).toHaveProperty("transactionId");
         expect(data).toHaveProperty("messageId");
       }
@@ -102,9 +121,13 @@ test.describe("Gateway API", () => {
           xinputSubmissionId: "submission-001",
         },
       });
+      const body = await response.text();
 
       // Should not fail validation due to optional fields
-      expect([200, 503]).toContain(response.status());
+      expect(
+        [200, 503].includes(response.status()),
+        `Expected 200 or 503 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(true);
     });
 
     test("accepts optional addOns field", async ({ request }) => {
@@ -122,8 +145,12 @@ test.describe("Gateway API", () => {
           ],
         },
       });
+      const body = await response.text();
 
-      expect([200, 503]).toContain(response.status());
+      expect(
+        [200, 503].includes(response.status()),
+        `Expected 200 or 503 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(true);
     });
 
     test("returns JSON content type", async ({ request }) => {
@@ -137,7 +164,12 @@ test.describe("Gateway API", () => {
           parentItemId: "i1",
         },
       });
-      expect(response.headers()["content-type"]).toContain("application/json");
+      const body = await response.text();
+
+      expect(
+        response.headers()["content-type"],
+        `Expected JSON content-type. Response body: ${body}`,
+      ).toContain("application/json");
     });
   });
 
@@ -172,10 +204,14 @@ test.describe("Gateway API", () => {
           },
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
 
-      const data = await response.json();
+      const data = JSON.parse(body);
       expect(data).toHaveProperty("message");
       expect(data.message).toHaveProperty("ack");
       expect(data.message.ack).toHaveProperty("status");
@@ -193,11 +229,15 @@ test.describe("Gateway API", () => {
           message: {},
         },
       });
+      const body = await response.text();
 
       // Should still return ACK even if transaction_id is missing
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
 
-      const data = await response.json();
+      const data = JSON.parse(body);
       expect(data.message.ack.status).toBe("ACK");
     });
 
@@ -215,15 +255,24 @@ test.describe("Gateway API", () => {
           custom_field: "passthrough works",
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
     });
 
     test("returns JSON content type", async ({ request }) => {
       const response = await request.post("/api/ondc/on_search", {
         data: { context: {}, message: {} },
       });
-      expect(response.headers()["content-type"]).toContain("application/json");
+      const body = await response.text();
+
+      expect(
+        response.headers()["content-type"],
+        `Expected JSON content-type. Response body: ${body}`,
+      ).toContain("application/json");
     });
   });
 
@@ -264,10 +313,14 @@ test.describe("Gateway API", () => {
           },
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
 
-      const data = await response.json();
+      const data = JSON.parse(body);
       expect(data).toHaveProperty("message");
       expect(data.message).toHaveProperty("ack");
       expect(data.message.ack.status).toBe("ACK");
@@ -287,10 +340,14 @@ test.describe("Gateway API", () => {
           },
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
 
-      const data = await response.json();
+      const data = JSON.parse(body);
       expect(data.message.ack.status).toBe("ACK");
     });
 
@@ -310,15 +367,24 @@ test.describe("Gateway API", () => {
           },
         },
       });
+      const body = await response.text();
 
-      expect(response.status()).toBe(200);
+      expect(
+        response.status(),
+        `Expected 200 but got ${response.status()}. Response body: ${body}`,
+      ).toBe(200);
     });
 
     test("returns JSON content type", async ({ request }) => {
       const response = await request.post("/api/ondc/on_select", {
         data: { context: {}, message: {} },
       });
-      expect(response.headers()["content-type"]).toContain("application/json");
+      const body = await response.text();
+
+      expect(
+        response.headers()["content-type"],
+        `Expected JSON content-type. Response body: ${body}`,
+      ).toContain("application/json");
     });
   });
 });
