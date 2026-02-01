@@ -9,6 +9,8 @@ jobs:
     timeout-minutes: 60
     runs-on: ubuntu-latest
     env:
+      # Node environment
+      NODE_ENV: test
       # ONDC Configuration
       DOMAIN_CODE: ${{ secrets.DOMAIN_CODE }}
       ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
