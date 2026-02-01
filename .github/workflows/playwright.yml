@@ -5,11 +5,8 @@ on:
   pull_request:
     branches: [ main, master ]
 
-# Sets permissions for GitHub Pages deployment
 permissions:
   contents: read
-  pages: write
-  id-token: write
   pull-requests: write
 
 jobs:
@@ -45,53 +42,41 @@ jobs:
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
     - name: Run Playwright tests
+      id: test
       run: pnpm exec playwright test
+      continue-on-error: true
     - uses: actions/upload-artifact@v4
+      id: artifact
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
 
-    # Deploy report to GitHub Pages (PR only)
-    - name: Setup Pages
+    # Comment on PR with test results and artifact link
+    - name: Comment PR with results
       if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-      uses: actions/configure-pages@v4
-
-    - name: Upload Pages artifact
-      if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-      uses: actions/upload-pages-artifact@v3
-      with:
-        path: playwright-report/
-
-  # Separate job for deploying to GitHub Pages
-  deploy-report:
-    if: ${{ !cancelled() && github.event_name == 'pull_request' }}
-    needs: test
-    runs-on: ubuntu-latest
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    steps:
-    - name: Deploy to GitHub Pages
-      id: deployment
-      uses: actions/deploy-pages@v4
-
-    - name: Comment PR with report link
       uses: actions/github-script@v7
       with:
         script: |
-          const url = '${{ steps.deployment.outputs.page_url }}';
-          const body = `## 📊 Playwright Test Report
+          const passed = '${{ steps.test.outcome }}' === 'success';
+          const icon = passed ? '✅' : '❌';
+          const status = passed ? 'All tests passed!' : 'Some tests failed.';
+          const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const artifactUrl = `${runUrl}#artifacts`;
 
-          The test report has been deployed to GitHub Pages:
+          const body = `## ${icon} Playwright Test Results
 
-          🔗 **[View Test Report](${url})**
+          **Status:** ${status}
 
-          This report includes:
-          - Test results summary
-          - Screenshots from failed tests
-          - Trace files for debugging`;
+          📦 **[Download Test Report](${artifactUrl})**
+
+          To view the report:
+          1. Click the link above
+          2. Download the \`playwright-report\` artifact
+          3. Extract and open \`index.html\` in your browser
+
+          Or run locally: \`pnpm exec playwright show-report\``;
 
           // Find existing comment
           const { data: comments } = await github.rest.issues.listComments({
@@ -102,7 +87,7 @@ jobs:
 
           const botComment = comments.find(comment =>
             comment.user.type === 'Bot' &&
-            comment.body.includes('Playwright Test Report')
+            comment.body.includes('Playwright Test Results')
           );
 
           if (botComment) {
@@ -120,3 +105,8 @@ jobs:
               body: body
             });
           }
+
+    # Fail the job if tests failed
+    - name: Check test outcome
+      if: ${{ steps.test.outcome == 'failure' }}
+      run: exit 1
