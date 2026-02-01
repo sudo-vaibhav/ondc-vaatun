@@ -81,8 +81,14 @@ if (process.env.NODE_ENV === "production") {
 
 // Global error handler - must be last middleware
 // biome-ignore lint/suspicious/noExplicitAny: Express error handler signature
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error("[Server Error]", err);
+
+  // If headers already sent, delegate to Express's default handler
+  if (res.headersSent) {
+    return next(err);
+  }
+
   const status = err.status || err.statusCode || 500;
   const message = err.message || "Internal Server Error";
   res.status(status).json({

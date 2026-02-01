@@ -18,9 +18,21 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
       # Node environment
       NODE_ENV: test
+      # Use local Redis service instead of external (more reliable in CI)
+      REDIS_URL: redis://localhost:6379
       # ONDC Configuration
       DOMAIN_CODE: ${{ secrets.DOMAIN_CODE }}
       ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
@@ -28,7 +40,6 @@ jobs:
       ONDC_GATEWAY_URL: ${{ secrets.ONDC_GATEWAY_URL }}
       ONDC_PUBLIC_KEY: ${{ secrets.ONDC_PUBLIC_KEY }}
       ONDC_REGISTRY_URL: ${{ secrets.ONDC_REGISTRY_URL }}
-      REDIS_URL: ${{ secrets.REDIS_URL }}
       SIGNING_PUBLIC_KEY: ${{ secrets.SIGNING_PUBLIC_KEY }}
       SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
       STATIC_SUBSCRIBE_REQUEST_ID: ${{ secrets.STATIC_SUBSCRIBE_REQUEST_ID }}
