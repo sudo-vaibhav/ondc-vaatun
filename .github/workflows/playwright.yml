@@ -8,6 +8,21 @@ jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    env:
+      # ONDC Configuration
+      DOMAIN_CODE: ${{ secrets.DOMAIN_CODE }}
+      ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
+      ENCRYPTION_PUBLIC_KEY: ${{ secrets.ENCRYPTION_PUBLIC_KEY }}
+      ONDC_GATEWAY_URL: ${{ secrets.ONDC_GATEWAY_URL }}
+      ONDC_PUBLIC_KEY: ${{ secrets.ONDC_PUBLIC_KEY }}
+      ONDC_REGISTRY_URL: ${{ secrets.ONDC_REGISTRY_URL }}
+      REDIS_URL: ${{ secrets.REDIS_URL }}
+      SIGNING_PUBLIC_KEY: ${{ secrets.SIGNING_PUBLIC_KEY }}
+      SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
+      STATIC_SUBSCRIBE_REQUEST_ID: ${{ secrets.STATIC_SUBSCRIBE_REQUEST_ID }}
+      STATIC_UNIQUE_KEY_ID: ${{ secrets.STATIC_UNIQUE_KEY_ID }}
+      SUBSCRIBER_ID: ${{ secrets.SUBSCRIBER_ID }}
+      FEATURE_VERIFY_CALLBACKS: ${{ secrets.FEATURE_VERIFY_CALLBACKS }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
