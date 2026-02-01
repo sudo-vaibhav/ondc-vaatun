@@ -24,6 +24,9 @@
 server/public/assets/
 server/public/index.html
 
+# Server build output (compiled TypeScript)
+server/dist/
+
 # misc
 .DS_Store
 *.pem
