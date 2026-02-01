@@ -8,9 +8,9 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-// For local development, use localhost
-// For CI/ngrok testing, use the SUBSCRIBER_ID domain
-const useNgrok = process.env.USE_NGROK === "true" || process.env.CI;
+// For local development and CI, use localhost
+// For ngrok testing (manual only), set USE_NGROK=true
+const useNgrok = process.env.USE_NGROK === "true";
 const baseURL = useNgrok
   ? `https://${
       process.env.SUBSCRIBER_ID ||
