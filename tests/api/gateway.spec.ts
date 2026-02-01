@@ -8,7 +8,7 @@ test.describe("Gateway API", () => {
       const response = await request.post("/api/ondc/search");
 
       // May return 200 or 503 depending on gateway availability
-      expect([200, 500, 502, 503]).toContain(response.status());
+      expect([200, 503]).toContain(response.status());
 
       const data = await response.json();
       expect(data).toBeDefined();
@@ -28,9 +28,7 @@ test.describe("Gateway API", () => {
 
     test("returns JSON content type", async ({ request }) => {
       const response = await request.post("/api/ondc/search");
-      // Accept both JSON (success) and plain text (error)
-      const contentType = response.headers()["content-type"];
-      expect(contentType).toBeDefined();
+      expect(response.headers()["content-type"]).toContain("application/json");
     });
   });
 
@@ -80,7 +78,7 @@ test.describe("Gateway API", () => {
       });
 
       // Will fail to reach BPP but should accept the request
-      expect([200, 500, 502, 503]).toContain(response.status());
+      expect([200, 503]).toContain(response.status());
 
       const data = await response.json();
       expect(data).toBeDefined();
@@ -106,7 +104,7 @@ test.describe("Gateway API", () => {
       });
 
       // Should not fail validation due to optional fields
-      expect([200, 500, 502, 503]).toContain(response.status());
+      expect([200, 503]).toContain(response.status());
     });
 
     test("accepts optional addOns field", async ({ request }) => {
@@ -125,7 +123,7 @@ test.describe("Gateway API", () => {
         },
       });
 
-      expect([200, 500, 502, 503]).toContain(response.status());
+      expect([200, 503]).toContain(response.status());
     });
 
     test("returns JSON content type", async ({ request }) => {
@@ -139,9 +137,7 @@ test.describe("Gateway API", () => {
           parentItemId: "i1",
         },
       });
-      // Accept both JSON (success) and plain text (error)
-      const contentType = response.headers()["content-type"];
-      expect(contentType).toBeDefined();
+      expect(response.headers()["content-type"]).toContain("application/json");
     });
   });
 
@@ -227,9 +223,7 @@ test.describe("Gateway API", () => {
       const response = await request.post("/api/ondc/on_search", {
         data: { context: {}, message: {} },
       });
-      // Accept both JSON (success) and plain text (error)
-      const contentType = response.headers()["content-type"];
-      expect(contentType).toBeDefined();
+      expect(response.headers()["content-type"]).toContain("application/json");
     });
   });
 
@@ -324,9 +318,7 @@ test.describe("Gateway API", () => {
       const response = await request.post("/api/ondc/on_select", {
         data: { context: {}, message: {} },
       });
-      // Accept both JSON (success) and plain text (error)
-      const contentType = response.headers()["content-type"];
-      expect(contentType).toBeDefined();
+      expect(response.headers()["content-type"]).toContain("application/json");
     });
   });
 });
