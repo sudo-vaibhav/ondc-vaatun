@@ -79,4 +79,16 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
+// Global error handler - must be last middleware
+// biome-ignore lint/suspicious/noExplicitAny: Express error handler signature
+app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+  console.error("[Server Error]", err);
+  const status = err.status || err.statusCode || 500;
+  const message = err.message || "Internal Server Error";
+  res.status(status).json({
+    error: message,
+    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+  });
+});
+
 export { app };
