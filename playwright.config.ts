@@ -2,7 +2,7 @@ import { defineConfig, devices } from "@playwright/test";
 
 // For local development and CI, use localhost
 // For ngrok testing (manual only), set USE_NGROK=true
-const baseURL = "http://localhost:3000";
+const baseURL = "http://localhost:4823";
 
 /**
  * See https://playwright.dev/docs/test-configuration.

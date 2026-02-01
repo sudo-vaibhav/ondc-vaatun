@@ -1,7 +1,7 @@
 import { app } from "./app";
 import ngrok from "@ngrok/ngrok";
 
-const PORT = process.env.PORT || 2022;
+const PORT = process.env.PORT || 4822;
 const NGROK_DOMAIN = process.env.SUBSCRIBER_ID;
 
 app.listen(PORT, async () => {

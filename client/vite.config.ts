@@ -16,14 +16,14 @@ export default defineConfig({
     },
   },
   server: {
-    port: 3000,
+    port: 4823,
     proxy: {
       "/api": {
-        target: "http://localhost:2022",
+        target: "http://localhost:4822",
         changeOrigin: true,
       },
       "/ondc-site-verification.html": {
-        target: "http://localhost:2022",
+        target: "http://localhost:4822",
         changeOrigin: true,
       },
     },

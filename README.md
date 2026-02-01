@@ -49,7 +49,7 @@ cp .env.example .env
 
 ```bash
 pnpm dev
-# Access at http://localhost:3000
+# Access at http://localhost:4823
 ```
 
 ## Features
@@ -304,7 +304,7 @@ See [src/lib/ondc/signing.ts](../src/lib/ondc/signing.ts) for implementation det
 Check service health status.
 
 ```bash
-curl http://localhost:3000/api/ondc/health
+curl http://localhost:4823/api/ondc/health
 ```
 
 Response:
@@ -347,7 +347,7 @@ Response:
 Serves HTML page with signed meta tag for domain verification.
 
 ```bash
-curl http://localhost:3000/ondc-site-verification.html
+curl http://localhost:4823/ondc-site-verification.html
 ```
 
 Response:
@@ -560,7 +560,7 @@ pnpm dev
 pnpm d    # alias for dev
 ```
 
-Access the application at [http://localhost:3000](http://localhost:3000).
+Access the application at [http://localhost:4823](http://localhost:4823).
 
 ### Code Quality
 
@@ -594,16 +594,16 @@ pnpm n    # alias
 
 ```bash
 # Health check
-curl http://localhost:3000/api/ondc/health
+curl http://localhost:4823/api/ondc/health
 
 # Domain verification
-curl http://localhost:3000/ondc-site-verification.html
+curl http://localhost:4823/ondc-site-verification.html
 
 # Registry lookup
-curl 'http://localhost:3000/api/ondc/lookup?type=bpp'
+curl 'http://localhost:4823/api/ondc/lookup?type=bpp'
 
 # Search (requires full payload)
-curl -X POST http://localhost:3000/api/ondc/search \
+curl -X POST http://localhost:4823/api/ondc/search \
   -H "Content-Type: application/json" \
   -d @search-payload.json
 ```

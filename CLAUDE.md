@@ -88,7 +88,7 @@ ondc-vaatun/
 │   ├── package.json
 │   ├── tsconfig.json
 │   └── src/
-│       ├── index.ts                # Entry point (port 2022)
+│       ├── index.ts                # Entry point (port 4822)
 │       ├── app.ts                  # Express app with middleware
 │       ├── trpc/
 │       │   ├── trpc.ts             # tRPC initialization
@@ -304,7 +304,7 @@ SIGNING_PRIVATE_KEY=<base64_ed25519_private_key>
 REDIS_URL=redis://localhost:6379
 
 # Server
-PORT=2022
+PORT=4822
 NODE_ENV=development
 ```
 
@@ -322,7 +322,7 @@ This project uses **Node.js** as the JavaScript runtime with **pnpm** for packag
 pnpm install              # Install all workspace dependencies
 cp .env.example .env      # Create environment file
 # Add actual keys to .env
-pnpm dev                  # Start both server (2022) and client (3000)
+pnpm dev                  # Start both server (4822) and client (4823)
 ```
 
 **Individual workspace commands**:
@@ -395,7 +395,7 @@ pnpm start                # Start production server (serves client from server/p
 ### Current Deployment
 
 - **Platform**: Any Node.js 18+ host
-- **Server Port**: 2022
+- **Server Port**: 4822
 - **Staging Subscriber ID**: `ondc-staging.vaatun.com`
 - **Seeding Request ID**: `019aa6d1-8906-704b-9929-64be78bb83cc`
 
@@ -412,20 +412,20 @@ pnpm start                # Start production server (serves client from server/p
 ### Health Check
 
 ```bash
-curl http://localhost:2022/api/ondc/health
+curl http://localhost:4822/api/ondc/health
 ```
 
 ### Site Verification
 
 ```bash
-curl http://localhost:2022/ondc-site-verification.html
+curl http://localhost:4822/ondc-site-verification.html
 ```
 
 ### tRPC Endpoints
 
 ```bash
 # Using tRPC batch format
-curl -X POST http://localhost:2022/api/trpc/registry.lookup \
+curl -X POST http://localhost:4822/api/trpc/registry.lookup \
   -H "Content-Type: application/json" \
   -d '{"json": {"subscriber_id": "test"}}'
 ```
@@ -494,7 +494,7 @@ Update `server/public/openapi.json` when:
 pnpm dev
 
 # 2. Visit the API docs
-open http://localhost:2022/api/reference
+open http://localhost:4822/api/reference
 
 # 3. Verify endpoints appear correctly
 ```
@@ -598,7 +598,7 @@ tests/api/
    - Check STATIC_SUBSCRIBE_REQUEST_ID matches ONDC registration
 
 4. **tRPC client errors**
-   - Verify server is running on port 2022
+   - Verify server is running on port 4822
    - Check CORS configuration in `server/src/app.ts`
    - Ensure `AppRouter` type is correctly imported
 
