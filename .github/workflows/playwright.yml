@@ -25,6 +25,8 @@ jobs:
       STATIC_UNIQUE_KEY_ID: ${{ secrets.STATIC_UNIQUE_KEY_ID }}
       SUBSCRIBER_ID: ${{ secrets.SUBSCRIBER_ID }}
       FEATURE_VERIFY_CALLBACKS: ${{ secrets.FEATURE_VERIFY_CALLBACKS }}
+      # ngrok tunnel for ONDC callbacks
+      NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
