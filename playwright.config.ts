@@ -8,14 +8,20 @@ import dotenv from "dotenv";
 
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
-const baseURL = `https://${
-  process.env.SUBSCRIBER_ID ||
-  (
-    () => {
-      throw new Error("SUBSCRIBER_ID is not defined in environment variables");
-    }
-  )()
-}`;
+// For local development, use localhost
+// For CI/ngrok testing, use the SUBSCRIBER_ID domain
+const useNgrok = process.env.USE_NGROK === "true" || process.env.CI;
+const baseURL = useNgrok
+  ? `https://${
+      process.env.SUBSCRIBER_ID ||
+      (() => {
+        throw new Error(
+          "SUBSCRIBER_ID is not defined in environment variables"
+        );
+      })()
+    }`
+  : "http://localhost:3000";
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -63,10 +69,17 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
-    command: "bun run build && bun run start & bun run ngrok",
-    url: baseURL,
-    reuseExistingServer: !process.env.CI,
-    timeout: 120000,
-  },
+  webServer: useNgrok
+    ? {
+        command: "pnpm build && pnpm start & pnpm ngrok",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+      }
+    : {
+        command: "pnpm dev",
+        url: baseURL,
+        reuseExistingServer: !process.env.CI,
+        timeout: 120000,
+      },
 });

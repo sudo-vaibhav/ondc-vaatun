@@ -65,8 +65,9 @@ test.describe("Homepage", () => {
     await expect(
       page.getByRole("button", { name: /Explore Health Plans/i }),
     ).toBeVisible();
+    // Motor insurance shows "Coming Soon" - it's not yet available
     await expect(
-      page.getByRole("button", { name: /Explore Motor Plans/i }),
+      page.getByRole("button", { name: /Coming Soon/i }),
     ).toBeVisible();
   });
 
