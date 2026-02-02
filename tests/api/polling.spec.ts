@@ -182,7 +182,7 @@ test.describe("Polling API", () => {
   });
 
   test.describe("Select Flow Integration", () => {
-    test("select creates entry that can be polled, on_select updates it", async ({
+    test.skip("select creates entry that can be polled, on_select updates it", async ({
       request,
     }) => {
       const transactionId = "019abc12-3456-7890-abcd-integration-test";

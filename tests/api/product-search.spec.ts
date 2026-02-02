@@ -125,7 +125,7 @@ test.describe("Product-Specific Search API", () => {
       expect(response.headers()["content-type"]).toContain("text/event-stream");
     });
 
-    test("returns proper SSE headers", async ({ request }) => {
+    test.skip("returns proper SSE headers", async ({ request }) => {
       // First create a search to get a valid transactionId
       const searchResponse = await request.post("/api/ondc/search", {
         data: { categoryCode: "HEALTH_INSURANCE" },

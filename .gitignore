@@ -20,6 +20,13 @@
 # production
 /build
 
+# Vite build output (client builds to server/public for production serving)
+server/public/assets/
+server/public/index.html
+
+# Server build output (compiled TypeScript)
+server/dist/
+
 # misc
 .DS_Store
 *.pem

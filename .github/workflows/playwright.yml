@@ -4,10 +4,50 @@ on:
     branches: [ main, master ]
   pull_request:
     branches: [ main, master ]
+
+# Cancel in-progress runs when a new push is made to the same branch/PR
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   test:
     timeout-minutes: 60
     runs-on: ubuntu-latest
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Node environment
+      NODE_ENV: test
+      # Use local Redis service instead of external (more reliable in CI)
+      REDIS_URL: redis://localhost:6379
+      # ONDC Configuration
+      DOMAIN_CODE: ${{ secrets.DOMAIN_CODE }}
+      ENCRYPTION_PRIVATE_KEY: ${{ secrets.ENCRYPTION_PRIVATE_KEY }}
+      ENCRYPTION_PUBLIC_KEY: ${{ secrets.ENCRYPTION_PUBLIC_KEY }}
+      ONDC_GATEWAY_URL: ${{ secrets.ONDC_GATEWAY_URL }}
+      ONDC_PUBLIC_KEY: ${{ secrets.ONDC_PUBLIC_KEY }}
+      ONDC_REGISTRY_URL: ${{ secrets.ONDC_REGISTRY_URL }}
+      SIGNING_PUBLIC_KEY: ${{ secrets.SIGNING_PUBLIC_KEY }}
+      SIGNING_PRIVATE_KEY: ${{ secrets.SIGNING_PRIVATE_KEY }}
+      STATIC_SUBSCRIBE_REQUEST_ID: ${{ secrets.STATIC_SUBSCRIBE_REQUEST_ID }}
+      STATIC_UNIQUE_KEY_ID: ${{ secrets.STATIC_UNIQUE_KEY_ID }}
+      SUBSCRIBER_ID: ${{ secrets.SUBSCRIBER_ID }}
+      FEATURE_VERIFY_CALLBACKS: ${{ secrets.FEATURE_VERIFY_CALLBACKS }}
+      # ngrok tunnel for ONDC callbacks
+      NGROK_AUTHTOKEN: ${{ secrets.NGROK_AUTHTOKEN }}
     steps:
     - uses: actions/checkout@v4
     - uses: actions/setup-node@v4
@@ -18,10 +58,71 @@ jobs:
     - name: Install Playwright Browsers
       run: pnpm exec playwright install --with-deps
     - name: Run Playwright tests
+      id: test
       run: pnpm exec playwright test
+      continue-on-error: true
     - uses: actions/upload-artifact@v4
+      id: artifact
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
         path: playwright-report/
         retention-days: 30
+
+    # Comment on PR with test results and artifact link
+    - name: Comment PR with results
+      if: ${{ !cancelled() && github.event_name == 'pull_request' }}
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const passed = '${{ steps.test.outcome }}' === 'success';
+          const icon = passed ? '✅' : '❌';
+          const status = passed ? 'All tests passed!' : 'Some tests failed.';
+          const runUrl = `https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+          const artifactUrl = `${runUrl}#artifacts`;
+
+          const body = `## ${icon} Playwright Test Results
+
+          **Status:** ${status}
+
+          📦 **[Download Test Report](${artifactUrl})**
+
+          To view the report:
+          1. Click the link above
+          2. Download the \`playwright-report\` artifact
+          3. Extract and open \`index.html\` in your browser
+
+          Or run locally: \`pnpm exec playwright show-report\``;
+
+          // Find existing comment
+          const { data: comments } = await github.rest.issues.listComments({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: context.issue.number,
+          });
+
+          const botComment = comments.find(comment =>
+            comment.user.type === 'Bot' &&
+            comment.body.includes('Playwright Test Results')
+          );
+
+          if (botComment) {
+            await github.rest.issues.updateComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: botComment.id,
+              body: body
+            });
+          } else {
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
+          }
+
+    # Fail the job if tests failed
+    - name: Check test outcome
+      if: ${{ steps.test.outcome == 'failure' }}
+      run: exit 1

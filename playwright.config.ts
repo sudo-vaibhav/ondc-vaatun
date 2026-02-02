@@ -1,21 +1,9 @@
-import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
-/**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import dotenv from "dotenv";
 
-dotenv.config({ path: path.resolve(__dirname, ".env") });
+// For local development and CI, use localhost
+// For ngrok testing (manual only), set USE_NGROK=true
+const baseURL = "http://localhost:4823";
 
-const baseURL = `https://${
-  process.env.SUBSCRIBER_ID ||
-  (
-    () => {
-      throw new Error("SUBSCRIBER_ID is not defined in environment variables");
-    }
-  )()
-}`;
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -35,6 +23,9 @@ export default defineConfig({
   use: {
     /* Base URL to use in actions like `await page.goto('')`. */
     baseURL,
+
+    /* Capture screenshot after each test */
+    screenshot: "on",
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: "on-first-retry",
@@ -64,7 +55,7 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: "bun run build && bun run start & bun run ngrok",
+    command: "pnpm dev",
     url: baseURL,
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
