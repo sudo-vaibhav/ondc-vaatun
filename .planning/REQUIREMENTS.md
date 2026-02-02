@@ -97,11 +97,47 @@
 
 ## Traceability
 
-*Populated by roadmap creation*
-
-| REQ-ID | Phase | Plan |
-|--------|-------|------|
-| — | — | — |
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| SEL-01 | Phase 1 | Pending |
+| SEL-02 | Phase 1 | Pending |
+| SEL-03 | Phase 1 | Pending |
+| SEL-04 | Phase 1 | Pending |
+| SEL-05 | Phase 1 | Pending |
+| FORM-01 | Phase 2 | Pending |
+| FORM-02 | Phase 2 | Pending |
+| FORM-03 | Phase 2 | Pending |
+| FORM-04 | Phase 2 | Pending |
+| FORM-05 | Phase 2 | Pending |
+| FORM-06 | Phase 2 | Pending |
+| FORM-07 | Phase 2 | Pending |
+| FORM-08 | Phase 2 | Pending |
+| INFRA-01 | Phase 2 | Pending |
+| INFRA-02 | Phase 2 | Pending |
+| INFRA-03 | Phase 2 | Pending |
+| INIT-01 | Phase 3 | Pending |
+| INIT-02 | Phase 3 | Pending |
+| INIT-03 | Phase 3 | Pending |
+| INIT-04 | Phase 3 | Pending |
+| INIT-05 | Phase 3 | Pending |
+| INIT-06 | Phase 3 | Pending |
+| INIT-07 | Phase 3 | Pending |
+| CONF-01 | Phase 4 | Pending |
+| CONF-02 | Phase 4 | Pending |
+| CONF-03 | Phase 4 | Pending |
+| CONF-04 | Phase 4 | Pending |
+| CONF-05 | Phase 4 | Pending |
+| STAT-01 | Phase 4 | Pending |
+| STAT-02 | Phase 4 | Pending |
+| STAT-03 | Phase 4 | Pending |
+| STAT-04 | Phase 4 | Pending |
+| CTX-01 | Phase 5 | Pending |
+| CTX-02 | Phase 5 | Pending |
+| CTX-03 | Phase 5 | Pending |
+| TEST-01 | Phase 5 | Pending |
+| TEST-02 | Phase 5 | Pending |
+| TEST-03 | Phase 5 | Pending |
+| TEST-04 | Phase 5 | Pending |
 
 ---
 
