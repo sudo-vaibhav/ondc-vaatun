@@ -7,11 +7,11 @@
 
 ### Select Flow
 
-- [ ] **SEL-01**: User can select a health insurance product from search results
-- [ ] **SEL-02**: select endpoint sends properly signed request to BPP
-- [ ] **SEL-03**: on_select callback stores quote details in Redis
-- [ ] **SEL-04**: Quote display page shows coverage amount, premium, co-payment, room rent cap
-- [ ] **SEL-05**: Quote display shows add-ons with prices
+- [x] **SEL-01**: User can select a health insurance product from search results
+- [x] **SEL-02**: select endpoint sends properly signed request to BPP
+- [x] **SEL-03**: on_select callback stores quote details in Redis
+- [x] **SEL-04**: Quote display page shows coverage amount, premium, co-payment, room rent cap
+- [x] **SEL-05**: Quote display shows add-ons with prices
 
 ### Custom Form UI
 
@@ -99,11 +99,11 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SEL-01 | Phase 1 | Pending |
-| SEL-02 | Phase 1 | Pending |
-| SEL-03 | Phase 1 | Pending |
-| SEL-04 | Phase 1 | Pending |
-| SEL-05 | Phase 1 | Pending |
+| SEL-01 | Phase 1 | Complete |
+| SEL-02 | Phase 1 | Complete |
+| SEL-03 | Phase 1 | Complete |
+| SEL-04 | Phase 1 | Complete |
+| SEL-05 | Phase 1 | Complete |
 | FORM-01 | Phase 2 | Pending |
 | FORM-02 | Phase 2 | Pending |
 | FORM-03 | Phase 2 | Pending |

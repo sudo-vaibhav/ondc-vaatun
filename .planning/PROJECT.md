@@ -89,6 +89,13 @@ A consumer-facing Buyer App Platform (BAP) for purchasing health insurance throu
 - **Architecture**: Follow existing patterns (tRPC routers, Redis stores, Tenant signing)
 - **Documentation**: Changes to API routes must update OpenAPI spec at `server/public/openapi.json`
 
+## Testing Notes
+
+**Reliable BPP for Testing:** ABC Insurance Ltd (`abc-insurance` BPP)
+- Most reliable BPP on ONDC staging network for health insurance
+- Use for E2E tests, manual testing, and demo workflows
+- Other BPPs (BAGIC, etc.) may return 500 errors intermittently — this is expected behavior
+
 ## Key Decisions
 
 <!-- Decisions that constrain future work. Add throughout project lifecycle. -->

@@ -12,7 +12,7 @@ This roadmap delivers a complete health insurance purchase flow through ONDC. St
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [ ] **Phase 1: Select Flow** - User can get detailed quotes for health insurance products
+- [x] **Phase 1: Select Flow** - User can get detailed quotes for health insurance products
 - [ ] **Phase 2: Form Infrastructure** - Custom Typeform-style multi-step forms for KYC
 - [ ] **Phase 3: Init Flow** - User can submit KYC data and reach payment stage
 - [ ] **Phase 4: Confirm & Status Flows** - User can pay and receive policy document
@@ -33,9 +33,9 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans**: 3 plans
 
 Plans:
-- [ ] 01-01-PLAN.md — Install UI components, create QuoteHeader and CoverageDetails
-- [ ] 01-02-PLAN.md — Create AddOnSelector, TermsCollapsible, wire up quote page with polling
-- [ ] 01-03-PLAN.md — E2E tests and OpenAPI documentation
+- [x] 01-01-PLAN.md — Install UI components, create QuoteHeader and CoverageDetails
+- [x] 01-02-PLAN.md — Create AddOnSelector, TermsCollapsible, wire up quote page with polling
+- [x] 01-03-PLAN.md — E2E tests and OpenAPI documentation
 
 ### Phase 2: Form Infrastructure
 **Goal**: Reusable Typeform-style form system for all KYC flows with progress tracking and state persistence
@@ -114,8 +114,8 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Select Flow | 0/3 | Ready to execute | - |
-| 2. Form Infrastructure | 0/TBD | Not started | - |
+| 1. Select Flow | 3/3 | Complete | 2026-02-02 |
+| 2. Form Infrastructure | 0/TBD | Ready to plan | - |
 | 3. Init Flow | 0/TBD | Not started | - |
 | 4. Confirm & Status Flows | 0/TBD | Not started | - |
 | 5. Protocol Context & Testing | 0/TBD | Not started | - |
