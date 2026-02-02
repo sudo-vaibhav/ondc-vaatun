@@ -141,6 +141,14 @@ function QuotePage() {
                   </p>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => refetch()}
+                    className="gap-2"
+                  >
+                    <RefreshCw className="h-4 w-4" />
+                    Retry
+                  </Button>
                   <Button variant="ghost" asChild>
                     <Link
                       to="/health/$searchId"
