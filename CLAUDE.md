@@ -580,6 +580,84 @@ tests/api/
 - [Vite Documentation](https://vite.dev/)
 - [libsodium Documentation](https://doc.libsodium.org/)
 
+## Accessing ONDC FIS Specifications via GitHub API
+
+The ONDC FIS (Financial Services) specifications are hosted on GitHub. The interactive documentation site at `ondc-official.github.io` is JavaScript-heavy and difficult to scrape. Use the GitHub API directly to pull specs.
+
+### Repository and Branches
+
+- **Repository**: `ONDC-Official/ONDC-FIS-Specifications`
+- **Health Insurance Branch**: `draft-FIS13-health-2.0.1`
+- **Motor Insurance Branch**: `draft-FIS13-motor-2.0.1`
+- **Marine Insurance Branch**: `draft-FIS13-marine-2.0.1`
+
+### Key Commands
+
+**List available branches:**
+```bash
+gh api repos/ONDC-Official/ONDC-FIS-Specifications/branches --jq '.[].name' | grep -i "FIS13"
+```
+
+**Fetch OpenAPI spec (full schema):**
+```bash
+gh api "repos/ONDC-Official/ONDC-FIS-Specifications/contents/api/build/build.yaml?ref=draft-FIS13-health-2.0.1" --jq '.content' | base64 -d
+```
+
+**List example payloads:**
+```bash
+gh api "repos/ONDC-Official/ONDC-FIS-Specifications/contents/api/components/examples/health-insurance?ref=draft-FIS13-health-2.0.1" --jq '.[].name'
+```
+
+**Fetch specific example (e.g., search request):**
+```bash
+gh api "repos/ONDC-Official/ONDC-FIS-Specifications/contents/api/components/examples/health-insurance/search/search-request.yaml?ref=draft-FIS13-health-2.0.1" --jq '.content' | base64 -d
+```
+
+**Fetch callback example (e.g., on_search response):**
+```bash
+gh api "repos/ONDC-Official/ONDC-FIS-Specifications/contents/api/components/examples/health-insurance/on_search?ref=draft-FIS13-health-2.0.1" --jq '.[].name'
+```
+
+### Directory Structure in Spec Repo
+
+```
+api/
+├── build/
+│   └── build.yaml              # Full OpenAPI spec
+└── components/
+    ├── examples/
+    │   └── health-insurance/
+    │       ├── search/         # search-request.yaml
+    │       ├── on_search/      # on_search response examples
+    │       ├── select/         # select-request.yaml
+    │       ├── on_select/      # on_select response examples
+    │       ├── init/           # init-request.yaml
+    │       ├── on_init/        # on_init response examples
+    │       ├── confirm/        # confirm-request.yaml
+    │       ├── on_confirm/     # on_confirm response examples
+    │       ├── status/         # status-request.yaml
+    │       └── on_status/      # on_status response examples
+    ├── flows/
+    │   └── health-insurance/   # Flow diagrams and sequences
+    └── attributes/             # Field-level documentation
+```
+
+### When to Use
+
+- **Implementing new endpoints**: Fetch the example request/response for that endpoint
+- **Debugging payload issues**: Compare your payload against official examples
+- **Understanding field requirements**: Check the OpenAPI spec schemas
+- **Protocol updates**: Check if branch has new versions (e.g., `2.0.2`)
+
+### Domain Codes
+
+| Domain | Code | Spec Branch Prefix |
+|--------|------|-------------------|
+| Health Insurance | ONDC:FIS13 | draft-FIS13-health |
+| Motor Insurance | ONDC:FIS13 | draft-FIS13-motor |
+| Marine Insurance | ONDC:FIS13 | draft-FIS13-marine |
+| Life Insurance | ONDC:FIS13 | draft-FIS13-life |
+
 ## Troubleshooting
 
 ### Common Issues
