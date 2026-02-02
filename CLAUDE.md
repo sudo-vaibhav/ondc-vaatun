@@ -2,6 +2,7 @@
 
 > **📚 API Documentation**: This project uses Scalar for interactive OpenAPI docs at `/api/reference`.
 > **⚠️ CRITICAL**: When modifying API routes, ALWAYS update `server/public/openapi.json`. See [API Documentation](#api-documentation) section below.
+> **🦦 Mascot**: Captain Otter is the UI mascot. See [Mascot Guide](#captain-otter-mascot) for usage in loading states, errors, and empty states.
 
 ## Project Overview
 
@@ -657,6 +658,64 @@ api/
 | Motor Insurance | ONDC:FIS13 | draft-FIS13-motor |
 | Marine Insurance | ONDC:FIS13 | draft-FIS13-marine |
 | Life Insurance | ONDC:FIS13 | draft-FIS13-life |
+
+## Captain Otter Mascot
+
+Captain Otter is the UI mascot used throughout the application for loading states, error pages, empty states, and success confirmations.
+
+### Core Principle
+
+**Action Over Text** — Captain Otter does not speak. No speech bubbles. He communicates through body language and props.
+
+### Quick Reference
+
+| State | Pose | Usage |
+|-------|------|-------|
+| Loading | Steering wheel / pocket watch | Page loading, API calls |
+| Success | Salute / thumbs up | Form submitted, action completed |
+| Error | Fixing with wrench (serious expression) | Server errors, failures |
+| 404 | Confused with tangled map | Page not found |
+| Empty | Waiting calmly | No data, empty lists |
+| Search | Spyglass | Search bars, filtering |
+| Help | Life ring | FAQ, support |
+
+### Generating New Poses
+
+```bash
+# Install dependencies first (one-time)
+cd .claude/skills/image-generation && npm install && cd -
+
+# Generate a pose
+node .claude/skills/image-generation/scripts/generate.mjs \
+  --prompt "Cute river otter in purple (#6C59A4) pilot uniform with gold (#F3CA5C) buttons, [POSE], [EXPRESSION], full body, no text, vector art" \
+  --ref docs/mascot/captain-otter/samples/ \
+  --ratio 1:1 \
+  --bg transparent \
+  --output-dir docs/mascot/captain-otter/poses \
+  --output [filename].png
+```
+
+### Documentation
+
+- **Visual Guide**: `docs/mascot/captain-otter/visual-and-mascot-voice-guide.md`
+- **Style Guide**: `docs/mascot/captain-otter/style-and-color-guide.md`
+- **Pose Reference**: `docs/mascot/captain-otter/poses/README.md`
+
+### Canonical Colors
+
+| Element | Hex |
+|---------|-----|
+| Primary Purple (uniform) | `#6C59A4` |
+| Gold Accents (buttons) | `#F3CA5C` |
+| Dark Trim | `#474B82` |
+| Fur Light | `#EDE6F1` |
+
+### Critical Rules
+
+1. **NO speech bubbles** — Ever
+2. **NO smiling in error states** — Expression must be serious/concerned
+3. **NO modern tech** — Uses nautical props only (compass, spyglass, wheel)
+4. **Minimum size**: 48px height
 
 ## Troubleshooting
 
