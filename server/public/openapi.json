@@ -1,0 +1,1060 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ONDC Vaatun API",
+    "description": "API endpoints for ONDC (Open Network for Digital Commerce) integration. Handles health insurance search, select, and quote operations.",
+    "version": "2.0.1",
+    "contact": {
+      "name": "Vaatun Technologies",
+      "email": "vaibhav@vaatun.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/ondc",
+      "description": "REST Compatibility Layer"
+    },
+    {
+      "url": "/api/trpc",
+      "description": "tRPC Endpoints (batch format)"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Health",
+      "description": "Service health check endpoints"
+    },
+    {
+      "name": "Registry",
+      "description": "ONDC registry operations (lookup, subscribe)"
+    },
+    {
+      "name": "Gateway",
+      "description": "ONDC gateway operations (search, select)"
+    },
+    {
+      "name": "Results",
+      "description": "Polling endpoints for async results"
+    },
+    {
+      "name": "Callbacks",
+      "description": "ONDC callback endpoints (on_search, on_select)"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Check service health",
+        "description": "Returns the health status of the service.",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Service is healthy",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Service unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/lookup": {
+      "get": {
+        "operationId": "registryLookup",
+        "summary": "Lookup subscriber in ONDC registry",
+        "description": "Queries the ONDC registry for subscriber information.",
+        "tags": ["Registry"],
+        "responses": {
+          "200": {
+            "description": "Subscriber details from registry",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Subscriber"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Lookup failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/subscribe": {
+      "post": {
+        "operationId": "registrySubscribe",
+        "summary": "Subscribe to ONDC network",
+        "description": "Registers as a subscriber in the ONDC network.",
+        "tags": ["Registry"],
+        "responses": {
+          "200": {
+            "description": "Subscription request sent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Subscription failed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/on_subscribe": {
+      "post": {
+        "operationId": "onSubscribe",
+        "summary": "Handle ONDC subscription callback",
+        "description": "Receives and decrypts the challenge from ONDC registry to complete subscription.",
+        "tags": ["Callbacks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSubscribeRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Challenge decrypted successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OnSubscribeResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing challenge",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "operationId": "gatewaySearch",
+        "summary": "Search for insurance products",
+        "description": "Initiates a search request to ONDC gateway for insurance products.",
+        "tags": ["Gateway"],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Search initiated successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Gateway unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/on_search": {
+      "post": {
+        "operationId": "onSearch",
+        "summary": "Handle search callback from BPP",
+        "description": "Receives search results from BPP (Business Provider Platform) and stores them for polling.",
+        "tags": ["Callbacks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Callback acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/select": {
+      "post": {
+        "operationId": "gatewaySelect",
+        "summary": "Select an insurance product for quote",
+        "description": "Sends a select request to a specific BPP to get a detailed quote for an insurance product.",
+        "tags": ["Gateway"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Select request sent successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectValidationError"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "BPP unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/on_select": {
+      "post": {
+        "operationId": "onSelect",
+        "summary": "Handle select callback from BPP",
+        "description": "Receives quote details from BPP after a select request and stores them for polling.",
+        "tags": ["Callbacks"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OnSelectRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Callback acknowledged",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AckResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search-results": {
+      "get": {
+        "operationId": "getSearchResults",
+        "summary": "Poll for search results",
+        "description": "Retrieves accumulated search results for a transaction.",
+        "tags": ["Results"],
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Transaction ID from the search request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Search results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SearchResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing transaction_id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/select-results": {
+      "get": {
+        "operationId": "getSelectResults",
+        "summary": "Poll for select/quote results",
+        "description": "Retrieves the quote response for a select request.",
+        "tags": ["Results"],
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Transaction ID from the search flow"
+          },
+          {
+            "name": "message_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Message ID from the select request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Select/quote results",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SelectResultsResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing transaction_id or message_id",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search-stream/{transactionId}": {
+      "get": {
+        "operationId": "searchStream",
+        "summary": "Stream search results via SSE",
+        "description": "Server-Sent Events stream for real-time search results.",
+        "tags": ["Results"],
+        "parameters": [
+          {
+            "name": "transactionId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "description": "Transaction ID from the search request"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "SSE stream of search results",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResponse": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "Health OK!!"
+          },
+          "ready": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": ["status", "ready"]
+      },
+      "Subscriber": {
+        "type": "object",
+        "properties": {
+          "subscriber_id": {
+            "type": "string"
+          },
+          "subscriber_url": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["bap", "bpp", "bg"]
+          },
+          "domain": {
+            "type": "string"
+          },
+          "signing_public_key": {
+            "type": "string"
+          },
+          "encr_public_key": {
+            "type": "string"
+          },
+          "valid_from": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "valid_until": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "status": {
+            "type": "string"
+          }
+        }
+      },
+      "OnSubscribeRequest": {
+        "type": "object",
+        "properties": {
+          "subscriber_id": {
+            "type": "string",
+            "description": "Subscriber ID to verify"
+          },
+          "challenge": {
+            "type": "string",
+            "description": "Encrypted challenge from ONDC"
+          }
+        },
+        "required": ["challenge"]
+      },
+      "OnSubscribeResponse": {
+        "type": "object",
+        "properties": {
+          "answer": {
+            "type": "string",
+            "description": "Decrypted challenge answer"
+          }
+        },
+        "required": ["answer"]
+      },
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "categoryCode": {
+            "type": "string",
+            "enum": ["HEALTH_INSURANCE", "MOTOR_INSURANCE", "MARINE_INSURANCE"],
+            "description": "Insurance category to search for"
+          }
+        }
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique transaction identifier for this search"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique message identifier"
+          }
+        },
+        "required": ["transactionId", "messageId"]
+      },
+      "OnSearchRequest": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ONDCContext"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "catalog": {
+                "$ref": "#/components/schemas/Catalog"
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/ONDCError"
+          }
+        }
+      },
+      "SelectRequest": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Transaction ID from previous search"
+          },
+          "bppId": {
+            "type": "string",
+            "description": "BPP subscriber ID"
+          },
+          "bppUri": {
+            "type": "string",
+            "format": "uri",
+            "description": "BPP callback URL"
+          },
+          "providerId": {
+            "type": "string",
+            "description": "Provider ID from search results"
+          },
+          "itemId": {
+            "type": "string",
+            "description": "Item ID to select"
+          },
+          "parentItemId": {
+            "type": "string",
+            "description": "Parent item ID (for insurance products)"
+          },
+          "xinputFormId": {
+            "type": "string",
+            "description": "Optional XInput form ID"
+          },
+          "xinputSubmissionId": {
+            "type": "string",
+            "description": "Optional XInput submission ID"
+          },
+          "addOns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AddOn"
+            },
+            "description": "Optional add-ons to include"
+          }
+        },
+        "required": ["transactionId", "bppId", "bppUri", "providerId", "itemId"]
+      },
+      "SelectResponse": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid",
+            "description": "Unique message ID for this select request"
+          }
+        },
+        "required": ["transactionId", "messageId"]
+      },
+      "SelectValidationError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string",
+            "example": "Missing required fields"
+          },
+          "required": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "example": [
+              "transactionId",
+              "bppId",
+              "bppUri",
+              "providerId",
+              "itemId"
+            ]
+          }
+        }
+      },
+      "OnSelectRequest": {
+        "type": "object",
+        "properties": {
+          "context": {
+            "$ref": "#/components/schemas/ONDCContext"
+          },
+          "message": {
+            "type": "object",
+            "properties": {
+              "order": {
+                "$ref": "#/components/schemas/Order"
+              }
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/ONDCError"
+          }
+        }
+      },
+      "SearchResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "Whether search entry exists"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "responseCount": {
+            "type": "integer",
+            "description": "Number of BPP responses received"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          },
+          "responses": {
+            "type": "array",
+            "items": {
+              "type": "object"
+            },
+            "description": "Raw on_search responses"
+          }
+        }
+      },
+      "SelectResultsResponse": {
+        "type": "object",
+        "properties": {
+          "found": {
+            "type": "boolean",
+            "description": "Whether select entry exists"
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "messageId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "hasResponse": {
+            "type": "boolean",
+            "description": "Whether on_select response has been received"
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          },
+          "provider": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "error": {
+            "$ref": "#/components/schemas/ONDCError"
+          }
+        }
+      },
+      "AckResponse": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "ack": {
+                "type": "object",
+                "properties": {
+                  "status": {
+                    "type": "string",
+                    "enum": ["ACK", "NACK"]
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "string"
+          },
+          "details": {
+            "type": "string"
+          }
+        }
+      },
+      "ONDCContext": {
+        "type": "object",
+        "properties": {
+          "domain": {
+            "type": "string",
+            "example": "ONDC:FIS13"
+          },
+          "action": {
+            "type": "string",
+            "enum": [
+              "search",
+              "on_search",
+              "select",
+              "on_select",
+              "init",
+              "on_init",
+              "confirm",
+              "on_confirm"
+            ]
+          },
+          "bap_id": {
+            "type": "string"
+          },
+          "bap_uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "bpp_id": {
+            "type": "string"
+          },
+          "bpp_uri": {
+            "type": "string",
+            "format": "uri"
+          },
+          "transaction_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "message_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "ttl": {
+            "type": "string",
+            "description": "ISO 8601 duration",
+            "example": "PT30S"
+          },
+          "version": {
+            "type": "string",
+            "example": "2.0.1"
+          }
+        }
+      },
+      "ONDCError": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "example": "DOMAIN-ERROR"
+          },
+          "code": {
+            "type": "string",
+            "example": "40001"
+          },
+          "message": {
+            "type": "string"
+          }
+        }
+      },
+      "Catalog": {
+        "type": "object",
+        "properties": {
+          "descriptor": {
+            "$ref": "#/components/schemas/Descriptor"
+          },
+          "providers": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Provider"
+            }
+          }
+        }
+      },
+      "Provider": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "descriptor": {
+            "$ref": "#/components/schemas/Descriptor"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          }
+        }
+      },
+      "Item": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "parent_item_id": {
+            "type": "string"
+          },
+          "descriptor": {
+            "$ref": "#/components/schemas/Descriptor"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Tag"
+            }
+          },
+          "add_ons": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ItemAddOn"
+            }
+          }
+        }
+      },
+      "ItemAddOn": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "descriptor": {
+            "$ref": "#/components/schemas/Descriptor"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          }
+        }
+      },
+      "AddOn": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "minimum": 1
+          }
+        },
+        "required": ["id", "quantity"]
+      },
+      "Order": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "$ref": "#/components/schemas/Provider"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Item"
+            }
+          },
+          "quote": {
+            "$ref": "#/components/schemas/Quote"
+          }
+        }
+      },
+      "Quote": {
+        "type": "object",
+        "properties": {
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          },
+          "breakup": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/QuoteBreakup"
+            }
+          },
+          "ttl": {
+            "type": "string",
+            "description": "ISO 8601 duration for quote validity",
+            "example": "P15D"
+          }
+        }
+      },
+      "QuoteBreakup": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "price": {
+            "$ref": "#/components/schemas/Price"
+          }
+        }
+      },
+      "Price": {
+        "type": "object",
+        "properties": {
+          "currency": {
+            "type": "string",
+            "example": "INR"
+          },
+          "value": {
+            "type": "string",
+            "example": "5000.00"
+          }
+        }
+      },
+      "Descriptor": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "short_desc": {
+            "type": "string"
+          },
+          "long_desc": {
+            "type": "string"
+          },
+          "images": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "url": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Tag": {
+        "type": "object",
+        "properties": {
+          "descriptor": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          },
+          "list": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "descriptor": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "value": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
