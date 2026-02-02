@@ -30,10 +30,12 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. on_select callback stores quote details in Redis
   4. Quote display page shows coverage amount, premium, co-payment, and room rent cap
   5. Quote display shows available add-ons with their prices
-**Plans**: TBD
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 01-01-PLAN.md — Install UI components, create QuoteHeader and CoverageDetails
+- [ ] 01-02-PLAN.md — Create AddOnSelector, TermsCollapsible, wire up quote page with polling
+- [ ] 01-03-PLAN.md — E2E tests and OpenAPI documentation
 
 ### Phase 2: Form Infrastructure
 **Goal**: Reusable Typeform-style form system for all KYC flows with progress tracking and state persistence
@@ -112,7 +114,7 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Select Flow | 0/TBD | Not started | - |
+| 1. Select Flow | 0/3 | Ready to execute | - |
 | 2. Form Infrastructure | 0/TBD | Not started | - |
 | 3. Init Flow | 0/TBD | Not started | - |
 | 4. Confirm & Status Flows | 0/TBD | Not started | - |
