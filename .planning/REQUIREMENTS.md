@@ -1,7 +1,7 @@
 # Requirements: ONDC Health Insurance BAP
 
 **Version:** 1.0
-**Last Updated:** 2026-02-02
+**Last Updated:** 2026-02-03
 
 ## v1 Requirements
 
@@ -15,14 +15,14 @@
 
 ### Custom Form UI
 
-- [ ] **FORM-01**: Typeform-style multi-step form component with smooth transitions
-- [ ] **FORM-02**: Progress indicator showing current step and total steps
-- [ ] **FORM-03**: Form fields based on ONDC spec (not BPP HTML)
-- [ ] **FORM-04**: PED (Pre-Existing Disease) form with condition selection
-- [ ] **FORM-05**: PAN & DOB form with validation
-- [ ] **FORM-06**: Personal info form (name, address, contact)
-- [ ] **FORM-07**: Form state persists across page refreshes
-- [ ] **FORM-08**: Form submission generates submission_id for ONDC protocol
+- [x] **FORM-01**: Typeform-style multi-step form component with smooth transitions
+- [x] **FORM-02**: Progress indicator showing current step and total steps
+- [x] **FORM-03**: Form fields based on ONDC spec (not BPP HTML)
+- [x] **FORM-04**: PED (Pre-Existing Disease) form with condition selection
+- [x] **FORM-05**: PAN & DOB form with validation
+- [x] **FORM-06**: Personal info form (name, address, contact)
+- [x] **FORM-07**: Form state persists across page refreshes
+- [x] **FORM-08**: Form submission generates submission_id for ONDC protocol
 
 ### Init Flow
 
@@ -104,17 +104,17 @@
 | SEL-03 | Phase 1 | Complete |
 | SEL-04 | Phase 1 | Complete |
 | SEL-05 | Phase 1 | Complete |
-| FORM-01 | Phase 2 | Pending |
-| FORM-02 | Phase 2 | Pending |
-| FORM-03 | Phase 2 | Pending |
-| FORM-04 | Phase 2 | Pending |
-| FORM-05 | Phase 2 | Pending |
-| FORM-06 | Phase 2 | Pending |
-| FORM-07 | Phase 2 | Pending |
-| FORM-08 | Phase 2 | Pending |
-| INFRA-01 | Phase 2 | Pending |
-| INFRA-02 | Phase 2 | Pending |
-| INFRA-03 | Phase 2 | Pending |
+| FORM-01 | Phase 2 | Complete |
+| FORM-02 | Phase 2 | Complete |
+| FORM-03 | Phase 2 | Complete |
+| FORM-04 | Phase 2 | Complete |
+| FORM-05 | Phase 2 | Complete |
+| FORM-06 | Phase 2 | Complete |
+| FORM-07 | Phase 2 | Complete |
+| FORM-08 | Phase 2 | Complete |
+| INFRA-01 | Phase 2 | Deferred |
+| INFRA-02 | Phase 2 | Complete |
+| INFRA-03 | Phase 2 | Deferred |
 | INIT-01 | Phase 3 | Pending |
 | INIT-02 | Phase 3 | Pending |
 | INIT-03 | Phase 3 | Pending |
