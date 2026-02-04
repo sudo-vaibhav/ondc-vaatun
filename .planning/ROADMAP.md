@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: Select Flow** - User can get detailed quotes for health insurance products
 - [x] **Phase 2: Form Infrastructure** - Custom Typeform-style multi-step forms for KYC
-- [ ] **Phase 3: Init Flow** - User can submit KYC data and reach payment stage
+- [x] **Phase 3: Init Flow** - User can submit KYC data and reach payment stage
 - [ ] **Phase 4: Confirm & Status Flows** - User can pay and receive policy document
 - [ ] **Phase 5: Protocol Context & Testing** - Protocol specs embedded, full E2E test coverage
 
@@ -73,11 +73,11 @@ Plans:
 **Plans**: 5 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Backend init/on_init procedures and init-store with Redis state management
-- [ ] 03-02-PLAN.md — Nominee Zod schema and NomineeInput component
-- [ ] 03-03-PLAN.md — ReviewSection and ReviewPage components with quote sidebar
-- [ ] 03-04-PLAN.md — Extend KYCForm with Nominee and Review steps
-- [ ] 03-05-PLAN.md — Init polling page and quote page integration
+- [x] 03-01-PLAN.md — Backend init/on_init procedures and init-store with Redis state management
+- [x] 03-02-PLAN.md — Nominee Zod schema and NomineeInput component
+- [x] 03-03-PLAN.md — ReviewSection and ReviewPage components with quote sidebar
+- [x] 03-04-PLAN.md — Extend KYCForm with Nominee and Review steps
+- [x] 03-05-PLAN.md — Init polling page and quote page integration
 
 ### Phase 4: Confirm & Status Flows
 **Goal**: Users can complete payment, receive policy confirmation, and check policy status
@@ -123,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Select Flow | 3/3 | Complete | 2026-02-02 |
 | 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
-| 3. Init Flow | 0/5 | Not started | - |
+| 3. Init Flow | 5/5 | Complete | 2026-02-04 |
 | 4. Confirm & Status Flows | 0/TBD | Not started | - |
 | 5. Protocol Context & Testing | 0/TBD | Not started | - |
