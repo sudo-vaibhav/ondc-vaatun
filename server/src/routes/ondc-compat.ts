@@ -734,6 +734,7 @@ ondcCompatRouter.post("/on_confirm", async (req, res) => {
 
     const transactionId = body.context?.transaction_id;
     const messageId = body.context?.message_id;
+    const orderId = body.message?.order?.id;
 
     if (body.error) {
       console.error("[on_confirm] BPP returned error:", body.error);
@@ -741,7 +742,7 @@ ondcCompatRouter.post("/on_confirm", async (req, res) => {
 
     if (transactionId && messageId) {
       const { addConfirmResponse } = await import("../lib/confirm-store");
-      await addConfirmResponse(kv, transactionId, messageId, body);
+      await addConfirmResponse(kv, transactionId, messageId, orderId, body);
     } else {
       console.warn("[on_confirm] Missing transaction_id or message_id");
     }
