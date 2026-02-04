@@ -10,18 +10,18 @@ See: .planning/PROJECT.md (updated 2026-02-02)
 ## Current Position
 
 Phase: 4 of 5 (Confirm & Status Flows)
-Plan: 1 of 4 complete
+Plan: 2 of 4 complete
 Status: In progress
-Last activity: 2026-02-04 - Completed 04-01-PLAN.md (Confirm and Status Stores)
+Last activity: 2026-02-04 - Completed 04-02-PLAN.md (Gateway Procedures)
 
-Progress: [█████████░] 93% (13/14 plans complete)
+Progress: [█████████░] 93% (14/16 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 13
+- Total plans completed: 14
 - Average duration: 5.4 min
-- Total execution time: 1.18 hours
+- Total execution time: 1.28 hours
 
 **By Phase:**
 
@@ -30,10 +30,10 @@ Progress: [█████████░] 93% (13/14 plans complete)
 | 01-select-flow | 3 | 30 min | 10 min |
 | 02-form-infrastructure | 4 | 15 min | 3.75 min |
 | 03-init-flow | 5 | 24 min | 4.8 min |
-| 04-confirm-status | 1 | 4 min | 4 min |
+| 04-confirm-status | 2 | 10 min | 5 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-02 (3 min), 03-03 (3 min), 03-04 (8 min), 03-05 (5 min), 04-01 (4 min)
+- Last 5 plans: 03-03 (3 min), 03-04 (8 min), 03-05 (5 min), 04-01 (4 min), 04-02 (6 min)
 - Trend: Consistent fast execution (averaging under 5 min)
 
 *Updated after each plan completion*
@@ -72,6 +72,10 @@ Recent decisions affecting current work:
 - Status store keyed by orderId only (simpler lookup after on_confirm)
 - Status store uses 24h TTL (policy data may be accessed later)
 - Policy document extraction by code='policy-doc' or mime_type='application/pdf'
+- Confirm includes quote object with id, price, breakup, ttl per FIS13
+- Status request uses PT10M ttl (quick lookups vs P24H for confirm)
+- Status message only contains order_id (minimal payload per spec)
+- OpenAPI docs disabled - openapi.json removed from project
 
 ### Pending Todos
 
@@ -83,6 +87,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-04T03:30:00Z
-Stopped at: Completed 04-01-PLAN.md (Confirm and Status Stores)
-Resume file: None (ready for 04-02-PLAN.md)
+Last session: 2026-02-04T06:22:37Z
+Stopped at: Completed 04-02-PLAN.md (Gateway Procedures)
+Resume file: None (ready for 04-03-PLAN.md)
