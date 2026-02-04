@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: Select Flow** - User can get detailed quotes for health insurance products
 - [x] **Phase 2: Form Infrastructure** - Custom Typeform-style multi-step forms for KYC
 - [x] **Phase 3: Init Flow** - User can submit KYC data and reach payment stage
-- [ ] **Phase 4: Confirm & Status Flows** - User can pay and receive policy document
+- [x] **Phase 4: Confirm & Status Flows** - User can pay and receive policy document
 - [ ] **Phase 5: Protocol Context & Testing** - Protocol specs embedded, full E2E test coverage
 
 ## Phase Details
@@ -95,10 +95,10 @@ Plans:
 **Plans**: 4 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Confirm and status stores with Redis state management
-- [ ] 04-02-PLAN.md — Gateway procedures (confirm, onConfirm, status, onStatus) and results queries
-- [ ] 04-03-PLAN.md — Payment callback page with confirm trigger and status polling
-- [ ] 04-04-PLAN.md — Policy success and view pages with Captain Otter celebration
+- [x] 04-01-PLAN.md — Confirm and status stores with Redis state management
+- [x] 04-02-PLAN.md — Gateway procedures (confirm, onConfirm, status, onStatus) and results queries
+- [x] 04-03-PLAN.md — Payment callback page with confirm trigger and status polling
+- [x] 04-04-PLAN.md — Policy success and view pages with Captain Otter celebration
 
 ### Phase 5: Protocol Context & Testing
 **Goal**: ONDC FIS13 protocol specs embedded in codebase and comprehensive E2E test coverage
@@ -127,5 +127,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Select Flow | 3/3 | Complete | 2026-02-02 |
 | 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
 | 3. Init Flow | 5/5 | Complete | 2026-02-04 |
-| 4. Confirm & Status Flows | 0/4 | Not started | - |
+| 4. Confirm & Status Flows | 4/4 | Complete | 2026-02-04 |
 | 5. Protocol Context & Testing | 0/TBD | Not started | - |

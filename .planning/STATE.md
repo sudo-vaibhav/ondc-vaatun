@@ -5,23 +5,23 @@
 See: .planning/PROJECT.md (updated 2026-02-02)
 
 **Core value:** Enable rapid implementation of ONDC health insurance features through rich embedded protocol context
-**Current focus:** Phase 4 - Confirm & Status Flows (IN PROGRESS)
+**Current focus:** Phase 5 - Protocol Context & Testing (NEXT)
 
 ## Current Position
 
-Phase: 4 of 5 (Confirm & Status Flows)
-Plan: 2 of 4 complete
-Status: In progress
-Last activity: 2026-02-04 - Completed 04-02-PLAN.md (Gateway Procedures)
+Phase: 4 of 5 (Confirm & Status Flows) - COMPLETE
+Plan: 4 of 4 complete
+Status: Complete
+Last activity: 2026-02-04 - Completed 04-04-PLAN.md (Policy Pages)
 
-Progress: [█████████░] 93% (14/16 plans complete)
+Progress: [██████████] 100% (16/16 plans complete)
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 14
-- Average duration: 5.4 min
-- Total execution time: 1.28 hours
+- Total plans completed: 16
+- Average duration: 5.1 min
+- Total execution time: 1.36 hours
 
 **By Phase:**
 
@@ -30,11 +30,11 @@ Progress: [█████████░] 93% (14/16 plans complete)
 | 01-select-flow | 3 | 30 min | 10 min |
 | 02-form-infrastructure | 4 | 15 min | 3.75 min |
 | 03-init-flow | 5 | 24 min | 4.8 min |
-| 04-confirm-status | 2 | 10 min | 5 min |
+| 04-confirm-status | 4 | 13 min | 3.25 min |
 
 **Recent Trend:**
-- Last 5 plans: 03-03 (3 min), 03-04 (8 min), 03-05 (5 min), 04-01 (4 min), 04-02 (6 min)
-- Trend: Consistent fast execution (averaging under 5 min)
+- Last 5 plans: 03-05 (5 min), 04-01 (4 min), 04-02 (6 min), 04-03 (2 min), 04-04 (1 min)
+- Trend: Consistent fast execution (averaging under 4 min)
 
 *Updated after each plan completion*
 
@@ -76,6 +76,12 @@ Recent decisions affecting current work:
 - Status request uses PT10M ttl (quick lookups vs P24H for confirm)
 - Status message only contains order_id (minimal payload per spec)
 - OpenAPI docs disabled - openapi.json removed from project
+- Payment callback triggers confirm immediately on mount
+- Status polling: 2-minute timeout, 3-second intervals
+- NOT-PAID state shows retry option
+- Policy success page uses Captain Otter celebration animation
+- Policy view page uses simple status + download link (not full details)
+- Validity formatted as "Valid: Jan 1, 2026 - Dec 31, 2026"
 
 ### Pending Todos
 
@@ -87,6 +93,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-04T06:22:37Z
-Stopped at: Completed 04-02-PLAN.md (Gateway Procedures)
-Resume file: None (ready for 04-03-PLAN.md)
+Last session: 2026-02-04T12:00:00Z
+Stopped at: Completed Phase 4 (Confirm & Status Flows)
+Resume file: None (ready for Phase 5)
