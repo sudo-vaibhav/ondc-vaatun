@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
 import { KYCForm, type KYCFormData } from "@/components/forms";
+import { storeConfirmData } from "@/lib/confirm-data";
 
 export const Route = createFileRoute("/quote/$transactionId/$messageId")({
   component: QuotePage,
@@ -69,6 +70,25 @@ function QuotePage() {
   const handleKYCSubmit = (formData: KYCFormData, submissionId: string) => {
     // Clear any previous error before new attempt
     setInitError(null);
+
+    // Store confirm data before init (needed for payment callback)
+    storeConfirmData({
+      transactionId,
+      bppId: data?.bppId || "",
+      bppUri: data?.bppUri || "",
+      providerId: data?.providerId || "",
+      itemId: data?.itemId || "",
+      parentItemId: data?.item?.parent_item_id || data?.itemId || "",
+      xinputFormId: data?.xinput?.form?.id || "",
+      submissionId,
+      addOns: selectedAddOns.map((id) => ({ id, quantity: 1 })),
+      customerName: `${formData.firstName} ${formData.lastName}`,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      quoteId: data?.quote?.id || "",
+      amount: data?.quote?.price?.value || "0",
+      quoteBreakup: data?.quote?.breakup,
+    });
 
     initMutation.mutate({
       transactionId,
