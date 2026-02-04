@@ -2,7 +2,7 @@
 
 ## Overview
 
-This roadmap delivers a complete health insurance purchase flow through ONDC. Starting with quote selection, we build custom form UI for seamless KYC capture, then implement payment and policy issuance flows. Each phase follows the ONDC protocol sequence (select → init → confirm → status) with protocol context embedded for vibe-coding.
+This roadmap delivers a complete health insurance purchase flow through ONDC. Starting with quote selection, we build custom form UI for seamless KYC capture, then implement payment and policy issuance flows. Each phase follows the ONDC protocol sequence (select -> init -> confirm -> status) with protocol context embedded for vibe-coding.
 
 ## Phases
 
@@ -108,19 +108,21 @@ Plans:
   1. ONDC FIS13 health insurance reference docs exist in codebase
   2. Example payloads for each endpoint (select, init, confirm, status) are documented
   3. Zod schemas defined for all request/response types
-  4. E2E tests verify select flow (select → on_select → quote display)
-  5. E2E tests verify init flow (init → on_init → payment redirect)
-  6. E2E tests verify confirm flow (payment callback → confirm → on_confirm)
-  7. E2E tests verify status flow (status → on_status → policy display)
-**Plans**: TBD
+  4. E2E tests verify select flow (select -> on_select -> quote display)
+  5. E2E tests verify init flow (init -> on_init -> payment redirect)
+  6. E2E tests verify confirm flow (payment callback -> confirm -> on_confirm)
+  7. E2E tests verify status flow (status -> on_status -> policy display)
+**Plans**: 3 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 05-01-PLAN.md — Fetch protocol specs from GitHub, create Zod schemas
+- [ ] 05-02-PLAN.md — E2E tests for init and confirm flows
+- [ ] 05-03-PLAN.md — E2E tests for status flow, verify select coverage
 
 ## Progress
 
 **Execution Order:**
-Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
+Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
@@ -128,4 +130,4 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
 | 3. Init Flow | 5/5 | Complete | 2026-02-04 |
 | 4. Confirm & Status Flows | 4/4 | Complete | 2026-02-04 |
-| 5. Protocol Context & Testing | 0/TBD | Not started | - |
+| 5. Protocol Context & Testing | 0/3 | Not started | - |
