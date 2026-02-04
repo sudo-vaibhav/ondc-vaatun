@@ -139,6 +139,8 @@ export interface SelectResult {
   messageId: string;
   itemId?: string;
   providerId?: string;
+  bppId?: string;
+  bppUri?: string;
   hasResponse: boolean;
   quote?: Quote;
   provider?: SelectProvider;
@@ -160,7 +162,7 @@ export async function createSelectEntry(
   itemId: string,
   providerId: string,
   bppId: string,
-  bppUri: string
+  bppUri: string,
 ): Promise<SelectEntry> {
   const entry: SelectEntry = {
     transactionId,
@@ -185,14 +187,14 @@ export async function addSelectResponse(
   kv: TenantKeyValueStore,
   transactionId: string,
   messageId: string,
-  response: Omit<OnSelectResponse, "_receivedAt">
+  response: Omit<OnSelectResponse, "_receivedAt">,
 ): Promise<boolean> {
   const key = keyFormatter.select(transactionId, messageId);
   let entry = await kv.get<SelectEntry>(key);
 
   if (!entry) {
     console.warn(
-      `[SelectStore] No entry found for: ${transactionId}:${messageId}, creating new`
+      `[SelectStore] No entry found for: ${transactionId}:${messageId}, creating new`,
     );
     entry = {
       transactionId,
@@ -218,7 +220,7 @@ export async function addSelectResponse(
   });
 
   console.log(
-    `[SelectStore] Added response for: ${transactionId}:${messageId}`
+    `[SelectStore] Added response for: ${transactionId}:${messageId}`,
   );
 
   const channel = keyFormatter.selectChannel(transactionId, messageId);
@@ -234,7 +236,7 @@ export async function addSelectResponse(
 export async function getSelectEntry(
   kv: TenantKeyValueStore,
   transactionId: string,
-  messageId: string
+  messageId: string,
 ): Promise<SelectEntry | null> {
   const key = keyFormatter.select(transactionId, messageId);
   return kv.get<SelectEntry>(key);
@@ -243,7 +245,7 @@ export async function getSelectEntry(
 export async function getSelectResponse(
   kv: TenantKeyValueStore,
   transactionId: string,
-  messageId: string
+  messageId: string,
 ): Promise<OnSelectResponse | null> {
   const key = keyFormatter.select(transactionId, messageId);
   const responseKey = `${key}:response`;
@@ -258,24 +260,24 @@ export function subscribeToSelect(
     type: string;
     transactionId: string;
     messageId: string;
-  }) => void
+  }) => void,
 ): () => void {
   const channel = keyFormatter.selectChannel(transactionId, messageId);
   return kv.subscribe(channel, (data) => {
     callback(
-      data as { type: string; transactionId: string; messageId: string }
+      data as { type: string; transactionId: string; messageId: string },
     );
   });
 }
 
 export async function findSelectByTransaction(
   kv: TenantKeyValueStore,
-  transactionId: string
+  transactionId: string,
 ): Promise<SelectEntry | null> {
   const keys = await kv.keys(`select:${transactionId}:*`);
 
   const entryKeys = keys.filter(
-    (k) => !k.endsWith(":response") && !k.endsWith(":updates")
+    (k) => !k.endsWith(":response") && !k.endsWith(":updates"),
   );
 
   if (entryKeys.length === 0) {
@@ -297,7 +299,7 @@ export async function findSelectByTransaction(
 export async function getSelectResult(
   kv: TenantKeyValueStore,
   transactionId: string,
-  messageId: string
+  messageId: string,
 ): Promise<SelectResult> {
   const entry = await getSelectEntry(kv, transactionId, messageId);
   const response = await getSelectResponse(kv, transactionId, messageId);
@@ -319,6 +321,8 @@ export async function getSelectResult(
     messageId: entry.messageId,
     itemId: entry.itemId,
     providerId: entry.providerId,
+    bppId: entry.bppId,
+    bppUri: entry.bppUri,
     hasResponse: !!response,
     quote: order?.quote,
     provider: order?.provider,
