@@ -10,7 +10,7 @@ export class UUID extends CaseInsensitiveId {
     } else {
       if (!UUID_REGEX.test(value)) {
         throw new Error(
-          `Invalid UUID format: ${value}. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`
+          `Invalid UUID format: ${value}. Expected format: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx`,
         );
       }
       super(value);

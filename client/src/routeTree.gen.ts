@@ -13,9 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as DirectoryIndexRouteImport } from './routes/directory/index'
 import { Route as SearchResultsTransactionIdRouteImport } from './routes/search-results/$transactionId'
 import { Route as SearchResultsStreamedTransactionIdRouteImport } from './routes/search-results-streamed/$transactionId'
+import { Route as PolicyOrderIdRouteImport } from './routes/policy/$orderId'
+import { Route as PolicySuccessOrderIdRouteImport } from './routes/policy-success/$orderId'
+import { Route as PaymentCallbackTransactionIdRouteImport } from './routes/payment-callback/$transactionId'
 import { Route as MotorSearchIdRouteImport } from './routes/motor/$searchId'
 import { Route as HealthSearchIdRouteImport } from './routes/health/$searchId'
 import { Route as QuoteTransactionIdMessageIdRouteImport } from './routes/quote/$transactionId/$messageId'
+import { Route as InitTransactionIdMessageIdRouteImport } from './routes/init/$transactionId/$messageId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -39,6 +43,22 @@ const SearchResultsStreamedTransactionIdRoute =
     path: '/search-results-streamed/$transactionId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const PolicyOrderIdRoute = PolicyOrderIdRouteImport.update({
+  id: '/policy/$orderId',
+  path: '/policy/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PolicySuccessOrderIdRoute = PolicySuccessOrderIdRouteImport.update({
+  id: '/policy-success/$orderId',
+  path: '/policy-success/$orderId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PaymentCallbackTransactionIdRoute =
+  PaymentCallbackTransactionIdRouteImport.update({
+    id: '/payment-callback/$transactionId',
+    path: '/payment-callback/$transactionId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const MotorSearchIdRoute = MotorSearchIdRouteImport.update({
   id: '/motor/$searchId',
   path: '/motor/$searchId',
@@ -55,23 +75,37 @@ const QuoteTransactionIdMessageIdRoute =
     path: '/quote/$transactionId/$messageId',
     getParentRoute: () => rootRouteImport,
   } as any)
+const InitTransactionIdMessageIdRoute =
+  InitTransactionIdMessageIdRouteImport.update({
+    id: '/init/$transactionId/$messageId',
+    path: '/init/$transactionId/$messageId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/health/$searchId': typeof HealthSearchIdRoute
   '/motor/$searchId': typeof MotorSearchIdRoute
+  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
+  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
+  '/policy/$orderId': typeof PolicyOrderIdRoute
   '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
   '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
   '/directory/': typeof DirectoryIndexRoute
+  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
   '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/health/$searchId': typeof HealthSearchIdRoute
   '/motor/$searchId': typeof MotorSearchIdRoute
+  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
+  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
+  '/policy/$orderId': typeof PolicyOrderIdRoute
   '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
   '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
   '/directory': typeof DirectoryIndexRoute
+  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
   '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
 }
 export interface FileRoutesById {
@@ -79,9 +113,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/health/$searchId': typeof HealthSearchIdRoute
   '/motor/$searchId': typeof MotorSearchIdRoute
+  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
+  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
+  '/policy/$orderId': typeof PolicyOrderIdRoute
   '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
   '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
   '/directory/': typeof DirectoryIndexRoute
+  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
   '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
 }
 export interface FileRouteTypes {
@@ -90,27 +128,39 @@ export interface FileRouteTypes {
     | '/'
     | '/health/$searchId'
     | '/motor/$searchId'
+    | '/payment-callback/$transactionId'
+    | '/policy-success/$orderId'
+    | '/policy/$orderId'
     | '/search-results-streamed/$transactionId'
     | '/search-results/$transactionId'
     | '/directory/'
+    | '/init/$transactionId/$messageId'
     | '/quote/$transactionId/$messageId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/health/$searchId'
     | '/motor/$searchId'
+    | '/payment-callback/$transactionId'
+    | '/policy-success/$orderId'
+    | '/policy/$orderId'
     | '/search-results-streamed/$transactionId'
     | '/search-results/$transactionId'
     | '/directory'
+    | '/init/$transactionId/$messageId'
     | '/quote/$transactionId/$messageId'
   id:
     | '__root__'
     | '/'
     | '/health/$searchId'
     | '/motor/$searchId'
+    | '/payment-callback/$transactionId'
+    | '/policy-success/$orderId'
+    | '/policy/$orderId'
     | '/search-results-streamed/$transactionId'
     | '/search-results/$transactionId'
     | '/directory/'
+    | '/init/$transactionId/$messageId'
     | '/quote/$transactionId/$messageId'
   fileRoutesById: FileRoutesById
 }
@@ -118,9 +168,13 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   HealthSearchIdRoute: typeof HealthSearchIdRoute
   MotorSearchIdRoute: typeof MotorSearchIdRoute
+  PaymentCallbackTransactionIdRoute: typeof PaymentCallbackTransactionIdRoute
+  PolicySuccessOrderIdRoute: typeof PolicySuccessOrderIdRoute
+  PolicyOrderIdRoute: typeof PolicyOrderIdRoute
   SearchResultsStreamedTransactionIdRoute: typeof SearchResultsStreamedTransactionIdRoute
   SearchResultsTransactionIdRoute: typeof SearchResultsTransactionIdRoute
   DirectoryIndexRoute: typeof DirectoryIndexRoute
+  InitTransactionIdMessageIdRoute: typeof InitTransactionIdMessageIdRoute
   QuoteTransactionIdMessageIdRoute: typeof QuoteTransactionIdMessageIdRoute
 }
 
@@ -154,6 +208,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SearchResultsStreamedTransactionIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/policy/$orderId': {
+      id: '/policy/$orderId'
+      path: '/policy/$orderId'
+      fullPath: '/policy/$orderId'
+      preLoaderRoute: typeof PolicyOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/policy-success/$orderId': {
+      id: '/policy-success/$orderId'
+      path: '/policy-success/$orderId'
+      fullPath: '/policy-success/$orderId'
+      preLoaderRoute: typeof PolicySuccessOrderIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/payment-callback/$transactionId': {
+      id: '/payment-callback/$transactionId'
+      path: '/payment-callback/$transactionId'
+      fullPath: '/payment-callback/$transactionId'
+      preLoaderRoute: typeof PaymentCallbackTransactionIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/motor/$searchId': {
       id: '/motor/$searchId'
       path: '/motor/$searchId'
@@ -175,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuoteTransactionIdMessageIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/init/$transactionId/$messageId': {
+      id: '/init/$transactionId/$messageId'
+      path: '/init/$transactionId/$messageId'
+      fullPath: '/init/$transactionId/$messageId'
+      preLoaderRoute: typeof InitTransactionIdMessageIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -182,10 +264,14 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   HealthSearchIdRoute: HealthSearchIdRoute,
   MotorSearchIdRoute: MotorSearchIdRoute,
+  PaymentCallbackTransactionIdRoute: PaymentCallbackTransactionIdRoute,
+  PolicySuccessOrderIdRoute: PolicySuccessOrderIdRoute,
+  PolicyOrderIdRoute: PolicyOrderIdRoute,
   SearchResultsStreamedTransactionIdRoute:
     SearchResultsStreamedTransactionIdRoute,
   SearchResultsTransactionIdRoute: SearchResultsTransactionIdRoute,
   DirectoryIndexRoute: DirectoryIndexRoute,
+  InitTransactionIdMessageIdRoute: InitTransactionIdMessageIdRoute,
   QuoteTransactionIdMessageIdRoute: QuoteTransactionIdMessageIdRoute,
 }
 export const routeTree = rootRouteImport

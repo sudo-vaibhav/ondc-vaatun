@@ -1,8 +1,8 @@
+import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import ReactDOM from "react-dom/client";
-import { RouterProvider, createRouter } from "@tanstack/react-router";
-import { TRPCProvider } from "./trpc/Provider";
 import { routeTree } from "./routeTree.gen";
+import { TRPCProvider } from "./trpc/Provider";
 import "./globals.css";
 
 // Create router instance
@@ -24,6 +24,6 @@ if (!rootElement.innerHTML) {
       <TRPCProvider>
         <RouterProvider router={router} />
       </TRPCProvider>
-    </StrictMode>
+    </StrictMode>,
   );
 }

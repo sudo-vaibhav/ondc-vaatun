@@ -31,7 +31,9 @@ export async function getCommandConnection(redisUrl: string): Promise<Redis> {
 /**
  * Get or create a subscriber connection for the given Redis URL.
  */
-export async function getSubscriberConnection(redisUrl: string): Promise<Redis> {
+export async function getSubscriberConnection(
+  redisUrl: string,
+): Promise<Redis> {
   const existing = subscriberConnectionPool.get(redisUrl);
   if (existing) return existing;
 
@@ -45,7 +47,7 @@ export async function getSubscriberConnection(redisUrl: string): Promise<Redis> 
  */
 export function registerChannelCallback(
   channel: string,
-  callback: SubscriberCallback
+  callback: SubscriberCallback,
 ): void {
   const existing = channelCallbacks.get(channel);
   if (existing) {
@@ -60,7 +62,7 @@ export function registerChannelCallback(
  */
 export function unregisterChannelCallback(
   channel: string,
-  callback: SubscriberCallback
+  callback: SubscriberCallback,
 ): boolean {
   const callbacks = channelCallbacks.get(channel);
   if (!callbacks) return true;
@@ -77,7 +79,7 @@ export function unregisterChannelCallback(
  * Get all callbacks for a channel.
  */
 export function getChannelCallbacks(
-  channel: string
+  channel: string,
 ): Set<SubscriberCallback> | undefined {
   return channelCallbacks.get(channel);
 }

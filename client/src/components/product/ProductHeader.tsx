@@ -1,5 +1,5 @@
-import { ArrowLeft, Car, HeartPulse, RefreshCw, Wifi } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { ArrowLeft, Car, HeartPulse, RefreshCw, Wifi } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { SearchStatus } from "./useProductSearch";

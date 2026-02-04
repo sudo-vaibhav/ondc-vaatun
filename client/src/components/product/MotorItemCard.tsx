@@ -1,4 +1,3 @@
-
 import { ArrowRight, Car, Clock, Loader2, Shield, Wrench } from "lucide-react";
 import type { ItemData, SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";

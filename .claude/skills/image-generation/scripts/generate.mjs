@@ -21,7 +21,7 @@ import {
   readdirSync,
   readFileSync,
   statSync,
-  writeFileSync
+  writeFileSync,
 } from "fs";
 import { createRequire } from "module";
 import { dirname, join } from "path";
@@ -70,14 +70,14 @@ const MODELS = {
     id: "gemini-2.5-flash-image",
     name: "Gemini 2.5 Flash",
     price: "~$0.039/image",
-    description: "Fast, cost-effective, good quality (recommended)"
+    description: "Fast, cost-effective, good quality (recommended)",
   },
   pro: {
     id: "gemini-3-pro-image-preview",
     name: "Gemini 3 Pro",
     price: "~$0.134/image",
-    description: "Highest quality, preview model"
-  }
+    description: "Highest quality, preview model",
+  },
 };
 const DEFAULT_MODEL = "flash";
 
@@ -91,7 +91,7 @@ function getOutputDir() {
     join(PROJECT_ROOT, "assets"),
     join(PROJECT_ROOT, "images"),
     join(PROJECT_ROOT, "static/images"),
-    join(PROJECT_ROOT, "static")
+    join(PROJECT_ROOT, "static"),
   ];
 
   for (const dir of candidates) {
@@ -115,7 +115,7 @@ const COLOR_THEMES = {
     dark: "#2d4a47",
     light: "#eef3f2",
     accent: "seafoam green",
-    description: "cool teal/cyan color palette"
+    description: "cool teal/cyan color palette",
   },
   maroon: {
     name: "Crimson/Red",
@@ -124,7 +124,7 @@ const COLOR_THEMES = {
     dark: "#4a1a1a",
     light: "#f8f0f0",
     accent: "coral",
-    description: "bold crimson/red color palette"
+    description: "bold crimson/red color palette",
   },
   blue: {
     name: "Ocean Blue",
@@ -133,7 +133,7 @@ const COLOR_THEMES = {
     dark: "#1e3a5f",
     light: "#eff6ff",
     accent: "sky blue",
-    description: "professional ocean blue color palette"
+    description: "professional ocean blue color palette",
   },
   purple: {
     name: "Royal Purple",
@@ -142,7 +142,7 @@ const COLOR_THEMES = {
     dark: "#3b1d6e",
     light: "#f5f3ff",
     accent: "lavender",
-    description: "elegant royal purple color palette"
+    description: "elegant royal purple color palette",
   },
   green: {
     name: "Forest Green",
@@ -151,7 +151,7 @@ const COLOR_THEMES = {
     dark: "#1a3d2e",
     light: "#ecfdf5",
     accent: "mint",
-    description: "natural forest green color palette"
+    description: "natural forest green color palette",
   },
   orange: {
     name: "Warm Orange",
@@ -160,7 +160,7 @@ const COLOR_THEMES = {
     dark: "#4a2512",
     light: "#fff7ed",
     accent: "peach",
-    description: "warm energetic orange color palette"
+    description: "warm energetic orange color palette",
   },
   neutral: {
     name: "Neutral Gray",
@@ -169,8 +169,8 @@ const COLOR_THEMES = {
     dark: "#171717",
     light: "#fafafa",
     accent: "silver",
-    description: "clean neutral gray color palette"
-  }
+    description: "clean neutral gray color palette",
+  },
 };
 
 // ============================================================================
@@ -188,7 +188,8 @@ const STYLE_THEMES = {
       "soft flowing waves with halftone texture overlay on organic shapes",
     statsDesc:
       "soft geometric shapes with circular and linear elements with halftone texture",
-    aesthetic: "Minimalist, sophisticated, high-end fintech/insurance aesthetic"
+    aesthetic:
+      "Minimalist, sophisticated, high-end fintech/insurance aesthetic",
   },
   biotech: {
     name: "Biotech/Research",
@@ -203,7 +204,7 @@ const STYLE_THEMES = {
       "flowing DNA-like spirals with organic cell membrane textures",
     statsDesc:
       "data visualization nodes connected by molecular bonds, with circular cell-like elements",
-    aesthetic: "Scientific, innovative, high-end biotech/research aesthetic"
+    aesthetic: "Scientific, innovative, high-end biotech/research aesthetic",
   },
   tech: {
     name: "Tech/SaaS",
@@ -217,7 +218,7 @@ const STYLE_THEMES = {
       "flowing network connections with subtle geometric backgrounds",
     statsDesc:
       "dashboard-inspired elements with charts, graphs, and data point visualizations",
-    aesthetic: "Modern, clean, high-end tech/SaaS aesthetic"
+    aesthetic: "Modern, clean, high-end tech/SaaS aesthetic",
   },
   nature: {
     name: "Nature/Organic",
@@ -230,7 +231,7 @@ const STYLE_THEMES = {
     testimonialDesc: "soft natural textures with organic flowing shapes",
     statsDesc:
       "growth-inspired elements with organic charts and natural flowing data",
-    aesthetic: "Organic, calming, nature-inspired aesthetic"
+    aesthetic: "Organic, calming, nature-inspired aesthetic",
   },
   minimal: {
     name: "Minimal/Clean",
@@ -240,7 +241,7 @@ const STYLE_THEMES = {
     accentDesc: "simple circles, lines, and basic geometric patterns",
     testimonialDesc: "clean background with subtle geometric elements",
     statsDesc: "minimal chart-inspired shapes with clean lines",
-    aesthetic: "Ultra-minimal, clean, modern aesthetic"
+    aesthetic: "Ultra-minimal, clean, modern aesthetic",
   },
   abstract: {
     name: "Abstract/Artistic",
@@ -253,8 +254,8 @@ const STYLE_THEMES = {
       "dynamic abstract compositions with bold shapes and artistic elements",
     testimonialDesc: "artistic abstract background with soft color transitions",
     statsDesc: "abstract data-inspired art with bold geometric elements",
-    aesthetic: "Bold, artistic, creative abstract aesthetic"
-  }
+    aesthetic: "Bold, artistic, creative abstract aesthetic",
+  },
 };
 
 // ============================================================================
@@ -277,7 +278,7 @@ The composition should have ${style.heroDesc}.
 Style: ${style.aesthetic}.
 No text, no logos, purely abstract visual art.`,
       ratio: "16:9",
-      filename: `hero-bg${suffix}.png`
+      filename: `hero-bg${suffix}.png`,
     },
     card: {
       prompt: `Create a subtle abstract background with ${style.cardDesc}.
@@ -285,28 +286,28 @@ Colors: Muted ${colorTheme} (${colors.primary} to ${colors.secondary}), with sub
 The pattern should be minimal and elegant, suitable as a card background.
 Style: Clean, sophisticated, subtle texture. No text or logos.`,
       ratio: "4:3",
-      filename: `card-pattern${suffix}.png`
+      filename: `card-pattern${suffix}.png`,
     },
     accent: {
       prompt: `Create an abstract geometric pattern with ${style.accentDesc}.
 Use ${colors.name.toLowerCase()} tones: deep ${colorTheme} (${colors.primary}), ${colors.accent}, cream, and dark gray (${colors.dark}).
 Style: Modern, sophisticated, minimal. No text or logos.`,
       ratio: "1:1",
-      filename: `accent-pattern${suffix}.png`
+      filename: `accent-pattern${suffix}.png`,
     },
     testimonial: {
       prompt: `Create an abstract portrait-oriented background with ${style.testimonialDesc}.
 ${colors.name} palette: ${colorTheme} (${colors.primary}), cream (${colors.light}), with hints of dark gray.
 Style: Elegant, professional, minimal. No text or faces.`,
       ratio: "3:4",
-      filename: `testimonial-bg${suffix}.png`
+      filename: `testimonial-bg${suffix}.png`,
     },
     stats: {
       prompt: `Create a minimal abstract background with ${style.statsDesc}.
 Colors: ${colors.name} tones (${colors.primary}) with cream accents on dark gray (${colors.dark}) base.
 Style: Clean, data-visualization inspired, sophisticated. No text.`,
       ratio: "1:1",
-      filename: `stats-bg${suffix}.png`
+      filename: `stats-bg${suffix}.png`,
     },
     banner: {
       prompt: `Create an ultra-wide abstract banner with ${style.elements}.
@@ -314,15 +315,15 @@ Use ${colors.description}: ${colors.primary} flowing into ${colors.secondary}, w
 The composition should be horizontally oriented with ${style.heroDesc}.
 Style: ${style.aesthetic}. No text or logos.`,
       ratio: "21:9",
-      filename: `banner${suffix}.png`
+      filename: `banner${suffix}.png`,
     },
     icon: {
       prompt: `Create a small abstract icon-style pattern with simplified ${style.elements}.
 Colors: Bold ${colorTheme} (${colors.primary}) on ${colors.light} background.
 Style: Simple, iconic, recognizable at small sizes. No text.`,
       ratio: "1:1",
-      filename: `icon${suffix}.png`
-    }
+      filename: `icon${suffix}.png`,
+    },
   };
 }
 
@@ -334,14 +335,14 @@ const BACKGROUND_MODES = {
     name: "Solid White",
     promptSuffix: "Clean solid white background.",
     description: "Pure white background, easy to composite",
-    removeBackground: false
+    removeBackground: false,
   },
   fade: {
     name: "Fade to White",
     promptSuffix:
       "Background fades softly to white at the edges with a gentle vignette effect. Environmental elements should fade out gradually toward the edges while the main subject remains crisp and detailed in the center.",
     description: "Environment fades to white edges (mascot with context style)",
-    removeBackground: false
+    removeBackground: false,
   },
   transparent: {
     name: "Transparent (auto-remove)",
@@ -349,14 +350,14 @@ const BACKGROUND_MODES = {
       "Include environmental props and context elements as part of the composition. The character and all props should be rendered as a cohesive foreground group with clean edges. Use a simple, solid, contrasting background color behind the entire scene to enable clean background removal while preserving the character and all environmental elements.",
     description:
       "Keeps character + environment/props, removes only the background behind them",
-    removeBackground: true
+    removeBackground: true,
   },
   scene: {
     name: "Full Scene",
     promptSuffix: "",
     description: "Full environmental background, no transparency",
-    removeBackground: false
-  }
+    removeBackground: false,
+  },
 };
 
 // ============================================================================
@@ -390,7 +391,7 @@ async function initBackgroundRemovalModel() {
 
   // Use briaai/RMBG-1.4 - works cross-platform, free for non-commercial use
   bgRemovalModel = await AutoModel.from_pretrained("briaai/RMBG-1.4", {
-    config: { model_type: "custom" }
+    config: { model_type: "custom" },
   });
 
   bgRemovalProcessor = await AutoProcessor.from_pretrained("briaai/RMBG-1.4", {
@@ -404,8 +405,8 @@ async function initBackgroundRemovalModel() {
       image_std: [1, 1, 1],
       resample: 2,
       rescale_factor: 0.00392156862745098,
-      size: { width: 1024, height: 1024 }
-    }
+      size: { width: 1024, height: 1024 },
+    },
   });
 
   return { model: bgRemovalModel, processor: bgRemovalProcessor };
@@ -426,7 +427,7 @@ async function removeBackgroundFromBuffer(imageBuffer) {
 
     // Load image from buffer
     const img = await RawImage.fromBlob(
-      new Blob([imageBuffer], { type: "image/png" })
+      new Blob([imageBuffer], { type: "image/png" }),
     );
 
     // Pre-process image
@@ -439,7 +440,7 @@ async function removeBackgroundFromBuffer(imageBuffer) {
     const maskData = (
       await RawImage.fromTensor(output[0].mul(255).to("uint8")).resize(
         img.width,
-        img.height
+        img.height,
       )
     ).data;
 
@@ -461,8 +462,8 @@ async function removeBackgroundFromBuffer(imageBuffer) {
       raw: {
         width: originalRgba.info.width,
         height: originalRgba.info.height,
-        channels: 4
-      }
+        channels: 4,
+      },
     })
       .png({ compressionLevel: 9 })
       .toBuffer();
@@ -472,7 +473,7 @@ async function removeBackgroundFromBuffer(imageBuffer) {
   } catch (error) {
     console.warn(`⚠️  Background removal failed: ${error.message}`);
     console.warn(
-      "   Tip: Run 'cd .claude/skills/image-generation && npm install' to install dependencies"
+      "   Tip: Run 'cd .claude/skills/image-generation && npm install' to install dependencies",
     );
     return null;
   }
@@ -499,7 +500,7 @@ function parseArgs() {
     listBackgrounds: false,
     listModels: false,
     referenceImages: [],
-    background: "solid"
+    background: "solid",
   };
 
   for (let i = 0; i < args.length; i++) {
@@ -652,7 +653,7 @@ function listPresets(theme = "teal", style = "fintech") {
   console.log(`\nAvailable Presets (${colorName} + ${styleName}):\n`);
   for (const [name, config] of Object.entries(presets)) {
     console.log(
-      `  ${name.padEnd(12)} - ${config.ratio.padEnd(5)} - ${config.filename}`
+      `  ${name.padEnd(12)} - ${config.ratio.padEnd(5)} - ${config.filename}`,
     );
   }
   console.log("");
@@ -672,7 +673,7 @@ function listModels() {
   for (const [name, config] of Object.entries(MODELS)) {
     const isDefault = name === DEFAULT_MODEL ? " (default)" : "";
     console.log(
-      `  ${name.padEnd(8)} - ${config.name} ${config.price}${isDefault}`
+      `  ${name.padEnd(8)} - ${config.name} ${config.price}${isDefault}`,
     );
     console.log(`           ${config.description}`);
   }
@@ -693,7 +694,7 @@ function getMimeType(filePath) {
     jpg: "image/jpeg",
     jpeg: "image/jpeg",
     gif: "image/gif",
-    webp: "image/webp"
+    webp: "image/webp",
   };
   return mimeTypes[ext] || "image/png";
 }
@@ -735,7 +736,7 @@ function expandReferencePaths(paths) {
       }
     } catch (error) {
       console.warn(
-        `Warning: Could not process path ${inputPath}: ${error.message}`
+        `Warning: Could not process path ${inputPath}: ${error.message}`,
       );
     }
   }
@@ -767,7 +768,7 @@ function loadReferenceImages(imagePaths) {
       loadedImages.push({
         path: resolvedPath,
         mimeType,
-        data: base64Data
+        data: base64Data,
       });
 
       // Show relative path for cleaner output
@@ -775,7 +776,7 @@ function loadReferenceImages(imagePaths) {
       console.log(`  Loaded: ${displayPath} (${mimeType})`);
     } catch (error) {
       console.warn(
-        `Warning: Failed to load reference image ${resolvedPath}: ${error.message}`
+        `Warning: Failed to load reference image ${resolvedPath}: ${error.message}`,
       );
     }
   }
@@ -793,7 +794,7 @@ async function generateImage(
   outputDir,
   referenceImages = [],
   backgroundMode = "solid",
-  modelKey = DEFAULT_MODEL
+  modelKey = DEFAULT_MODEL,
 ) {
   if (!API_KEY) {
     console.error("\nError: AI_API_KEY environment variable is not set");
@@ -823,7 +824,7 @@ async function generateImage(
   console.log(`\nModel: ${modelConfig.name} (${modelConfig.id})`);
   console.log(`Aspect Ratio: ${ratio}`);
   console.log(
-    `Background: ${bgConfig.name}${bgConfig.removeBackground ? " (will auto-remove)" : ""}`
+    `Background: ${bgConfig.name}${bgConfig.removeBackground ? " (will auto-remove)" : ""}`,
   );
   console.log(`Output: ${join(OUTPUT_DIR, outputFilename)}`);
 
@@ -834,7 +835,7 @@ async function generateImage(
     loadedReferences = loadReferenceImages(referenceImages);
     if (loadedReferences.length === 0) {
       console.warn(
-        "\nWarning: No reference images could be loaded. Proceeding without them."
+        "\nWarning: No reference images could be loaded. Proceeding without them.",
       );
     }
   }
@@ -863,8 +864,8 @@ async function generateImage(
       parts.push({
         inlineData: {
           mimeType: ref.mimeType,
-          data: ref.data
-        }
+          data: ref.data,
+        },
       });
     }
 
@@ -881,9 +882,9 @@ async function generateImage(
       config: {
         responseModalities: ["TEXT", "IMAGE"],
         imageConfig: {
-          aspectRatio: ratio
-        }
-      }
+          aspectRatio: ratio,
+        },
+      },
     });
 
     let imageGenerated = false;
@@ -919,7 +920,7 @@ async function generateImage(
 
     if (!imageGenerated) {
       console.log(
-        "\nNo image was generated. The model may have returned only text."
+        "\nNo image was generated. The model may have returned only text.",
       );
       return false;
     }
@@ -931,7 +932,7 @@ async function generateImage(
     if (error.response) {
       console.error(
         "API Error Details:",
-        JSON.stringify(error.response, null, 2)
+        JSON.stringify(error.response, null, 2),
       );
     }
     return false;
@@ -1024,12 +1025,12 @@ async function main() {
   } else {
     // Generate all presets for current theme
     console.log(
-      `\nNo preset or prompt specified. Generating all presets with ${colorName} + ${styleName}...\n`
+      `\nNo preset or prompt specified. Generating all presets with ${colorName} + ${styleName}...\n`,
     );
 
     for (const [name, config] of Object.entries(PRESETS)) {
       console.log(
-        `\n>>> Generating ${name} preset (${colorName} + ${styleName})...`
+        `\n>>> Generating ${name} preset (${colorName} + ${styleName})...`,
       );
       await generateImage(
         config.prompt,
@@ -1038,7 +1039,7 @@ async function main() {
         options.outputDir,
         options.referenceImages,
         options.background,
-        options.model
+        options.model,
       );
     }
     return;
@@ -1051,7 +1052,7 @@ async function main() {
     options.outputDir,
     options.referenceImages,
     options.background,
-    options.model
+    options.model,
   );
 }
 

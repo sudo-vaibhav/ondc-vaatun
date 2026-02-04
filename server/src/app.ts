@@ -1,14 +1,14 @@
-import express from "express";
+import { apiReference } from "@scalar/express-api-reference";
+import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import cors from "cors";
+import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
-import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { apiReference } from "@scalar/express-api-reference";
+import { ondcCompatRouter } from "./routes/ondc-compat";
+import { siteVerificationRouter } from "./routes/site-verification";
+import { sseRouter } from "./routes/sse";
 import { appRouter } from "./trpc";
 import { createContext } from "./trpc/context";
-import { sseRouter } from "./routes/sse";
-import { siteVerificationRouter } from "./routes/site-verification";
-import { ondcCompatRouter } from "./routes/ondc-compat";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -23,7 +23,7 @@ app.use(
         : process.env.CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
-  })
+  }),
 );
 
 // Health check
@@ -49,7 +49,7 @@ app.use(
   createExpressMiddleware({
     router: appRouter,
     createContext,
-  })
+  }),
 );
 
 // OpenAPI documentation
@@ -60,7 +60,7 @@ app.use(
     spec: {
       url: "/openapi.json",
     },
-  })
+  }),
 );
 
 // Serve OpenAPI spec
@@ -81,20 +81,27 @@ if (process.env.NODE_ENV === "production") {
 
 // Global error handler - must be last middleware
 // biome-ignore lint/suspicious/noExplicitAny: Express error handler signature
-app.use((err: any, _req: express.Request, res: express.Response, next: express.NextFunction) => {
-  console.error("[Server Error]", err);
+app.use(
+  (
+    err: any,
+    _req: express.Request,
+    res: express.Response,
+    next: express.NextFunction,
+  ) => {
+    console.error("[Server Error]", err);
 
-  // If headers already sent, delegate to Express's default handler
-  if (res.headersSent) {
-    return next(err);
-  }
+    // If headers already sent, delegate to Express's default handler
+    if (res.headersSent) {
+      return next(err);
+    }
 
-  const status = err.status || err.statusCode || 500;
-  const message = err.message || "Internal Server Error";
-  res.status(status).json({
-    error: message,
-    ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
-  });
-});
+    const status = err.status || err.statusCode || 500;
+    const message = err.message || "Internal Server Error";
+    res.status(status).json({
+      error: message,
+      ...(process.env.NODE_ENV !== "production" && { stack: err.stack }),
+    });
+  },
+);
 
 export { app };

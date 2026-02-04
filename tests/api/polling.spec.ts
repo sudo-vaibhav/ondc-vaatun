@@ -182,7 +182,9 @@ test.describe("Polling API", () => {
   });
 
   test.describe("Select Flow Integration", () => {
-    test("on_select stores response that can be polled", async ({ request }) => {
+    test("on_select stores response that can be polled", async ({
+      request,
+    }) => {
       // Generate unique IDs for this test
       const transactionId = `test-poll-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const messageId = `msg-poll-${Date.now()}-${Math.random().toString(36).slice(2)}`;

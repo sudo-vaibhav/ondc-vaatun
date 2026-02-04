@@ -157,7 +157,7 @@ export async function createSearchEntry(
   transactionId: string,
   messageId: string,
   categoryCode?: string,
-  ttl = "PT5M"
+  ttl = "PT5M",
 ): Promise<SearchEntry> {
   const now = Date.now();
   const ttlMs = parseTtlToMs(ttl);
@@ -176,7 +176,7 @@ export async function createSearchEntry(
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
   console.log(
-    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl})`
+    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl})`,
   );
 
   return entry;
@@ -185,14 +185,14 @@ export async function createSearchEntry(
 export async function addSearchResponse(
   kv: TenantKeyValueStore,
   transactionId: string,
-  response: Omit<OnSearchResponse, "_receivedAt">
+  response: Omit<OnSearchResponse, "_receivedAt">,
 ): Promise<boolean> {
   const key = keyFormatter.search(transactionId);
   let entry = await kv.get<SearchEntry>(key);
 
   if (!entry) {
     console.warn(
-      `[SearchStore] No entry found for transaction: ${transactionId}, creating new`
+      `[SearchStore] No entry found for transaction: ${transactionId}, creating new`,
     );
     const now = Date.now();
     const ttlMs = parseTtlToMs(response.context.ttl || "PT5M");
@@ -217,7 +217,7 @@ export async function addSearchResponse(
   const count = await kv.listPush(responsesKey, responseWithTimestamp);
 
   console.log(
-    `[SearchStore] Added response for transaction: ${transactionId} (total: ${count})`
+    `[SearchStore] Added response for transaction: ${transactionId} (total: ${count})`,
   );
 
   const channel = keyFormatter.searchChannel(transactionId);
@@ -232,7 +232,7 @@ export async function addSearchResponse(
 
 export async function getSearchEntry(
   kv: TenantKeyValueStore,
-  transactionId: string
+  transactionId: string,
 ): Promise<SearchEntry | null> {
   const key = keyFormatter.search(transactionId);
   return kv.get<SearchEntry>(key);
@@ -240,7 +240,7 @@ export async function getSearchEntry(
 
 export async function getSearchResponses(
   kv: TenantKeyValueStore,
-  transactionId: string
+  transactionId: string,
 ): Promise<OnSearchResponse[]> {
   const responsesKey = keyFormatter.searchResponses(transactionId);
   return kv.listGetAll<OnSearchResponse>(responsesKey);
@@ -249,7 +249,7 @@ export async function getSearchResponses(
 export function subscribeToSearch(
   kv: TenantKeyValueStore,
   transactionId: string,
-  callback: (data: { type: string; responseCount: number }) => void
+  callback: (data: { type: string; responseCount: number }) => void,
 ): () => void {
   const channel = keyFormatter.searchChannel(transactionId);
   return kv.subscribe(channel, (data) => {
@@ -259,7 +259,7 @@ export function subscribeToSearch(
 
 export async function getSearchResults(
   kv: TenantKeyValueStore,
-  transactionId: string
+  transactionId: string,
 ): Promise<SearchResultsResponse | null> {
   const entry = await getSearchEntry(kv, transactionId);
   const responses = await getSearchResponses(kv, transactionId);
@@ -289,7 +289,7 @@ export async function getSearchResults(
       const itemCount =
         response.message?.catalog?.providers?.reduce(
           (sum, p) => sum + (p.items?.length || 0),
-          0
+          0,
         ) || 0;
 
       providerMap.set(bppId, {
@@ -317,7 +317,7 @@ export async function getSearchResults(
 }
 
 export async function getAllTransactionIds(
-  kv: TenantKeyValueStore
+  kv: TenantKeyValueStore,
 ): Promise<string[]> {
   const keys = await kv.keys("search:*");
   return keys
