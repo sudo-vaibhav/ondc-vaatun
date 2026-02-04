@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
 import { AddOnSelector } from "@/components/quote/AddOnSelector";
@@ -9,6 +9,7 @@ import { TermsCollapsible } from "@/components/quote/TermsCollapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
+import { KYCForm, type KYCFormData } from "@/components/forms";
 
 export const Route = createFileRoute("/quote/$transactionId/$messageId")({
   component: QuotePage,
@@ -16,11 +17,14 @@ export const Route = createFileRoute("/quote/$transactionId/$messageId")({
 
 function QuotePage() {
   const { transactionId, messageId } = Route.useParams();
+  const navigate = useNavigate();
 
-  // Local state for add-on selection (not sent to backend yet - Phase 2 handles forms)
-  // Prefixed with _ to indicate intentionally unused until Phase 2
-  const [_selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
-  const [_addOnTotal, setAddOnTotal] = useState(0);
+  // Local state for add-on selection
+  const [selectedAddOns, setSelectedAddOns] = useState<string[]>([]);
+
+  // KYC form visibility state
+  const [showKYCForm, setShowKYCForm] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Polling configuration: poll every 2s until response received or error occurs
   const { data, isLoading, error, refetch } =
@@ -38,10 +42,49 @@ function QuotePage() {
       },
     );
 
+  // Init mutation with auto-retry (3 attempts with exponential backoff)
+  const initMutation = trpc.gateway.init.useMutation({
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 5000),
+    onSuccess: (result) => {
+      // Navigate to init polling page
+      navigate({
+        to: "/init/$transactionId/$messageId",
+        params: { transactionId, messageId: result.messageId },
+      });
+    },
+    onError: (error) => {
+      // Only shown after all 3 retries exhausted
+      console.error("Init failed after retries:", error);
+      setInitError(error.message);
+    },
+  });
+
   // Handle add-on selection changes
-  const handleAddOnChange = (selectedIds: string[], totalPrice: number) => {
+  const handleAddOnChange = (selectedIds: string[], _totalPrice: number) => {
     setSelectedAddOns(selectedIds);
-    setAddOnTotal(totalPrice);
+  };
+
+  // Handle KYC form submission
+  const handleKYCSubmit = (formData: KYCFormData, submissionId: string) => {
+    // Clear any previous error before new attempt
+    setInitError(null);
+
+    initMutation.mutate({
+      transactionId,
+      bppId: data?.bppId || "",
+      bppUri: data?.bppUri || "",
+      providerId: data?.providerId || "",
+      itemId: data?.itemId || "",
+      parentItemId: data?.item?.parent_item_id || data?.itemId || "",
+      xinputFormId: data?.xinput?.form?.id || "",
+      submissionId,
+      addOns: selectedAddOns.map((id) => ({ id, quantity: 1 })),
+      customerName: `${formData.firstName} ${formData.lastName}`,
+      customerEmail: formData.email,
+      customerPhone: formData.phone,
+      amount: data?.quote?.price?.value || "0",
+    });
   };
 
   // Loading state: waiting for initial response
@@ -248,18 +291,53 @@ function QuotePage() {
           {/* Terms & Conditions */}
           <TermsCollapsible terms={terms} />
 
-          {/* Proceed button (disabled for Phase 1) */}
-          <Button
-            size="lg"
-            className="w-full"
-            disabled
-            title="Application forms coming in Phase 2"
-          >
-            Proceed to Application
-          </Button>
-          <p className="text-xs text-center text-muted-foreground -mt-3">
-            Application forms coming soon
-          </p>
+          {/* Proceed button / KYC Form */}
+          {!showKYCForm ? (
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={() => setShowKYCForm(true)}
+            >
+              Proceed to Application
+            </Button>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Complete Your Application</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowKYCForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+              <KYCForm quote={quote} onSubmit={handleKYCSubmit} />
+              {initMutation.isPending && (
+                <div className="text-center text-sm text-muted-foreground">
+                  Submitting application...
+                  {initMutation.failureCount > 0 && (
+                    <span className="ml-2 text-amber-600">
+                      (Retry {initMutation.failureCount}/3)
+                    </span>
+                  )}
+                </div>
+              )}
+              {initError && (
+                <div className="text-center text-sm text-destructive">
+                  {initError}
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="ml-2"
+                    onClick={() => setInitError(null)}
+                  >
+                    Dismiss
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>
