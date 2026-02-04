@@ -26,47 +26,47 @@
 
 ### Init Flow
 
-- [ ] **INIT-01**: init endpoint sends KYC data to BPP
-- [ ] **INIT-02**: on_init callback stores response with payment link
-- [ ] **INIT-03**: Buyer information form (proposer details)
-- [ ] **INIT-04**: Insured information form (who is covered)
-- [ ] **INIT-05**: Medical history form with health questions
-- [ ] **INIT-06**: Nominee information form (beneficiary details)
-- [ ] **INIT-07**: Review page showing all entered data before payment
+- [x] **INIT-01**: init endpoint sends KYC data to BPP
+- [x] **INIT-02**: on_init callback stores response with payment link
+- [x] **INIT-03**: Buyer information form (proposer details)
+- [x] **INIT-04**: Insured information form (who is covered)
+- [x] **INIT-05**: Medical history form with health questions
+- [x] **INIT-06**: Nominee information form (beneficiary details)
+- [x] **INIT-07**: Review page showing all entered data before payment
 
 ### Confirm Flow
 
-- [ ] **CONF-01**: Payment redirect to BPP's payment gateway
-- [ ] **CONF-02**: Payment callback handler for success/failure
-- [ ] **CONF-03**: confirm endpoint sends payment confirmation to BPP
-- [ ] **CONF-04**: on_confirm callback stores policy document
-- [ ] **CONF-05**: Success page with policy summary
+- [x] **CONF-01**: Payment redirect to BPP's payment gateway
+- [x] **CONF-02**: Payment callback handler for success/failure
+- [x] **CONF-03**: confirm endpoint sends payment confirmation to BPP
+- [x] **CONF-04**: on_confirm callback stores policy document
+- [x] **CONF-05**: Success page with policy summary
 
 ### Status Flow
 
-- [ ] **STAT-01**: status endpoint queries order status from BPP
-- [ ] **STAT-02**: on_status callback handler
-- [ ] **STAT-03**: Policy view page with document display
-- [ ] **STAT-04**: Policy download capability (PDF if available)
+- [x] **STAT-01**: status endpoint queries order status from BPP
+- [x] **STAT-02**: on_status callback handler
+- [x] **STAT-03**: Policy view page with document display
+- [x] **STAT-04**: Policy download capability (PDF if available)
 
 ### Protocol Context
 
-- [ ] **CTX-01**: ONDC FIS13 health insurance reference docs in codebase
-- [ ] **CTX-02**: Example payloads for each endpoint documented
-- [ ] **CTX-03**: Zod schemas for all request/response types
+- [x] **CTX-01**: ONDC FIS13 health insurance reference docs in codebase
+- [x] **CTX-02**: Example payloads for each endpoint documented
+- [x] **CTX-03**: Zod schemas for all request/response types
 
 ### Testing
 
-- [ ] **TEST-01**: E2E tests for select flow
-- [ ] **TEST-02**: E2E tests for init flow
-- [ ] **TEST-03**: E2E tests for confirm flow
-- [ ] **TEST-04**: E2E tests for status flow
+- [x] **TEST-01**: E2E tests for select flow
+- [x] **TEST-02**: E2E tests for init flow
+- [x] **TEST-03**: E2E tests for confirm flow
+- [x] **TEST-04**: E2E tests for status flow
 
 ### Infrastructure
 
-- [ ] **INFRA-01**: Transaction state machine for flow tracking
-- [ ] **INFRA-02**: Form state persistence in Redis
-- [ ] **INFRA-03**: TTL handling for expired transactions
+- [x] **INFRA-01**: Transaction state machine for flow tracking
+- [x] **INFRA-02**: Form state persistence in Redis
+- [x] **INFRA-03**: TTL handling for expired transactions
 
 ---
 
@@ -115,29 +115,29 @@
 | INFRA-01 | Phase 2 | Deferred |
 | INFRA-02 | Phase 2 | Complete |
 | INFRA-03 | Phase 2 | Deferred |
-| INIT-01 | Phase 3 | Pending |
-| INIT-02 | Phase 3 | Pending |
-| INIT-03 | Phase 3 | Pending |
-| INIT-04 | Phase 3 | Pending |
-| INIT-05 | Phase 3 | Pending |
-| INIT-06 | Phase 3 | Pending |
-| INIT-07 | Phase 3 | Pending |
-| CONF-01 | Phase 4 | Pending |
-| CONF-02 | Phase 4 | Pending |
-| CONF-03 | Phase 4 | Pending |
-| CONF-04 | Phase 4 | Pending |
-| CONF-05 | Phase 4 | Pending |
-| STAT-01 | Phase 4 | Pending |
-| STAT-02 | Phase 4 | Pending |
-| STAT-03 | Phase 4 | Pending |
-| STAT-04 | Phase 4 | Pending |
-| CTX-01 | Phase 5 | Pending |
-| CTX-02 | Phase 5 | Pending |
-| CTX-03 | Phase 5 | Pending |
-| TEST-01 | Phase 5 | Pending |
-| TEST-02 | Phase 5 | Pending |
-| TEST-03 | Phase 5 | Pending |
-| TEST-04 | Phase 5 | Pending |
+| INIT-01 | Phase 3 | Complete |
+| INIT-02 | Phase 3 | Complete |
+| INIT-03 | Phase 3 | Complete |
+| INIT-04 | Phase 3 | Complete |
+| INIT-05 | Phase 3 | Complete |
+| INIT-06 | Phase 3 | Complete |
+| INIT-07 | Phase 3 | Complete |
+| CONF-01 | Phase 4 | Complete |
+| CONF-02 | Phase 4 | Complete |
+| CONF-03 | Phase 4 | Complete |
+| CONF-04 | Phase 4 | Complete |
+| CONF-05 | Phase 4 | Complete |
+| STAT-01 | Phase 4 | Complete |
+| STAT-02 | Phase 4 | Complete |
+| STAT-03 | Phase 4 | Complete |
+| STAT-04 | Phase 4 | Complete |
+| CTX-01 | Phase 5 | Complete |
+| CTX-02 | Phase 5 | Complete |
+| CTX-03 | Phase 5 | Complete |
+| TEST-01 | Phase 5 | Complete |
+| TEST-02 | Phase 5 | Complete |
+| TEST-03 | Phase 5 | Complete |
+| TEST-04 | Phase 5 | Complete |
 
 ---
 
