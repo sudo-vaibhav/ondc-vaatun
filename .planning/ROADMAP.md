@@ -70,10 +70,14 @@ Plans:
   5. User can review all entered data before proceeding to payment
   6. init endpoint sends complete KYC payload to BPP with proper signing
   7. on_init callback captures response with payment link
-**Plans**: TBD
+**Plans**: 5 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 03-01-PLAN.md — Backend init/on_init procedures and init-store with Redis state management
+- [ ] 03-02-PLAN.md — Nominee Zod schema and NomineeInput component
+- [ ] 03-03-PLAN.md — ReviewSection and ReviewPage components with quote sidebar
+- [ ] 03-04-PLAN.md — Extend KYCForm with Nominee and Review steps
+- [ ] 03-05-PLAN.md — Init polling page and quote page integration
 
 ### Phase 4: Confirm & Status Flows
 **Goal**: Users can complete payment, receive policy confirmation, and check policy status
@@ -119,6 +123,6 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 |-------|----------------|--------|-----------|
 | 1. Select Flow | 3/3 | Complete | 2026-02-02 |
 | 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
-| 3. Init Flow | 0/TBD | Not started | - |
+| 3. Init Flow | 0/5 | Not started | - |
 | 4. Confirm & Status Flows | 0/TBD | Not started | - |
 | 5. Protocol Context & Testing | 0/TBD | Not started | - |
