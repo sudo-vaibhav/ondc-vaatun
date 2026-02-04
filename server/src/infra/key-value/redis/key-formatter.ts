@@ -8,6 +8,7 @@
 const KEY_PREFIXES = {
   SEARCH: "search",
   SELECT: "select",
+  INIT: "init",
 } as const;
 
 /**
@@ -43,9 +44,26 @@ export function selectKey(transactionId: string, messageId: string): string {
  */
 export function selectChannel(
   transactionId: string,
-  messageId: string
+  messageId: string,
 ): string {
   return `${KEY_PREFIXES.SELECT}:${transactionId}:${messageId}:updates`;
+}
+
+/**
+ * Format an init entry key
+ */
+export function initKey(transactionId: string, messageId: string): string {
+  return `${KEY_PREFIXES.INIT}:${transactionId}:${messageId}`;
+}
+
+/**
+ * Format an init Pub/Sub channel
+ */
+export function initChannel(
+  transactionId: string,
+  messageId: string,
+): string {
+  return `${KEY_PREFIXES.INIT}:${transactionId}:${messageId}:updates`;
 }
 
 /**
@@ -57,4 +75,6 @@ export const keyFormatter = {
   searchChannel,
   select: selectKey,
   selectChannel,
+  init: initKey,
+  initChannel,
 } as const;
