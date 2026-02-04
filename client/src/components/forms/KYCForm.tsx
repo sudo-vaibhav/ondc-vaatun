@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { Plus } from "lucide-react";
 
 import { useFormPersistence } from "@/hooks/useFormPersistence";
 import { generateSubmissionId } from "@/lib/submission-id";
@@ -19,12 +20,15 @@ import {
   PhoneInput,
   DateInput,
   PEDSelector,
+  NomineeInput,
   type PEDConditionId,
   type PEDConditions,
 } from "./fields";
+import { ReviewPage } from "../review";
 
 import { personalInfoSchema } from "@/lib/form-schemas/personal-info";
 import { panDobSchema } from "@/lib/form-schemas/pan-dob";
+import type { NomineeData } from "@/lib/form-schemas/nominee";
 
 // Define PED conditions schema inline (to avoid ZodEffects complexity from pedSchema.refine())
 const conditionsSchema = z.object({
@@ -37,33 +41,42 @@ const conditionsSchema = z.object({
   other: z.boolean(),
 });
 
-// Combined form data schema - merge all schemas
-const kycFormSchema = z
-  .object({
-    ...personalInfoSchema.shape,
-    ...panDobSchema.shape,
-    hasPED: z.boolean(),
-    conditions: conditionsSchema,
-    otherDescription: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      // If "other" is selected, description is required
-      if (data.conditions.other) {
-        return (
-          data.otherDescription !== undefined &&
-          data.otherDescription.trim().length > 0
-        );
-      }
-      return true;
-    },
-    {
-      message: "Please describe your condition",
-      path: ["otherDescription"],
-    }
-  );
+// Base schema without refinement for type inference
+const baseKycSchema = z.object({
+  ...personalInfoSchema.shape,
+  ...panDobSchema.shape,
+  hasPED: z.boolean(),
+  conditions: conditionsSchema,
+  otherDescription: z.string().optional(),
+  nominees: z.array(z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    dateOfBirth: z.string(),
+    relationship: z.string(),
+  })).max(2),
+  termsAccepted: z.boolean(),
+});
 
-type KYCFormData = z.infer<typeof kycFormSchema>;
+// Combined form data schema with refinement
+const kycFormSchema = baseKycSchema.refine(
+  (data) => {
+    // If "other" is selected, description is required
+    if (data.conditions.other) {
+      return (
+        data.otherDescription !== undefined &&
+        data.otherDescription.trim().length > 0
+      );
+    }
+    return true;
+  },
+  {
+    message: "Please describe your condition",
+    path: ["otherDescription"],
+  }
+);
+
+// Use base schema for type inference to avoid ZodEffects complexity
+type KYCFormData = z.infer<typeof baseKycSchema>;
 
 const defaultValues: KYCFormData = {
   firstName: "",
@@ -87,6 +100,8 @@ const defaultValues: KYCFormData = {
     other: false,
   },
   otherDescription: "",
+  nominees: [],
+  termsAccepted: false,
 };
 
 const FORM_ID = "kyc-form";
@@ -94,16 +109,28 @@ const STEP_TITLES = [
   "Personal Information",
   "Identity Verification",
   "Health Information",
+  "Nominee Details",
+  "Review & Submit",
 ];
 
 export interface KYCFormProps {
   onSubmit: (data: KYCFormData, submissionId: string) => void;
   className?: string;
+  quote?: {
+    price: { currency: string; value: string };
+    breakup?: Array<{
+      title: string;
+      price: { currency: string; value: string };
+      item?: { id: string; add_ons?: Array<{ id: string }> };
+    }>;
+    ttl?: string;
+  };
 }
 
-export function KYCForm({ onSubmit, className }: KYCFormProps) {
+export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
+  const [showNomineeForm, setShowNomineeForm] = useState(false);
 
   const { getStoredData, saveData, clearData, hasStoredData } =
     useFormPersistence<KYCFormData>({
@@ -161,7 +188,7 @@ export function KYCForm({ onSubmit, className }: KYCFormProps) {
     const isValid = await trigger(stepFields);
 
     if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, 2));
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   }, [currentStep, trigger]);
 
@@ -183,6 +210,56 @@ export function KYCForm({ onSubmit, className }: KYCFormProps) {
   const hasPED = watch("hasPED");
   const conditions = watch("conditions");
   const otherDescription = watch("otherDescription");
+  const nominees = watch("nominees") || [];
+  const termsAccepted = watch("termsAccepted");
+
+  // Nominee management handlers
+  const addNominee = useCallback(() => {
+    const current = getValues("nominees") || [];
+    if (current.length < 2) {
+      setValue("nominees", [
+        ...current,
+        { firstName: "", lastName: "", dateOfBirth: "", relationship: "" },
+      ]);
+      setShowNomineeForm(true);
+    }
+  }, [getValues, setValue]);
+
+  const updateNominee = useCallback(
+    (index: number, nominee: NomineeData) => {
+      const current = getValues("nominees") || [];
+      const updated = [...current];
+      updated[index] = nominee;
+      setValue("nominees", updated);
+      saveData(getValues());
+    },
+    [getValues, setValue, saveData]
+  );
+
+  const removeNominee = useCallback(
+    (index: number) => {
+      const current = getValues("nominees") || [];
+      setValue(
+        "nominees",
+        current.filter((_, i) => i !== index)
+      );
+      saveData(getValues());
+    },
+    [getValues, setValue, saveData]
+  );
+
+  // Navigate to specific step (for review edit links)
+  const goToStep = useCallback((step: number) => {
+    setCurrentStep(step);
+  }, []);
+
+  // Section to step mapping for review edit navigation
+  const sectionStepMap: Record<string, number> = {
+    personal: 0,
+    identity: 1,
+    health: 2,
+    nominee: 3,
+  };
 
   return (
     <div className={className}>
@@ -194,7 +271,7 @@ export function KYCForm({ onSubmit, className }: KYCFormProps) {
 
       <StepProgress
         currentStep={currentStep}
-        totalSteps={3}
+        totalSteps={5}
         stepTitles={STEP_TITLES}
         className="mb-8"
       />
@@ -409,6 +486,67 @@ export function KYCForm({ onSubmit, className }: KYCFormProps) {
               )}
             </div>
           </FormStep>
+
+          {/* Step 4: Nominee (prompt-but-skippable) */}
+          <FormStep
+            title="Nominee Details"
+            description="Add beneficiaries for your policy (optional)"
+          >
+            <div className="space-y-6">
+              {!showNomineeForm && nominees.length === 0 ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground mb-4">
+                    Would you like to add a nominee to your policy?
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button type="button" onClick={addNominee}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Nominee
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={goToNextStep}>
+                      Skip for Now
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {nominees.map((nominee, index) => (
+                    <NomineeInput
+                      key={`nominee-${index}`}
+                      nominee={nominee}
+                      index={index}
+                      onUpdate={(updated) => updateNominee(index, updated)}
+                      onRemove={() => removeNominee(index)}
+                    />
+                  ))}
+                  {nominees.length < 2 && (
+                    <Button type="button" variant="outline" onClick={addNominee}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Another Nominee
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          </FormStep>
+
+          {/* Step 5: Review & Submit */}
+          <FormStep
+            title="Review & Submit"
+            description="Verify your details before proceeding"
+          >
+            <ReviewPage
+              formData={getValues()}
+              quote={quote || { price: { currency: "INR", value: "0" } }}
+              onEdit={(section) => goToStep(sectionStepMap[section])}
+              onSubmit={() => {}}
+              termsAccepted={termsAccepted}
+              onTermsChange={(checked) => {
+                setValue("termsAccepted", checked);
+                saveData(getValues());
+              }}
+            />
+          </FormStep>
         </MultiStepForm>
 
         {/* Navigation buttons */}
@@ -422,12 +560,14 @@ export function KYCForm({ onSubmit, className }: KYCFormProps) {
             Previous
           </Button>
 
-          {currentStep < 2 ? (
+          {currentStep < 4 ? (
             <Button type="button" onClick={goToNextStep}>
               Next
             </Button>
           ) : (
-            <Button type="submit">Submit</Button>
+            <Button type="submit" disabled={!termsAccepted}>
+              Submit
+            </Button>
           )}
         </div>
       </form>
@@ -453,6 +593,10 @@ function getStepFields(step: number): (keyof KYCFormData)[] {
       return ["panNumber", "dateOfBirth"];
     case 2:
       return ["hasPED", "conditions", "otherDescription"];
+    case 3:
+      return ["nominees"];
+    case 4:
+      return ["termsAccepted"];
     default:
       return [];
   }

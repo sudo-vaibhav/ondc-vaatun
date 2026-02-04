@@ -39,6 +39,16 @@ interface Quote {
   ttl?: string;
 }
 
+interface PEDConditions {
+  diabetes: boolean;
+  bloodPressure: boolean;
+  heartAilments: boolean;
+  asthma: boolean;
+  thyroid: boolean;
+  cancer: boolean;
+  other: boolean;
+}
+
 interface FormData {
   firstName: string;
   lastName: string;
@@ -51,7 +61,7 @@ interface FormData {
   panNumber: string;
   dateOfBirth: string;
   hasPED: boolean;
-  conditions?: string[];
+  conditions: PEDConditions;
   otherDescription?: string;
   nominees?: Nominee[];
 }
@@ -96,6 +106,19 @@ function formatRelationship(relationship: string): string {
     other: "Other",
   };
   return map[relationship] || relationship;
+}
+
+function formatConditionLabel(condition: string): string {
+  const map: Record<string, string> = {
+    diabetes: "Diabetes",
+    bloodPressure: "High Blood Pressure",
+    heartAilments: "Heart Ailments",
+    asthma: "Asthma",
+    thyroid: "Thyroid Disorders",
+    cancer: "Cancer",
+    other: "Other",
+  };
+  return map[condition] || condition;
 }
 
 function formatCurrency(value: string, currency: string = "INR"): string {
@@ -178,16 +201,26 @@ export function ReviewPage({
           <dl>
             <dt className="text-sm text-muted-foreground">Pre-existing Conditions</dt>
             <dd className="font-medium">
-              {formData.hasPED && formData.conditions && formData.conditions.length > 0 ? (
-                <ul className="list-disc list-inside">
-                  {formData.conditions.map((condition) => (
-                    <li key={condition}>
-                      {condition === "other" && formData.otherDescription
-                        ? `Other: ${formData.otherDescription}`
-                        : condition.replace(/_/g, " ")}
-                    </li>
-                  ))}
-                </ul>
+              {formData.hasPED && formData.conditions ? (
+                (() => {
+                  const selectedConditions = Object.entries(formData.conditions)
+                    .filter(([_, value]) => value)
+                    .map(([key]) => key);
+                  if (selectedConditions.length === 0) {
+                    return <span className="text-muted-foreground">None declared</span>;
+                  }
+                  return (
+                    <ul className="list-disc list-inside">
+                      {selectedConditions.map((condition) => (
+                        <li key={condition}>
+                          {condition === "other" && formData.otherDescription
+                            ? `Other: ${formData.otherDescription}`
+                            : formatConditionLabel(condition)}
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                })()
               ) : (
                 <span className="text-muted-foreground">None declared</span>
               )}
