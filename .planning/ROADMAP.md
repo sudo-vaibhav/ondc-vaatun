@@ -92,10 +92,13 @@ Plans:
   6. User can query policy status from BPP
   7. Policy view page displays policy details
   8. User can download policy document (PDF if available)
-**Plans**: TBD
+**Plans**: 4 plans
 
 Plans:
-- [ ] TBD during planning
+- [ ] 04-01-PLAN.md — Confirm and status stores with Redis state management
+- [ ] 04-02-PLAN.md — Gateway procedures (confirm, onConfirm, status, onStatus) and results queries
+- [ ] 04-03-PLAN.md — Payment callback page with confirm trigger and status polling
+- [ ] 04-04-PLAN.md — Policy success and view pages with Captain Otter celebration
 
 ### Phase 5: Protocol Context & Testing
 **Goal**: ONDC FIS13 protocol specs embedded in codebase and comprehensive E2E test coverage
@@ -124,5 +127,5 @@ Phases execute in numeric order: 1 → 2 → 3 → 4 → 5
 | 1. Select Flow | 3/3 | Complete | 2026-02-02 |
 | 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
 | 3. Init Flow | 5/5 | Complete | 2026-02-04 |
-| 4. Confirm & Status Flows | 0/TBD | Not started | - |
+| 4. Confirm & Status Flows | 0/4 | Not started | - |
 | 5. Protocol Context & Testing | 0/TBD | Not started | - |
