@@ -8,3 +8,4 @@ export {
   type PEDConditionId,
   PED_CONDITIONS,
 } from "./PEDSelector";
+export { NomineeInput, type NomineeInputProps } from "./NomineeInput";
