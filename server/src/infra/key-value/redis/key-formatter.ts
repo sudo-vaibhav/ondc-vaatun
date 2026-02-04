@@ -9,6 +9,8 @@ const KEY_PREFIXES = {
   SEARCH: "search",
   SELECT: "select",
   INIT: "init",
+  CONFIRM: "confirm",
+  STATUS: "status",
 } as const;
 
 /**
@@ -67,6 +69,37 @@ export function initChannel(
 }
 
 /**
+ * Format a confirm entry key
+ */
+export function confirmKey(transactionId: string, messageId: string): string {
+  return `${KEY_PREFIXES.CONFIRM}:${transactionId}:${messageId}`;
+}
+
+/**
+ * Format a confirm Pub/Sub channel
+ */
+export function confirmChannel(
+  transactionId: string,
+  messageId: string,
+): string {
+  return `${KEY_PREFIXES.CONFIRM}:${transactionId}:${messageId}:updates`;
+}
+
+/**
+ * Format a status entry key (keyed by orderId only)
+ */
+export function statusKey(orderId: string): string {
+  return `${KEY_PREFIXES.STATUS}:${orderId}`;
+}
+
+/**
+ * Format a status Pub/Sub channel (keyed by orderId only)
+ */
+export function statusChannel(orderId: string): string {
+  return `${KEY_PREFIXES.STATUS}:${orderId}:updates`;
+}
+
+/**
  * Key formatter object for convenient access
  */
 export const keyFormatter = {
@@ -77,4 +110,8 @@ export const keyFormatter = {
   selectChannel,
   init: initKey,
   initChannel,
+  confirm: confirmKey,
+  confirmChannel,
+  status: statusKey,
+  statusChannel,
 } as const;
