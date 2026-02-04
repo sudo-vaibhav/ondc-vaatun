@@ -15,12 +15,34 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // CORS - must come before routes
+// In development, allow localhost and ngrok subscriber URL
+const getAllowedOrigins = (): string[] => {
+  const origins: string[] = [];
+
+  if (process.env.NODE_ENV === "development") {
+    origins.push("http://localhost:4823");
+    // Allow ngrok URL if configured
+    if (process.env.SUBSCRIBER_ID) {
+      origins.push(`https://${process.env.SUBSCRIBER_ID}`);
+    }
+  } else if (process.env.CLIENT_URL) {
+    origins.push(process.env.CLIENT_URL);
+  }
+
+  return origins;
+};
+
 app.use(
   cors({
-    origin:
-      process.env.NODE_ENV === "development"
-        ? "http://localhost:4823"
-        : process.env.CLIENT_URL,
+    origin: (origin, callback) => {
+      const allowed = getAllowedOrigins();
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin || allowed.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(null, false);
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
