@@ -388,8 +388,10 @@ test.describe("Gateway API", () => {
     });
   });
 
-  test.describe("Select Integration Flow", () => {
-    test("select endpoint returns messageId on success", async ({ request }) => {
+  test.describe("Select Flow Integration", () => {
+    test("select endpoint returns messageId on success", async ({
+      request,
+    }) => {
       const transactionId = `019abc12-3456-7890-abcd-${Date.now().toString(16)}`;
 
       // Call select - will fail to reach mock BPP but validates the endpoint works
@@ -463,7 +465,10 @@ test.describe("Gateway API", () => {
               quote: {
                 price: { currency: "INR", value: "5500" },
                 breakup: [
-                  { title: "BASE_PRICE", price: { currency: "INR", value: "5000" } },
+                  {
+                    title: "BASE_PRICE",
+                    price: { currency: "INR", value: "5000" },
+                  },
                   { title: "TAX", price: { currency: "INR", value: "500" } },
                 ],
                 ttl: "P15D",
@@ -528,6 +533,210 @@ test.describe("Gateway API", () => {
       expect(pollData.hasResponse).toBe(true);
       expect(pollData.error).toBeDefined();
       expect(pollData.error.code).toBe("40001");
+    });
+  });
+
+  test.describe("Status Flow Integration", () => {
+    test("status endpoint returns messageId on success", async ({
+      request,
+    }) => {
+      const transactionId = `test-status-${Date.now()}`;
+      const orderId = `order-${Date.now()}`;
+
+      // Call status - will fail to reach mock BPP but validates the endpoint works
+      const statusResponse = await request.post("/api/ondc/status", {
+        data: {
+          transactionId,
+          orderId,
+          bppId: "test-bpp.example.com",
+          bppUri: "https://test-bpp.example.com/api/ondc",
+        },
+      });
+      const statusBody = await statusResponse.text();
+
+      // Accept 200 (success) or 503 (BPP unreachable) as valid responses
+      expect(
+        [200, 503].includes(statusResponse.status()),
+        `Expected 200 or 503 but got ${statusResponse.status()}. Response body: ${statusBody}`,
+      ).toBe(true);
+
+      // On 200 success, verify messageId, transactionId, and orderId
+      if (statusResponse.status() === 200) {
+        const statusData = JSON.parse(statusBody);
+        expect(statusData).toHaveProperty("messageId");
+        expect(statusData).toHaveProperty("transactionId");
+        expect(statusData).toHaveProperty("orderId");
+        expect(statusData.transactionId).toBe(transactionId);
+        expect(statusData.orderId).toBe(orderId);
+
+        // Verify UUID format for messageId
+        expect(statusData.messageId).toMatch(
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i,
+        );
+      }
+    });
+
+    test("on_status stores policy details for polling", async ({
+      request,
+    }) => {
+      const transactionId = `test-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const orderId = `order-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+      // Step 1: Simulate on_status callback with full policy details
+      const onStatusResponse = await request.post("/api/ondc/on_status", {
+        data: {
+          context: {
+            transaction_id: transactionId,
+            bpp_id: "test-bpp",
+            timestamp: new Date().toISOString(),
+          },
+          message: {
+            order: {
+              id: orderId,
+              status: "COMPLETE",
+              provider: { id: "P1", descriptor: { name: "Test Insurance Co" } },
+              items: [
+                {
+                  id: "I1",
+                  descriptor: { name: "Health Plan Premium" },
+                },
+              ],
+              fulfillments: [
+                {
+                  id: "F1",
+                  type: "POLICY",
+                  state: { descriptor: { code: "GRANTED" } },
+                },
+              ],
+              documents: [
+                {
+                  descriptor: { code: "policy-doc" },
+                  url: "https://test-insurance.example.com/policies/POL123.pdf",
+                  mime_type: "application/pdf",
+                },
+              ],
+            },
+          },
+        },
+      });
+
+      expect(onStatusResponse.status()).toBe(200);
+      const onStatusData = await onStatusResponse.json();
+      expect(onStatusData.message.ack.status).toBe("ACK");
+
+      // Step 2: Poll for results - should have the policy details
+      const pollResponse = await request.get(
+        `/api/ondc/status-results?order_id=${orderId}`,
+      );
+
+      expect(pollResponse.status()).toBe(200);
+
+      const pollData = await pollResponse.json();
+      expect(pollData.found).toBe(true);
+      expect(pollData.hasResponse).toBe(true);
+      expect(pollData.orderId).toBe(orderId);
+      expect(pollData.orderStatus).toBe("COMPLETE");
+      expect(pollData.provider).toBeDefined();
+      expect(pollData.provider.descriptor.name).toBe("Test Insurance Co");
+      expect(pollData.items).toBeDefined();
+      expect(pollData.items[0].descriptor.name).toBe("Health Plan Premium");
+      expect(pollData.policyDocument).toBeDefined();
+      expect(pollData.policyDocument.url).toBe(
+        "https://test-insurance.example.com/policies/POL123.pdf",
+      );
+    });
+
+    test("on_status stores policy with documents", async ({ request }) => {
+      const transactionId = `test-docs-${Date.now()}`;
+      const orderId = `order-docs-${Date.now()}`;
+
+      // Simulate on_status callback with multiple documents
+      await request.post("/api/ondc/on_status", {
+        data: {
+          context: {
+            transaction_id: transactionId,
+            bpp_id: "test-bpp",
+            timestamp: new Date().toISOString(),
+          },
+          message: {
+            order: {
+              id: orderId,
+              status: "COMPLETE",
+              provider: { id: "P1" },
+              fulfillments: [
+                {
+                  id: "F1",
+                  type: "POLICY",
+                  state: { descriptor: { code: "GRANTED" } },
+                },
+              ],
+              documents: [
+                {
+                  descriptor: { code: "policy-doc" },
+                  url: "https://test-insurance.example.com/policies/POL456.pdf",
+                  mime_type: "application/pdf",
+                },
+                {
+                  descriptor: { code: "terms-and-conditions" },
+                  url: "https://test-insurance.example.com/terms.pdf",
+                  mime_type: "application/pdf",
+                },
+              ],
+            },
+          },
+        },
+      });
+
+      // Poll for results
+      const pollResponse = await request.get(
+        `/api/ondc/status-results?order_id=${orderId}`,
+      );
+
+      expect(pollResponse.status()).toBe(200);
+
+      const pollData = await pollResponse.json();
+      expect(pollData.found).toBe(true);
+      expect(pollData.hasResponse).toBe(true);
+      expect(pollData.documents).toBeDefined();
+      expect(pollData.documents.length).toBe(2);
+      expect(pollData.policyDocument).toBeDefined();
+      expect(pollData.policyDocument.descriptor.code).toBe("policy-doc");
+      expect(pollData.policyDocument.url).toBe(
+        "https://test-insurance.example.com/policies/POL456.pdf",
+      );
+    });
+
+    test("on_status with BPP error stores error for polling", async ({
+      request,
+    }) => {
+      const orderId = `order-err-${Date.now()}`;
+
+      // Step 1: Simulate on_status callback with error
+      await request.post("/api/ondc/on_status", {
+        data: {
+          context: { bpp_id: "test-bpp", timestamp: new Date().toISOString() },
+          message: { order: { id: orderId } },
+          error: {
+            type: "DOMAIN-ERROR",
+            code: "40004",
+            message: "Order not found",
+          },
+        },
+      });
+
+      // Step 2: Poll for results - should have the error
+      const pollResponse = await request.get(
+        `/api/ondc/status-results?order_id=${orderId}`,
+      );
+
+      expect(pollResponse.status()).toBe(200);
+
+      const pollData = await pollResponse.json();
+      expect(pollData.found).toBe(true);
+      expect(pollData.hasResponse).toBe(true);
+      expect(pollData.error).toBeDefined();
+      expect(pollData.error.code).toBe("40004");
+      expect(pollData.error.message).toBe("Order not found");
     });
   });
 });
