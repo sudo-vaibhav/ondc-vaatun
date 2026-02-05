@@ -26,7 +26,7 @@ export class TenantKeyValueStore {
    */
   static async create(
     tenant: Tenant,
-    redisUrl: string
+    redisUrl: string,
   ): Promise<TenantKeyValueStore> {
     const client = await getCommandConnection(redisUrl);
     return new TenantKeyValueStore(tenant, client, redisUrl);
@@ -47,7 +47,7 @@ export class TenantKeyValueStore {
   async set<T>(
     key: string,
     value: T,
-    options?: { ttlMs?: number }
+    options?: { ttlMs?: number },
   ): Promise<void> {
     const fullKey = this.keyPrefix + key;
     const serialized = JSON.stringify(value);
@@ -187,7 +187,7 @@ export class TenantKeyValueStore {
     }
 
     console.log(
-      `[KV] Cleared all data for tenant: ${this.tenant.subscriberId}`
+      `[KV] Cleared all data for tenant: ${this.tenant.subscriberId}`,
     );
   }
 

@@ -44,7 +44,8 @@ function SearchResultsPage() {
         {data?.found ? (
           <div>
             <p className="mb-4">
-              Found {data.responseCount} responses from {data.providers?.length || 0} providers
+              Found {data.responseCount} responses from{" "}
+              {data.providers?.length || 0} providers
             </p>
             <pre className="bg-muted p-4 rounded-lg overflow-auto">
               {JSON.stringify(data, null, 2)}

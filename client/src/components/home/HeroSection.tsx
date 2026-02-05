@@ -1,4 +1,3 @@
-
 // import Spline from "@splinetool/react-spline";
 import { ArrowRight, ChevronDown, Sparkles } from "lucide-react";
 import { Component, type ReactNode, Suspense, useState } from "react";

@@ -34,8 +34,9 @@ export class ONDCClient {
     const bodyWithContext = body as { context?: { timestamp?: string } };
     if (bodyWithContext?.context?.timestamp) {
       created =
-        Math.floor(new Date(bodyWithContext.context.timestamp).getTime() / 1000) -
-        CLOCK_DRIFT_OFFSET_SECONDS;
+        Math.floor(
+          new Date(bodyWithContext.context.timestamp).getTime() / 1000,
+        ) - CLOCK_DRIFT_OFFSET_SECONDS;
     } else {
       created = Math.floor(Date.now() / 1000) - CLOCK_DRIFT_OFFSET_SECONDS;
     }
@@ -49,7 +50,7 @@ export class ONDCClient {
       "from timestamp:",
       bodyWithContext?.context?.timestamp,
       "→",
-      new Date(created * 1000).toISOString()
+      new Date(created * 1000).toISOString(),
     );
 
     const signature = this.tenant.signMessage(signingString);
@@ -61,7 +62,7 @@ export class ONDCClient {
   async send<T = unknown>(
     url: string | URL,
     method: "POST" | "GET",
-    body: object
+    body: object,
   ): Promise<T> {
     try {
       const authHeader = await this.createAuthorizationHeader(body);
@@ -78,7 +79,7 @@ export class ONDCClient {
       if (!response.ok) {
         const errorText = await response.text();
         throw new Error(
-          `ONDC Request Failed [${response.status}]: ${errorText}`
+          `ONDC Request Failed [${response.status}]: ${errorText}`,
         );
       }
 

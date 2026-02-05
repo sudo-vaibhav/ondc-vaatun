@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { router, publicProcedure } from "../trpc";
+import { publicProcedure, router } from "../trpc";
 
 const SubscriberSchema = z
   .object({
@@ -38,12 +38,12 @@ export const registryRouter = router({
     const response = await ondcClient.send<SubscriberDetails[]>(
       registryUrl,
       "POST",
-      lookupPayload
+      lookupPayload,
     );
 
     console.log(
       "[Lookup] Registry Response:",
-      JSON.stringify(response, null, 2)
+      JSON.stringify(response, null, 2),
     );
 
     return response;
@@ -112,7 +112,7 @@ export const registryRouter = router({
 
     console.log(
       "[Subscribe] ONDC Response:",
-      JSON.stringify(response, null, 2)
+      JSON.stringify(response, null, 2),
     );
 
     return response;
@@ -123,7 +123,7 @@ export const registryRouter = router({
       z.object({
         subscriber_id: z.string().optional(),
         challenge: z.string(),
-      })
+      }),
     )
     .mutation(async ({ ctx, input }) => {
       const { tenant } = ctx;

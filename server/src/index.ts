@@ -1,5 +1,5 @@
-import { app } from "./app";
 import ngrok from "@ngrok/ngrok";
+import { app } from "./app";
 
 const PORT = process.env.PORT || 4822;
 const NGROK_DOMAIN = process.env.SUBSCRIBER_ID;

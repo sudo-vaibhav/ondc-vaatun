@@ -12,10 +12,7 @@
     "declaration": true,
     "declarationMap": true
   },
-  "references": [
-    { "path": "./server" },
-    { "path": "./client" }
-  ],
+  "references": [{ "path": "./server" }, { "path": "./client" }],
   "include": [],
   "exclude": ["node_modules", "server", "client"]
 }

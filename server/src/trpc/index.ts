@@ -1,8 +1,8 @@
-import { router } from "./trpc";
+import { gatewayRouter } from "./routers/gateway";
 import { healthRouter } from "./routers/health";
 import { registryRouter } from "./routers/registry";
-import { gatewayRouter } from "./routers/gateway";
 import { resultsRouter } from "./routers/results";
+import { router } from "./trpc";
 
 export const appRouter = router({
   health: healthRouter,

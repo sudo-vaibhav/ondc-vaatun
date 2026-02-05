@@ -10,7 +10,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { HealthItemCard } from "@/components/product/HealthItemCard";
 import { ProductHeader } from "@/components/product/ProductHeader";
 import { useProductSearch } from "@/components/product/useProductSearch";
-import { PurchaserInfoDialog } from "@/components/purchaser/PurchaserInfoDialog";
+// Commented out: KYC info now collected in KYCForm after quote selection
+// import { PurchaserInfoDialog } from "@/components/purchaser/PurchaserInfoDialog";
 import type { SelectionData } from "@/components/search/ItemCard";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,16 +37,17 @@ function HealthSearchPage() {
   const { searchId } = Route.useParams();
   const navigate = useNavigate();
   const [selectingItemId, setSelectingItemId] = useState<string | null>(null);
-  const [showPurchaserDialog, setShowPurchaserDialog] = useState(false);
+  // Commented out: KYC info now collected in KYCForm after quote selection
+  // const [showPurchaserDialog, setShowPurchaserDialog] = useState(false);
 
   const { status, responses, responseCount, reconnect } = useProductSearch({
     transactionId: searchId,
   });
 
-  // Show purchaser info dialog on mount for confirmation
-  useEffect(() => {
-    setShowPurchaserDialog(true);
-  }, []);
+  // Commented out: KYC info now collected in KYCForm after quote selection
+  // useEffect(() => {
+  //   setShowPurchaserDialog(true);
+  // }, []);
 
   const handleItemSelect = useCallback(
     async (data: SelectionData) => {
@@ -71,7 +73,10 @@ function HealthSearchPage() {
         const result = await response.json();
         navigate({
           to: "/quote/$transactionId/$messageId",
-          params: { transactionId: result.transactionId, messageId: result.messageId },
+          params: {
+            transactionId: result.transactionId,
+            messageId: result.messageId,
+          },
         });
       } catch (error) {
         console.error("Selection error:", error);
@@ -109,10 +114,11 @@ function HealthSearchPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <PurchaserInfoDialog
+      {/* Commented out: KYC info now collected in KYCForm after quote selection */}
+      {/* <PurchaserInfoDialog
         open={showPurchaserDialog}
         onOpenChange={setShowPurchaserDialog}
-      />
+      /> */}
 
       <ProductHeader
         productType="health"

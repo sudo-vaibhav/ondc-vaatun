@@ -182,43 +182,23 @@ test.describe("Polling API", () => {
   });
 
   test.describe("Select Flow Integration", () => {
-    test.skip("select creates entry that can be polled, on_select updates it", async ({
+    test("on_select stores response that can be polled", async ({
       request,
     }) => {
-      const transactionId = "019abc12-3456-7890-abcd-integration-test";
+      // Generate unique IDs for this test
+      const transactionId = `test-poll-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      const messageId = `msg-poll-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 
-      // Step 1: Initiate a select (will fail to reach BPP but should create entry)
-      const selectResponse = await request.post("/api/ondc/select", {
-        data: {
-          transactionId,
-          bppId: "test-bpp.example.com",
-          bppUri: "https://test-bpp.example.com/api/ondc",
-          providerId: "provider-001",
-          itemId: "item-001",
-          parentItemId: "item-001",
-        },
-      });
-
-      // Accept both 200 (success) and 502/503 (BPP unreachable) as valid responses
-      // The API should still return a messageId for tracking
-      expect([200, 502, 503]).toContain(selectResponse.status());
-
-      const selectData = await selectResponse.json();
-      expect(selectData).toHaveProperty("messageId");
-      const { messageId } = selectData;
-
-      // Step 2: Poll for results (should find entry, no response yet)
-      const pollResponse = await request.get(
+      // Step 1: Poll before on_select - should not be found
+      const pollBefore = await request.get(
         `/api/ondc/select-results?transaction_id=${transactionId}&message_id=${messageId}`,
       );
+      expect(pollBefore.status()).toBe(200);
+      const pollBeforeData = await pollBefore.json();
+      expect(pollBeforeData.found).toBe(false);
+      expect(pollBeforeData.hasResponse).toBe(false);
 
-      expect(pollResponse.status()).toBe(200);
-
-      const pollData = await pollResponse.json();
-      expect(pollData.found).toBe(true);
-      expect(pollData.hasResponse).toBe(false);
-
-      // Step 3: Simulate an on_select callback
+      // Step 2: Simulate an on_select callback (creates entry and stores response)
       const onSelectResponse = await request.post("/api/ondc/on_select", {
         data: {
           context: {
@@ -248,18 +228,18 @@ test.describe("Polling API", () => {
 
       expect(onSelectResponse.status()).toBe(200);
 
-      // Step 4: Poll again - should now have the quote
-      const pollResponse2 = await request.get(
+      // Step 3: Poll after on_select - should now have the quote
+      const pollAfter = await request.get(
         `/api/ondc/select-results?transaction_id=${transactionId}&message_id=${messageId}`,
       );
 
-      expect(pollResponse2.status()).toBe(200);
+      expect(pollAfter.status()).toBe(200);
 
-      const pollData2 = await pollResponse2.json();
-      expect(pollData2.found).toBe(true);
-      expect(pollData2.hasResponse).toBe(true);
-      expect(pollData2.quote).toBeDefined();
-      expect(pollData2.quote.price.value).toBe("15000.00");
+      const pollAfterData = await pollAfter.json();
+      expect(pollAfterData.found).toBe(true);
+      expect(pollAfterData.hasResponse).toBe(true);
+      expect(pollAfterData.quote).toBeDefined();
+      expect(pollAfterData.quote.price.value).toBe("15000.00");
     });
 
     test("on_select creates entry if it does not exist", async ({

@@ -4,7 +4,7 @@ export function createSearchPayload(
   tenant: Tenant,
   transactionId: string,
   messageId: string,
-  categoryCode?: string
+  categoryCode?: string,
 ) {
   return {
     context: createPayloadContext(tenant, transactionId, messageId),
@@ -89,7 +89,7 @@ export function createSearchPayload(
 function createPayloadContext(
   tenant: Tenant,
   transactionId: string,
-  messageId: string
+  messageId: string,
 ) {
   return {
     action: "search",

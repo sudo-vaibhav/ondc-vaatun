@@ -41,11 +41,9 @@ const TenantEnvSchema = z.object({
       },
       {
         message: "Encryption private key must be valid base64",
-      }
+      },
     ),
-  ENCRYPTION_PUBLIC_KEY: z
-    .string()
-    .min(1, "Encryption public key is required"),
+  ENCRYPTION_PUBLIC_KEY: z.string().min(1, "Encryption public key is required"),
   ONDC_PUBLIC_KEY: z
     .string()
     .min(1, "ONDC public key is required")
@@ -60,7 +58,7 @@ const TenantEnvSchema = z.object({
       },
       {
         message: "ONDC public key must be valid base64",
-      }
+      },
     ),
   SIGNING_PRIVATE_KEY: z
     .string()
@@ -76,7 +74,7 @@ const TenantEnvSchema = z.object({
       },
       {
         message: "Signing private key must be valid base64",
-      }
+      },
     ),
   SIGNING_PUBLIC_KEY: z.string().min(1, "Signing public key is required"),
   ONDC_REGISTRY_URL: z.string().url(),
@@ -144,7 +142,7 @@ export class Tenant {
 
       if (this.sharedSecret.length !== 32) {
         throw new Error(
-          `Invalid shared secret length: ${this.sharedSecret.length} (expected 32 bytes for AES-256)`
+          `Invalid shared secret length: ${this.sharedSecret.length} (expected 32 bytes for AES-256)`,
         );
       }
 
@@ -178,7 +176,7 @@ export class Tenant {
       const decipher = crypto.createDecipheriv(
         "aes-256-ecb",
         this.sharedSecret,
-        iv
+        iv,
       );
       let decrypted = decipher.update(encryptedChallenge, "base64", "utf8");
       decrypted += decipher.final("utf8");

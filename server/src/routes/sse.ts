@@ -128,7 +128,7 @@ sseRouter.get("/search-stream/:transactionId", async (req, res) => {
     // Handle client disconnect
     req.on("close", () => {
       console.log(
-        `[SSE] Client disconnected for transaction: ${transactionId}`
+        `[SSE] Client disconnected for transaction: ${transactionId}`,
       );
       cleanup();
     });

@@ -1,4 +1,3 @@
-
 import { Check, Copy, Loader2, Play, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";

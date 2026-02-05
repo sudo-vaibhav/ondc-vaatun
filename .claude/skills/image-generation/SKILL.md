@@ -36,7 +36,20 @@ node .claude/skills/image-generation/scripts/generate.mjs --theme teal --style f
 # List available options
 node .claude/skills/image-generation/scripts/generate.mjs --list-themes
 node .claude/skills/image-generation/scripts/generate.mjs --list-styles
+node .claude/skills/image-generation/scripts/generate.mjs --list-backgrounds
+node .claude/skills/image-generation/scripts/generate.mjs --list-models
 node .claude/skills/image-generation/scripts/generate.mjs --list
+
+# Use higher quality model (costs more)
+node .claude/skills/image-generation/scripts/generate.mjs --prompt "Detailed artwork" --model pro
+
+# With reference images (for style consistency)
+node .claude/skills/image-generation/scripts/generate.mjs --prompt "Character waving" --ref ./samples/character.png
+node .claude/skills/image-generation/scripts/generate.mjs --prompt "Same style" --ref ./samples/  # scans directory
+
+# With background modes
+node .claude/skills/image-generation/scripts/generate.mjs --prompt "Otter at desk" --bg fade
+node .claude/skills/image-generation/scripts/generate.mjs --prompt "Otter with props" --bg transparent -o mascot.png
 ```
 
 ### Aspect Ratios
@@ -48,6 +61,24 @@ node .claude/skills/image-generation/scripts/generate.mjs --list
 | `1:1` | Accent patterns, icons, social media |
 | `3:4` | Portrait backgrounds, testimonials |
 | `21:9` | Ultra-wide banners |
+
+### Background Modes
+
+| Mode | Description |
+|------|-------------|
+| `solid` | Pure white background (default) |
+| `fade` | Environment fades to white at edges (mascot-with-context style) |
+| `transparent` | Generates image then auto-removes background (keeps character + props) |
+| `scene` | Full environmental background, no transparency |
+
+**Note:** The `transparent` mode uses `@huggingface/transformers` with the RMBG-1.4 model to automatically remove the background while preserving the character and environmental props.
+
+### Models
+
+| Model | Price | Description |
+|-------|-------|-------------|
+| `flash` | ~$0.039/image | Fast, cost-effective, good quality (default) |
+| `pro` | ~$0.134/image | Highest quality, preview model |
 
 ### Color Themes
 
@@ -143,7 +174,7 @@ Falls back to creating `public/images/` if none exist.
 
 - **Node.js** 18+
 - **AI_API_KEY** environment variable in project root `.env` file
-- Uses Google Gemini model: `gemini-3-pro-image-preview`
+- Uses Google Gemini models: `flash` (default, ~$0.039/image) or `pro` (~$0.134/image)
 
 ## Portability
 
@@ -157,7 +188,7 @@ This skill is designed to be copy-pasted across projects:
 The script automatically:
 - Finds the project root by looking for `.env` or `package.json`
 - Detects the appropriate output directory
-- Works with any package manager (npm, pnpm, yarn, bun)
+- Works with any package manager (npm, pnpm, pnpm, bun)
 
 ## Best Practices
 

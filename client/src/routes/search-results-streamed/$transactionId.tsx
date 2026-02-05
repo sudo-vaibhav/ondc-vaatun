@@ -16,7 +16,7 @@ interface SearchResult {
 export const Route = createFileRoute("/search-results-streamed/$transactionId")(
   {
     component: StreamedSearchResultsPage,
-  }
+  },
 );
 
 function StreamedSearchResultsPage() {
@@ -27,7 +27,7 @@ function StreamedSearchResultsPage() {
 
   useEffect(() => {
     const eventSource = new EventSource(
-      `/api/ondc/search-stream/${transactionId}`
+      `/api/ondc/search-stream/${transactionId}`,
     );
 
     eventSource.addEventListener("connected", () => {

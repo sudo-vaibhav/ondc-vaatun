@@ -8,6 +8,9 @@
 const KEY_PREFIXES = {
   SEARCH: "search",
   SELECT: "select",
+  INIT: "init",
+  CONFIRM: "confirm",
+  STATUS: "status",
 } as const;
 
 /**
@@ -43,9 +46,57 @@ export function selectKey(transactionId: string, messageId: string): string {
  */
 export function selectChannel(
   transactionId: string,
-  messageId: string
+  messageId: string,
 ): string {
   return `${KEY_PREFIXES.SELECT}:${transactionId}:${messageId}:updates`;
+}
+
+/**
+ * Format an init entry key
+ */
+export function initKey(transactionId: string, messageId: string): string {
+  return `${KEY_PREFIXES.INIT}:${transactionId}:${messageId}`;
+}
+
+/**
+ * Format an init Pub/Sub channel
+ */
+export function initChannel(
+  transactionId: string,
+  messageId: string,
+): string {
+  return `${KEY_PREFIXES.INIT}:${transactionId}:${messageId}:updates`;
+}
+
+/**
+ * Format a confirm entry key
+ */
+export function confirmKey(transactionId: string, messageId: string): string {
+  return `${KEY_PREFIXES.CONFIRM}:${transactionId}:${messageId}`;
+}
+
+/**
+ * Format a confirm Pub/Sub channel
+ */
+export function confirmChannel(
+  transactionId: string,
+  messageId: string,
+): string {
+  return `${KEY_PREFIXES.CONFIRM}:${transactionId}:${messageId}:updates`;
+}
+
+/**
+ * Format a status entry key (keyed by orderId only)
+ */
+export function statusKey(orderId: string): string {
+  return `${KEY_PREFIXES.STATUS}:${orderId}`;
+}
+
+/**
+ * Format a status Pub/Sub channel (keyed by orderId only)
+ */
+export function statusChannel(orderId: string): string {
+  return `${KEY_PREFIXES.STATUS}:${orderId}:updates`;
 }
 
 /**
@@ -57,4 +108,10 @@ export const keyFormatter = {
   searchChannel,
   select: selectKey,
   selectChannel,
+  init: initKey,
+  initChannel,
+  confirm: confirmKey,
+  confirmChannel,
+  status: statusKey,
+  statusChannel,
 } as const;

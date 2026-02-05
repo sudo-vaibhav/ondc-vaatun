@@ -40,7 +40,10 @@ function HomePage() {
       });
       if (!response.ok) throw new Error("Search failed");
       const { transactionId } = await response.json();
-      navigate({ to: "/health/$searchId", params: { searchId: transactionId } });
+      navigate({
+        to: "/health/$searchId",
+        params: { searchId: transactionId },
+      });
     } catch (error) {
       console.error("Failed to initiate health search:", error);
       setIsNavigating(false);
