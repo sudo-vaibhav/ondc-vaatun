@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 2 - Core Instrumentation (4 plans total)
-Plan: 3 of 4 complete (02-03 just completed)
+Phase: 2 - Core Instrumentation (3 plans total)
+Plan: 2 of 3 complete (02-01, 02-03)
 Status: In progress
-Last activity: 2026-02-09 — Completed 02-03-PLAN.md (HTTP Client Instrumentation)
+Last activity: 2026-02-09 — Completed 02-01-PLAN.md (Add tRPC tracing middleware)
 
-Progress: [███░░░░░░░] 29% (4/14 plans complete)
+Progress: [████░░░░░░] 29% (4/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -69,6 +69,9 @@ Key decisions from v1.0 affecting v2.0 work:
 - 72h trace retention in ClickHouse for local development (01-02)
 - Separate OTel collector config file mounted as Docker volume (01-02)
 - Tracing import placed as first line before all other imports (critical for auto-instrumentation) (01-03)
+- Tracer name "ondc-bap-trpc" version "0.1.0" for tRPC-specific spans (02-01)
+- Span naming: trpc.{type}.{path} for easy filtering by procedure type (02-01)
+- Applied tracing middleware to publicProcedure base - all procedures inherit automatically (02-01)
 - Capture full Authorization header without truncation (CONTEXT.md decision 4) (02-03)
 - Serialize body once and reuse for both fetch and span attribute (02-03)
 - Use numeric literals for SpanStatusCode enum to avoid runtime import (02-03)
@@ -89,7 +92,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09
-Stopped at: Completed 02-03-PLAN.md (HTTP Client Instrumentation)
+Last session: 2026-02-09 12:34:52Z
+Stopped at: Completed 02-01-PLAN.md (Add tRPC tracing middleware)
 Resume file: None
-Next step: Continue with 02-04 (tRPC procedure spans) or other Phase 2 plans
+Next step: Complete 02-02 (remaining plan in Phase 2)
