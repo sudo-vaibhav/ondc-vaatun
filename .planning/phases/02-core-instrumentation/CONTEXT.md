@@ -36,7 +36,7 @@
 
 ### Current State (from codebase exploration)
 - **Zero middleware** exists — all procedures use `publicProcedure` directly
-- **18 total procedures**: health(1), registry(3), gateway(12), results(2)
+- **19 total procedures**: health(1), registry(3), gateway(10), results(5)
 - **ONDCClient.send()** is the single HTTP call point for all outbound ONDC requests
 - **Singleton context**: tenant, ondcClient, kv are created once and reused
 - **Express middleware stack**: CORS → health → JSON → routes → tRPC → error handler

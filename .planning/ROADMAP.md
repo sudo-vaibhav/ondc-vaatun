@@ -47,7 +47,7 @@ Plans:
   2. gateway.search creates a child span labeled "ondc.search"
   3. transactionId and messageId captured as span attributes
   4. Outgoing ONDC HTTP requests show as child spans with full request payloads
-  5. HTTP client spans include Authorization header (truncated for security)
+  5. HTTP client spans include full Authorization header
   6. Span hierarchy shows: HTTP request → tRPC procedure → ONDC action → HTTP client
 **Plans**: 3 plans
 
