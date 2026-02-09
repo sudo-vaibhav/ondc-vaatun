@@ -651,6 +651,74 @@ const SubscriberSchema = z.looseObject({
 });
 ```
 
+### Running SigNoz (Trace Visualization)
+
+SigNoz provides distributed trace visualization for debugging and monitoring ONDC request flows. It uses ClickHouse for storage and exposes an OTLP collector to receive traces from the BAP server.
+
+#### Prerequisites
+
+- Docker Desktop installed and running
+
+#### SigNoz Commands
+
+| Command | Description |
+|---------|-------------|
+| `pnpm signoz:up` | Start SigNoz services in background |
+| `pnpm signoz:down` | Stop SigNoz services |
+| `pnpm signoz:clean` | Stop and remove all data (reset) |
+| `pnpm signoz:logs` | View SigNoz container logs |
+
+#### Quick Start
+
+```bash
+# Start SigNoz
+pnpm signoz:up
+
+# Access SigNoz UI
+open http://localhost:4830
+```
+
+#### Port Mapping
+
+| Service | Port | Purpose |
+|---------|------|---------|
+| Frontend (UI) | 4830 | Web interface for viewing traces |
+| OTLP HTTP | 4831 | Trace ingestion endpoint (used by BAP) |
+| OTLP gRPC | 4832 | Alternative trace ingestion |
+| Query Service API | 4833 | Backend API |
+| Query Service Metrics | 4834 | Prometheus metrics |
+| ClickHouse Native | 4835 | Database connection |
+| ClickHouse HTTP | 4836 | Database HTTP API |
+
+#### Architecture
+
+SigNoz consists of 4 services:
+
+1. **ClickHouse** - Database for storing trace data (72h retention)
+2. **OTel Collector** - Receives OTLP traces from BAP server
+3. **Query Service** - API for querying trace data
+4. **Frontend** - Web UI for visualizing traces
+
+All services run in Docker containers with persistent storage for ClickHouse data.
+
+#### Troubleshooting
+
+**Containers won't start:**
+```bash
+# Check Docker is running
+docker ps
+
+# View logs
+pnpm signoz:logs
+```
+
+**Data corruption:**
+```bash
+# Reset all data
+pnpm signoz:clean
+pnpm signoz:up
+```
+
 ## Deployment
 
 ### Current Deployment
