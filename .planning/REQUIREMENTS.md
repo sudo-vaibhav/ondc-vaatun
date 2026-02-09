@@ -1,9 +1,9 @@
 # Requirements: ONDC Health Insurance BAP
 
-**Version:** 1.0
-**Last Updated:** 2026-02-03
+**Version:** 2.0
+**Last Updated:** 2026-02-09
 
-## v1 Requirements
+## v1.0 Requirements (Complete)
 
 ### Select Flow
 
@@ -70,7 +70,22 @@
 
 ---
 
-## v2 Requirements (Deferred)
+## v2.0 Requirements (Active: Observability & Traceability)
+
+### OpenTelemetry Integration
+
+- [ ] **OTEL-01**: OpenTelemetry SDK integrated into Express server with auto-instrumentation
+- [ ] **OTEL-02**: Every outgoing ONDC request (search, select, init, confirm, status) creates trace span with full payload
+- [ ] **OTEL-03**: Every callback (on_search, on_select, on_init, on_confirm, on_status) linked to parent trace via transactionId
+- [ ] **OTEL-04**: Internal operations (Redis reads/writes, Ed25519 signing) visible as child spans
+- [ ] **OTEL-05**: HTTP headers, request/response bodies, and timing captured in span attributes
+- [ ] **OTEL-06**: OTLP exporter configured for vendor-neutral backend export (Jaeger, Grafana Tempo)
+- [ ] **OTEL-07**: Structured logging with transactionId correlation and trace context
+- [ ] **OTEL-08**: Error classification distinguishes BAP errors, gateway errors, and BPP errors
+
+---
+
+## v2.x Requirements (Deferred)
 
 - [ ] Family plans with multiple insured members
 - [ ] Form pre-filling from saved profiles
@@ -79,6 +94,10 @@
 - [ ] Claims submission flow
 - [ ] Offline form caching
 - [ ] User authentication and saved policies
+- [ ] Frontend/browser tracing
+- [ ] Custom dashboard UI
+- [ ] PII redaction in traces
+- [ ] Metrics and alerting
 
 ---
 
@@ -92,53 +111,73 @@
 | Policy renewal | New purchase flow first |
 | Claims flow | Different protocol flow entirely |
 | Iframe BPP forms | Building custom Typeform-style UI instead |
+| Custom dashboard UI | Use Jaeger/Grafana Tempo for visualization |
+| Frontend tracing | Server-side tracing covers critical path |
+| PII redaction | Full payloads needed for debugging; defer to production |
 
 ---
 
 ## Traceability
 
+### v1.0 Requirements
+
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| SEL-01 | Phase 1 | Complete |
-| SEL-02 | Phase 1 | Complete |
-| SEL-03 | Phase 1 | Complete |
-| SEL-04 | Phase 1 | Complete |
-| SEL-05 | Phase 1 | Complete |
-| FORM-01 | Phase 2 | Complete |
-| FORM-02 | Phase 2 | Complete |
-| FORM-03 | Phase 2 | Complete |
-| FORM-04 | Phase 2 | Complete |
-| FORM-05 | Phase 2 | Complete |
-| FORM-06 | Phase 2 | Complete |
-| FORM-07 | Phase 2 | Complete |
-| FORM-08 | Phase 2 | Complete |
-| INFRA-01 | Phase 2 | Deferred |
-| INFRA-02 | Phase 2 | Complete |
-| INFRA-03 | Phase 2 | Deferred |
-| INIT-01 | Phase 3 | Complete |
-| INIT-02 | Phase 3 | Complete |
-| INIT-03 | Phase 3 | Complete |
-| INIT-04 | Phase 3 | Complete |
-| INIT-05 | Phase 3 | Complete |
-| INIT-06 | Phase 3 | Complete |
-| INIT-07 | Phase 3 | Complete |
-| CONF-01 | Phase 4 | Complete |
-| CONF-02 | Phase 4 | Complete |
-| CONF-03 | Phase 4 | Complete |
-| CONF-04 | Phase 4 | Complete |
-| CONF-05 | Phase 4 | Complete |
-| STAT-01 | Phase 4 | Complete |
-| STAT-02 | Phase 4 | Complete |
-| STAT-03 | Phase 4 | Complete |
-| STAT-04 | Phase 4 | Complete |
-| CTX-01 | Phase 5 | Complete |
-| CTX-02 | Phase 5 | Complete |
-| CTX-03 | Phase 5 | Complete |
-| TEST-01 | Phase 5 | Complete |
-| TEST-02 | Phase 5 | Complete |
-| TEST-03 | Phase 5 | Complete |
-| TEST-04 | Phase 5 | Complete |
+| SEL-01 | v1.0 Phase 1 | Complete |
+| SEL-02 | v1.0 Phase 1 | Complete |
+| SEL-03 | v1.0 Phase 1 | Complete |
+| SEL-04 | v1.0 Phase 1 | Complete |
+| SEL-05 | v1.0 Phase 1 | Complete |
+| FORM-01 | v1.0 Phase 2 | Complete |
+| FORM-02 | v1.0 Phase 2 | Complete |
+| FORM-03 | v1.0 Phase 2 | Complete |
+| FORM-04 | v1.0 Phase 2 | Complete |
+| FORM-05 | v1.0 Phase 2 | Complete |
+| FORM-06 | v1.0 Phase 2 | Complete |
+| FORM-07 | v1.0 Phase 2 | Complete |
+| FORM-08 | v1.0 Phase 2 | Complete |
+| INFRA-01 | v1.0 Phase 2 | Complete |
+| INFRA-02 | v1.0 Phase 2 | Complete |
+| INFRA-03 | v1.0 Phase 2 | Complete |
+| INIT-01 | v1.0 Phase 3 | Complete |
+| INIT-02 | v1.0 Phase 3 | Complete |
+| INIT-03 | v1.0 Phase 3 | Complete |
+| INIT-04 | v1.0 Phase 3 | Complete |
+| INIT-05 | v1.0 Phase 3 | Complete |
+| INIT-06 | v1.0 Phase 3 | Complete |
+| INIT-07 | v1.0 Phase 3 | Complete |
+| CONF-01 | v1.0 Phase 4 | Complete |
+| CONF-02 | v1.0 Phase 4 | Complete |
+| CONF-03 | v1.0 Phase 4 | Complete |
+| CONF-04 | v1.0 Phase 4 | Complete |
+| CONF-05 | v1.0 Phase 4 | Complete |
+| STAT-01 | v1.0 Phase 4 | Complete |
+| STAT-02 | v1.0 Phase 4 | Complete |
+| STAT-03 | v1.0 Phase 4 | Complete |
+| STAT-04 | v1.0 Phase 4 | Complete |
+| CTX-01 | v1.0 Phase 5 | Complete |
+| CTX-02 | v1.0 Phase 5 | Complete |
+| CTX-03 | v1.0 Phase 5 | Complete |
+| TEST-01 | v1.0 Phase 5 | Complete |
+| TEST-02 | v1.0 Phase 5 | Complete |
+| TEST-03 | v1.0 Phase 5 | Complete |
+| TEST-04 | v1.0 Phase 5 | Complete |
+
+### v2.0 Requirements (Active)
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| OTEL-01 | v2.0 Phase 1 | Pending |
+| OTEL-06 | v2.0 Phase 1 | Pending |
+| OTEL-02 | v2.0 Phase 2 | Pending |
+| OTEL-05 | v2.0 Phase 2 | Pending |
+| OTEL-03 | v2.0 Phase 3 | Pending |
+| OTEL-04 | v2.0 Phase 3 | Pending |
+| OTEL-04 | v2.0 Phase 4 | Pending |
+| OTEL-05 | v2.0 Phase 4 | Pending |
+| OTEL-07 | v2.0 Phase 5 | Pending |
+| OTEL-08 | v2.0 Phase 5 | Pending |
 
 ---
 
-*Requirements defined: 2026-02-02*
+*Requirements updated: 2026-02-09 for v2.0 milestone*
