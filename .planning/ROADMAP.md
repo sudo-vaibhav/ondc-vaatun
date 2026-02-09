@@ -13,7 +13,7 @@ This roadmap delivers full end-to-end request traceability across BAP → Gatewa
 Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: SDK Foundation** - OpenTelemetry SDK installed and auto-instrumentation verified
-- [ ] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
+- [x] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
 - [ ] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
 - [ ] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
 - [ ] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
@@ -52,9 +52,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Add tRPC tracing middleware to publicProcedure for universal span creation
-- [ ] 02-02-PLAN.md — Add ondc.search manual span to gateway.search with ONDC-specific attributes
-- [ ] 02-03-PLAN.md — Wrap ONDCClient.send() in manual span with full payload and auth header capture
+- [x] 02-01-PLAN.md — Add tRPC tracing middleware to publicProcedure for universal span creation
+- [x] 02-02-PLAN.md — Add ondc.search manual span to gateway.search with ONDC-specific attributes
+- [x] 02-03-PLAN.md — Wrap ONDCClient.send() in manual span with full payload and auth header capture
 
 ### Phase 3: Async Callback Correlation
 **Goal**: ONDC callbacks (on_search, on_select, etc.) link back to their originating request traces
@@ -119,7 +119,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
-| 2. Core Instrumentation | 0/3 | Planned | — |
+| 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
 | 3. Async Callback Correlation | 0/3 | Not Started | — |
 | 4. Comprehensive Coverage | 0/3 | Not Started | — |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |
