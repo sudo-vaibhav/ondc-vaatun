@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 1 - SDK Foundation (3 plans total)
-Plan: All 3 plans complete (01-01, 01-02, 01-03)
-Status: Phase complete
-Last activity: 2026-02-09 — Completed 01-03-PLAN.md (Import tracing module and verify auto-instrumentation)
+Phase: 2 - Core Instrumentation (4 plans total)
+Plan: 3 of 4 complete (02-03 just completed)
+Status: In progress
+Last activity: 2026-02-09 — Completed 02-03-PLAN.md (HTTP Client Instrumentation)
 
-Progress: [███░░░░░░░] 21% (3/14 plans complete)
+Progress: [███░░░░░░░] 29% (4/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -69,6 +69,10 @@ Key decisions from v1.0 affecting v2.0 work:
 - 72h trace retention in ClickHouse for local development (01-02)
 - Separate OTel collector config file mounted as Docker volume (01-02)
 - Tracing import placed as first line before all other imports (critical for auto-instrumentation) (01-03)
+- Capture full Authorization header without truncation (CONTEXT.md decision 4) (02-03)
+- Serialize body once and reuse for both fetch and span attribute (02-03)
+- Use numeric literals for SpanStatusCode enum to avoid runtime import (02-03)
+- sendWithAck inherits tracing by delegating to send() (02-03)
 
 ### Pending Todos
 
@@ -86,6 +90,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 01-03-PLAN.md (Phase 1 complete)
-Resume file: None (Phase 1 complete, ready for Phase 2)
-Next step: Begin Phase 2 (Manual Span Instrumentation) when ready
+Stopped at: Completed 02-03-PLAN.md (HTTP Client Instrumentation)
+Resume file: None
+Next step: Continue with 02-04 (tRPC procedure spans) or other Phase 2 plans
