@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 1 - SDK Foundation
-Plan: 01-01 through 01-03 planned
-Status: Ready to execute
-Last activity: 2026-02-09 — Phase 1 plans created and verified
+Phase: 1 - SDK Foundation (3 plans total)
+Plan: 01-01 complete, 01-02 and 01-03 remaining
+Status: In progress
+Last activity: 2026-02-09 — Completed 01-01-PLAN.md (OpenTelemetry packages and tracing module)
 
-Progress: [░░░░░░░░░░] 0% (0/14 plans complete)
+Progress: [█░░░░░░░░░] 7% (1/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -61,6 +61,9 @@ Key decisions from v1.0 affecting v2.0 work:
 - 16KB payload truncation limit to prevent span bloat
 - Auto-instrumentation for HTTP/Express/ioredis
 - Manual spans for tRPC procedures and ONDC business logic
+- Disable FS/DNS instrumentation to reduce trace noise (01-01)
+- Configure ioredis to capture Redis key names for debugging (01-01)
+- Optional OTEL env vars with sensible defaults (localhost:4831, service name "ondc-bap") (01-01)
 
 ### Pending Todos
 
@@ -78,6 +81,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Phase 1 planning complete
-Resume file: .planning/phases/01-sdk-foundation/
-Next step: Run `/gsd:execute-phase 1` to execute Phase 1: SDK Foundation
+Stopped at: Completed 01-01-PLAN.md
+Resume file: .planning/phases/01-sdk-foundation/01-02-PLAN.md
+Next step: Execute plan 01-02 (SigNoz setup documentation) or continue with plan 01-03
