@@ -52,9 +52,9 @@ Plans:
 **Plans**: 3 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Create tRPC tracing middleware that wraps procedures in spans
-- [ ] 02-02-PLAN.md — Add manual spans to gateway.search with ONDC-specific attributes
-- [ ] 02-03-PLAN.md — Configure HTTP instrumentation to capture request/response bodies
+- [ ] 02-01-PLAN.md — Add tRPC tracing middleware to publicProcedure for universal span creation
+- [ ] 02-02-PLAN.md — Add ondc.search manual span to gateway.search with ONDC-specific attributes
+- [ ] 02-03-PLAN.md — Wrap ONDCClient.send() in manual span with full payload and auth header capture
 
 ### Phase 3: Async Callback Correlation
 **Goal**: ONDC callbacks (on_search, on_select, etc.) link back to their originating request traces
@@ -119,7 +119,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
-| 2. Core Instrumentation | 0/3 | Not Started | — |
+| 2. Core Instrumentation | 0/3 | Planned | — |
 | 3. Async Callback Correlation | 0/3 | Not Started | — |
 | 4. Comprehensive Coverage | 0/3 | Not Started | — |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |
