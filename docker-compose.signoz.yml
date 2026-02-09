@@ -1,0 +1,52 @@
+# docker-compose.signoz.yml
+# SigNoz local deployment for OpenTelemetry traces
+version: '3.8'
+
+services:
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.1.2-alpine
+    container_name: signoz-clickhouse
+    volumes:
+      - clickhouse-data:/var/lib/clickhouse
+    ports:
+      - "4835:9000"
+      - "4836:8123"
+    environment:
+      - CLICKHOUSE_DB=signoz
+
+  otel-collector:
+    image: signoz/signoz-otel-collector:0.88.11
+    container_name: signoz-otel-collector
+    command: ["--config=/etc/otel-collector-config.yaml"]
+    volumes:
+      - ./otel-collector-config.yaml:/etc/otel-collector-config.yaml
+    ports:
+      - "4832:4317"   # OTLP gRPC
+      - "4831:4318"   # OTLP HTTP (used by our app)
+    depends_on:
+      - clickhouse
+
+  query-service:
+    image: signoz/query-service:0.44.2
+    container_name: signoz-query-service
+    command: ["-config=/root/config/prometheus.yml"]
+    ports:
+      - "4834:6060"
+      - "4833:8080"
+    environment:
+      - ClickHouseUrl=tcp://clickhouse:9000
+    depends_on:
+      - clickhouse
+
+  frontend:
+    image: signoz/frontend:0.44.2
+    container_name: signoz-frontend
+    ports:
+      - "4830:3301"
+    environment:
+      - FRONTEND_API_ENDPOINT=http://query-service:8080
+    depends_on:
+      - query-service
+
+volumes:
+  clickhouse-data:
