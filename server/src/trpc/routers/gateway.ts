@@ -1,3 +1,4 @@
+import { SpanStatusCode, trace } from "@opentelemetry/api";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import {
@@ -11,6 +12,8 @@ import { addSelectResponse, createSelectEntry } from "../../lib/select-store";
 import { addStatusResponse, createStatusEntry } from "../../lib/status-store";
 import { publicProcedure, router } from "../trpc";
 
+const tracer = trace.getTracer("ondc-bap", "0.1.0");
+
 export const gatewayRouter = router({
   search: publicProcedure
     .input(
@@ -21,31 +24,61 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant, ondcClient, kv } = ctx;
 
-      const transactionId = uuidv7();
-      const messageId = uuidv7();
+      return tracer.startActiveSpan("ondc.search", async (span) => {
+        try {
+          const transactionId = uuidv7();
+          const messageId = uuidv7();
 
-      await createSearchEntry(kv, transactionId, messageId, input.categoryCode);
+          // ONDC-specific attributes (CONTEXT.md decision 2: full ONDC set)
+          span.setAttribute("ondc.transaction_id", transactionId);
+          span.setAttribute("ondc.message_id", messageId);
+          span.setAttribute("ondc.action", "search");
+          span.setAttribute("ondc.domain", tenant.domainCode);
+          span.setAttribute("ondc.subscriber_id", tenant.subscriberId);
 
-      const payload = createSearchPayload(
-        tenant,
-        transactionId,
-        messageId,
-        input.categoryCode,
-      );
-      const gatewayUrl = new URL("search", tenant.gatewayUrl);
+          await createSearchEntry(
+            kv,
+            transactionId,
+            messageId,
+            input.categoryCode,
+          );
 
-      console.log("[Search] Sending request to:", gatewayUrl.toString());
-      console.log("[Search] Payload:", JSON.stringify(payload, null, "\t"));
+          const payload = createSearchPayload(
+            tenant,
+            transactionId,
+            messageId,
+            input.categoryCode,
+          );
+          const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
-      const response = await ondcClient.send(gatewayUrl, "POST", payload);
+          console.log("[Search] Sending request to:", gatewayUrl.toString());
+          console.log("[Search] Payload:", JSON.stringify(payload, null, "\t"));
 
-      console.log("[Search] ONDC Response:", JSON.stringify(response, null, 2));
+          // ondcClient.send() creates its own child span (ondc.http.request from 02-03)
+          const response = await ondcClient.send(gatewayUrl, "POST", payload);
 
-      return {
-        ...response,
-        transactionId,
-        messageId,
-      };
+          console.log(
+            "[Search] ONDC Response:",
+            JSON.stringify(response, null, 2),
+          );
+
+          span.setStatus({ code: SpanStatusCode.OK });
+          return {
+            ...response,
+            transactionId,
+            messageId,
+          };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   onSearch: publicProcedure
