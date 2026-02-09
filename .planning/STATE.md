@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 1 - SDK Foundation (3 plans total)
-Plan: 01-01 complete, 01-02 and 01-03 remaining
+Plan: 01-01 and 01-02 complete, 01-03 remaining
 Status: In progress
-Last activity: 2026-02-09 — Completed 01-01-PLAN.md (OpenTelemetry packages and tracing module)
+Last activity: 2026-02-09 — Completed 01-02-PLAN.md (SigNoz local deployment)
 
-Progress: [█░░░░░░░░░] 7% (1/14 plans complete)
+Progress: [██░░░░░░░░] 14% (2/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -64,6 +64,10 @@ Key decisions from v1.0 affecting v2.0 work:
 - Disable FS/DNS instrumentation to reduce trace noise (01-01)
 - Configure ioredis to capture Redis key names for debugging (01-01)
 - Optional OTEL env vars with sensible defaults (localhost:4831, service name "ondc-bap") (01-01)
+- Use port range 4830-4836 for SigNoz services to avoid conflicts (01-02)
+- HTTP OTLP on port 4831 (container 4318) for BAP trace export (01-02)
+- 72h trace retention in ClickHouse for local development (01-02)
+- Separate OTel collector config file mounted as Docker volume (01-02)
 
 ### Pending Todos
 
@@ -81,6 +85,6 @@ None yet.
 ## Session Continuity
 
 Last session: 2026-02-09
-Stopped at: Completed 01-01-PLAN.md
-Resume file: .planning/phases/01-sdk-foundation/01-02-PLAN.md
-Next step: Execute plan 01-02 (SigNoz setup documentation) or continue with plan 01-03
+Stopped at: Completed 01-02-PLAN.md
+Resume file: .planning/phases/01-sdk-foundation/01-03-PLAN.md
+Next step: Execute plan 01-03 (Instrument BAP Server with OpenTelemetry)
