@@ -24,7 +24,7 @@ Progress: [░░░░░░░░░░] 0% (0/14 plans complete)
 - Distributed traces for all ONDC protocol operations
 - transactionId-based correlation across async callbacks
 - Full payload capture with timing data
-- OTLP export to Jaeger/Grafana Tempo
+- OTLP export to SigNoz (ClickHouse-backed)
 - Error source attribution (BAP/gateway/BPP)
 
 **Total phases:** 5
@@ -52,6 +52,7 @@ Key decisions from v1.0 affecting v2.0 work:
 ### v2.0 Decisions
 
 - OpenTelemetry (OTLP) for vendor-neutral tracing
+- SigNoz as trace backend (ClickHouse storage, OTLP-native, local Docker)
 - Full payload logging (no PII redaction for now)
 - Server-side tracing only (frontend deferred)
 - transactionId as correlation key for traces

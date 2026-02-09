@@ -2,7 +2,7 @@
 
 ## Overview
 
-This roadmap delivers full end-to-end request traceability across BAP → Gateway → BPP using OpenTelemetry. The goal is to enable debugging any transactionId by viewing the complete request chain with timing and payloads in Jaeger or Grafana Tempo. Each phase builds on distributed tracing fundamentals: SDK initialization, auto-instrumentation, manual business logic spans, async callback correlation, and error attribution.
+This roadmap delivers full end-to-end request traceability across BAP → Gateway → BPP using OpenTelemetry. The goal is to enable debugging any transactionId by viewing the complete request chain with timing and payloads in SigNoz (ClickHouse-backed, OTLP-native). Each phase builds on distributed tracing fundamentals: SDK initialization, auto-instrumentation, manual business logic spans, async callback correlation, and error attribution.
 
 ## Phases
 
@@ -28,15 +28,15 @@ Decimal phases appear between their surrounding integers in numeric order.
   1. OpenTelemetry packages installed (sdk-node, api, auto-instrumentations, otlp exporter)
   2. tracing.ts exists and initializes SDK with OTLP HTTP exporter
   3. tracing.ts is imported first in server entry point
-  4. Health check request creates HTTP/Express spans visible in Jaeger
-  5. Jaeger UI shows service name "ondc-bap" with spans for incoming requests
+  4. Health check request creates HTTP/Express spans visible in SigNoz
+  5. SigNoz UI shows service name "ondc-bap" with spans for incoming requests
   6. Redis commands (GET, SET) appear as child spans with command names
 **Plans**: 3 plans
 
 Plans:
 - [ ] 01-01-PLAN.md — Install OpenTelemetry packages and create tracing.ts with SDK initialization
 - [ ] 01-02-PLAN.md — Configure OTLP exporter, resource attributes, and span limits
-- [ ] 01-03-PLAN.md — Update server entry point to import tracing first, verify in Jaeger
+- [ ] 01-03-PLAN.md — Update server entry point to import tracing first, add SigNoz docker-compose, verify traces
 
 ### Phase 2: Core Instrumentation
 **Goal**: tRPC procedures and ONDC client requests create manual spans with transactionId attributes

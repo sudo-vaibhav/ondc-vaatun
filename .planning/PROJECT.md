@@ -61,7 +61,7 @@ A consumer-facing Buyer App Platform (BAP) for purchasing health insurance throu
 <!-- Explicit boundaries. Includes reasoning to prevent re-adding. -->
 
 - Frontend/browser tracing — Server-side first; frontend tracing deferred
-- Custom dashboard UI — Use external tools (Jaeger, Grafana Tempo)
+- Custom dashboard UI — Use SigNoz (ClickHouse-backed, accepts OTLP natively)
 - PII redaction in traces — Full payloads needed for debugging; revisit for production
 - Metrics/alerting — Focus on tracing first; metrics can layer on top later
 - Quote comparison page — ONDC protocol doesn't standardize comparison
@@ -77,7 +77,7 @@ A consumer-facing Buyer App Platform (BAP) for purchasing health insurance throu
 - OpenTelemetry instrumentation for all ONDC protocol operations
 - transactionId-based trace correlation across outgoing requests and async callbacks
 - Full payload capture (headers, bodies, timing) in span attributes
-- OTLP export to any compatible backend (Jaeger, Grafana Tempo, etc.)
+- OTLP export to SigNoz (ClickHouse-backed, OTLP-native)
 - Structured logging with trace context
 - Error classification (BAP vs gateway vs BPP failures)
 
