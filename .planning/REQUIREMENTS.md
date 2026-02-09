@@ -167,8 +167,8 @@
 
 | REQ-ID | Phase | Status |
 |--------|-------|--------|
-| OTEL-01 | v2.0 Phase 1 | Pending |
-| OTEL-06 | v2.0 Phase 1 | Pending |
+| OTEL-01 | v2.0 Phase 1 | Complete |
+| OTEL-06 | v2.0 Phase 1 | Complete |
 | OTEL-02 | v2.0 Phase 2 | Pending |
 | OTEL-05 | v2.0 Phase 2 | Pending |
 | OTEL-03 | v2.0 Phase 3 | Pending |
