@@ -1,182 +1,236 @@
-# Features Research: ONDC Health Insurance BAP
+# Feature Landscape: Observability & Tracing for ONDC BAP
 
-**Research Date:** 2026-02-02
-**Source:** ONDC-Official/ONDC-FIS-Specifications (branch: draft-FIS13-health-2.0.1)
+**Domain:** Distributed tracing for async webhook API service
+**Researched:** 2026-02-09
+**Confidence:** MEDIUM (based on industry-standard observability practices; external tool access unavailable for verification)
 
 ## Executive Summary
 
-Health insurance on ONDC involves a multi-step form journey where the BPP controls the form sequence. The BAP's job is to render these forms, collect user input, and submit back. Key features needed are form rendering, state persistence across steps, and clear progress indication.
+For an API service that makes outgoing requests and receives async callbacks (like ONDC BAP), observability features fall into three tiers:
 
-## User Journey
+1. **Table stakes** — Without these, you can't debug production issues or understand system behavior
+2. **Differentiators** — Competitive advantages that accelerate debugging and improve operational confidence
+3. **Anti-features** — Things that seem valuable but add complexity without commensurate benefit for this milestone
+
+The ONDC BAP's architecture (outgoing requests → external processing → async webhook callbacks) makes trace correlation and request/response payload capture critical table stakes. Unlike typical microservices, the "transaction" spans multiple services with unpredictable timing, making timing analysis and error classification essential.
+
+---
+
+## Table Stakes
+
+Features users expect. Missing these means observability is incomplete or unusable.
+
+| Feature | Why Expected | Complexity | Notes |
+|---------|--------------|------------|-------|
+| **Distributed trace creation** | Every outgoing request (search, select, init, confirm, status) must create a trace | Low | OpenTelemetry SDK provides this |
+| **Trace correlation via transactionId** | Callbacks must link to parent trace so full flow is visible | Medium | ONDC already threads transactionId through all requests |
+| **HTTP instrumentation (auto)** | Automatic span creation for all HTTP requests/responses | Low | OpenTelemetry Express middleware |
+| **Request/response payload capture** | Full headers + bodies in span attributes for debugging | Medium | Manual attribute setting; watch payload size |
+| **Timing data** | Start time, end time, duration for every operation | Low | OpenTelemetry captures automatically |
+| **Error status in spans** | Failed operations marked with error status + stack traces | Low | Standard OpenTelemetry error recording |
+| **OTLP export** | Export traces to any OTLP-compatible backend (Jaeger, Tempo, Datadog, etc.) | Low | Standard exporter configuration |
+| **Span hierarchy** | Child spans for Redis operations, signing, internal logic | Medium | Manual span creation for non-HTTP operations |
+| **Context propagation** | Trace context flows through AsyncLocalStorage for tRPC handlers | Medium | Critical for linking tRPC procedures to HTTP request |
+| **Structured logging with trace IDs** | Logs include traceId/spanId for correlation | Low | OpenTelemetry logger integration |
+
+### Why These Are Table Stakes
+
+**For ONDC BAP specifically:**
+- **Async nature** — Callbacks arrive seconds to minutes after requests. Without trace correlation, impossible to know which search led to which on_search.
+- **External dependencies** — BPPs/gateways are black boxes. Payload capture is the only way to see what they returned.
+- **Debugging requirement** — User's transactionId is the query key. "Show me everything that happened for transaction X" must work.
+- **Error attribution** — Is the failure ours (BAP), the gateway's, or the BPP's? Span hierarchy + timing reveals this.
+
+---
+
+## Differentiators
+
+Features that set this observability implementation apart. Not expected, but highly valued.
+
+| Feature | Value Proposition | Complexity | Notes |
+|---------|-------------------|------------|-------|
+| **transactionId as root span name** | Makes traces searchable by business ID in Jaeger/Tempo UI | Low | Set span name on root span creation |
+| **Error classification attributes** | Span attributes: `error.source` = "bap" \| "gateway" \| "bpp" | Low | Parse error response to determine source |
+| **ONDC-specific span attributes** | `ondc.action`, `ondc.domain`, `ondc.bpp_id`, `ondc.item_id` | Medium | Makes traces queryable by ONDC context |
+| **Payload size limits** | Truncate payloads >10KB to avoid span bloat | Low | Prevents backend overload |
+| **Callback latency tracking** | Measure time between outgoing request and callback arrival | Medium | Store request timestamp in Redis, calculate on callback |
+| **Redis operation spans** | Visibility into cache hits/misses, set/get operations | Medium | Manual span creation around ioredis calls |
+| **Signing operation spans** | Visibility into Ed25519 signing time (usually <1ms but good to verify) | Low | Manual span around libsodium calls |
+| **Sampling configuration** | Sample 100% in dev/staging, 10% in prod (configurable) | Low | Reduces backend costs in production |
+| **Multi-backend export** | Export to both Jaeger (local dev) and cloud backend (prod) | Medium | Useful for hybrid setups |
+| **Span links** | Link related transactions (e.g., select → init → confirm for same policy) | Medium | Requires storing previous traceIds in Redis |
+
+### Why These Are Differentiators
+
+**transactionId searchability** — Jaeger/Tempo UIs typically search by traceId (opaque UUID). Making transactionId the span name or a searchable attribute means users can paste their transactionId directly.
+
+**Error source attribution** — When a BPP returns 500, distinguishing "gateway forwarded BPP error" from "gateway itself failed" saves debugging hours.
+
+**ONDC-specific attributes** — Being able to filter traces by `ondc.bpp_id = "abc-insurance"` or `ondc.action = "search"` enables pattern analysis across transactions.
+
+**Callback latency** — ONDC SLA requires callbacks within seconds. Measuring this reveals slow BPPs and timeout issues.
+
+---
+
+## Anti-Features
+
+Features to explicitly NOT build. Common mistakes in observability implementations.
+
+| Anti-Feature | Why Avoid | What to Do Instead |
+|--------------|-----------|-------------------|
+| **Custom dashboard UI** | Reinventing Jaeger/Grafana is high effort, low ROI | Use existing visualization tools (Jaeger, Grafana Tempo) |
+| **In-process trace storage** | Memory/disk bloat; BAP becomes stateful | Export via OTLP to external backend |
+| **PII redaction in spans** | Complex and fragile; easy to miss fields | Full payload logging for v2.0; defer redaction to production hardening |
+| **Metrics collection** | Conflates tracing with metrics; different concerns | Focus on tracing first; add Prometheus metrics layer later |
+| **Alerting** | Requires metrics + thresholds; premature for v2.0 | Observability first, alerting once patterns understood |
+| **Frontend/browser tracing** | Adds JS bundle size + backend complexity | Server-side only; client tracing deferred to v3.0 |
+| **Trace stitching across tenants** | Multi-tenancy not in scope for prototype | Single-tenant trace correlation sufficient |
+| **Custom span processors** | Over-engineering; built-in processors sufficient | Use BatchSpanProcessor (OpenTelemetry default) |
+| **Trace-based testing** | Asserting on spans in tests is brittle | Use E2E tests for behavior; traces for debugging only |
+
+### Why These Are Anti-Features
+
+**Custom dashboard** — OpenTelemetry's entire value is vendor-neutrality. Building a custom UI defeats this and locks you into your own implementation.
+
+**PII redaction** — Insurance payloads contain names, Aadhaar numbers, medical history. Redacting reliably requires deep schema knowledge and is error-prone. For a prototype, full payloads enable debugging; production hardening can add redaction later.
+
+**Metrics conflation** — Tracing answers "what happened?" (causality); metrics answer "how much?" (volume/rate). Mixing these adds complexity. Tracing first; metrics can layer on top once trace collection is stable.
+
+**Frontend tracing** — Browser → BAP traces are useful but add JS bundle size, CORS complexity, and backend span volume. Server-side tracing covers the critical path (BAP → Gateway → BPP).
+
+---
+
+## Feature Dependencies
 
 ```
-[Search Results] → [Select Product] → [Fill Forms 1-3] → [Review Quote]
-                                           ↓
-[Policy Issued] ← [Payment] ← [Final Review] ← [Fill Forms 4-6]
+HTTP Instrumentation (auto)
+    ↓
+Trace Creation
+    ↓
+Context Propagation → Span Hierarchy
+    ↓                       ↓
+Trace Correlation      Child Spans (Redis, Signing)
+    ↓
+Payload Capture
+    ↓
+OTLP Export
+    ↓
+External Visualization (Jaeger, Tempo)
 ```
 
-## Features by Flow Stage
+**Critical path:**
+1. HTTP instrumentation must work first (auto-spans for tRPC requests)
+2. Context propagation links tRPC procedures to root HTTP span
+3. Manual child spans for non-HTTP operations (Redis, signing)
+4. Payload capture adds debugging value
+5. OTLP export makes traces visible externally
 
-### 1. Select Stage (Quote Request)
-
-**Table Stakes:**
-- Display product from on_search (name, coverage, premium)
-- Show add-ons if available
-- "Get Quote" button triggers select
-
-**User Sees:**
-- Product card with coverage details
-- Premium estimate (may change after forms)
-- List of add-ons with prices
-
-**Data Collected:**
-- Selected item ID
-- Selected add-on IDs
-- (Forms come in on_select response)
+**Optional enhancements:**
+- Error classification (layered on top of basic spans)
+- ONDC attributes (query/filter enhancement)
+- Callback latency (timing analysis)
 
 ---
 
-### 2. XInput Forms Stage (PED/PAN/eKYC)
+## MVP Recommendation
 
-**Table Stakes:**
-- Render BPP-provided HTML forms
-- Show progress indicator (step X of Y)
-- Handle form submission
-- Show validation errors
+For v2.0 observability milestone, prioritize:
 
-**User Sees:**
-- Progress bar: "Step 1 of 3: PED Details"
-- Form from BPP (embedded or rendered)
-- Next/Submit button
+### Phase 1: Core Tracing (Must Have)
+1. OpenTelemetry SDK + Express instrumentation
+2. Auto-spans for all HTTP requests (incoming tRPC, outgoing ONDC)
+3. OTLP exporter to Jaeger (local dev) or Tempo (staging/prod)
+4. Context propagation via AsyncLocalStorage
+5. transactionId correlation (W3C baggage or span attributes)
 
-**Forms Typically Required (from spec examples):**
+### Phase 2: Payload & Hierarchy (High Value)
+6. Request/response payload capture in span attributes
+7. Child spans for Redis operations
+8. Child spans for signing operations
+9. Error status recording
 
-| Step | Form | Fields |
-|------|------|--------|
-| 1 | PED Details | Pre-existing diseases, conditions |
-| 2 | PAN & DOB | PAN number, date of birth |
-| 3 | eKYC | Aadhaar-based verification |
+### Phase 3: Enhancements (Nice to Have)
+10. Error classification (BAP vs gateway vs BPP)
+11. ONDC-specific span attributes
+12. Callback latency measurement
+13. Payload size truncation
 
-**Technical Note:** Forms are HTML served from BPP URL. Can be:
-- Rendered in iframe
-- Fetched and re-styled (risky, may break)
-- Opened in new tab (poor UX)
-
----
-
-### 3. Init Stage (KYC/Medical/Nominee)
-
-**Table Stakes:**
-- Continue form sequence from on_init responses
-- Collect detailed personal information
-- Show updated premium after each step
-
-**User Sees:**
-- More detailed forms for insurance application
-- Running total of premium
-- Form validation feedback
-
-**Forms Typically Required:**
-
-| Step | Form | Fields |
-|------|------|--------|
-| 1 | Buyer Info | Name, address, contact |
-| 2 | Insured Info | Who is covered (self/family) |
-| 3 | Medical Info | Health conditions, medications |
-| 4 | Nominee Info | Beneficiary details |
-| 5 | Review | Final terms acceptance |
+### Defer to Post-MVP
+- Sampling configuration (use 100% for prototype)
+- Multi-backend export (single backend sufficient for v2.0)
+- Span links (complex; low ROI for initial implementation)
+- Structured logging integration (traces alone sufficient for debugging)
 
 ---
 
-### 4. Quote Review Stage
+## Implementation Complexity
 
-**Table Stakes:**
-- Display final quote with all details
-- Show coverage breakdown
-- Show premium breakdown
-- Display terms and conditions
-- "Proceed to Pay" button
+| Feature | Effort | Risk | Blocker? |
+|---------|--------|------|----------|
+| OpenTelemetry SDK setup | 2 hours | Low | No — standard integration |
+| Express auto-instrumentation | 1 hour | Low | No — official package |
+| Context propagation | 4 hours | Medium | **Yes** — tRPC + AsyncLocalStorage quirks |
+| Payload capture | 3 hours | Medium | No — attribute setting |
+| Redis spans | 3 hours | Low | No — wrap ioredis calls |
+| Signing spans | 1 hour | Low | No — wrap libsodium calls |
+| OTLP export config | 2 hours | Low | No — standard config |
+| Error classification | 2 hours | Low | No — response parsing |
+| ONDC attributes | 2 hours | Low | No — extract from payload |
+| Callback latency | 3 hours | Medium | No — Redis timestamp storage |
 
-**User Sees:**
-```
-Health Gain Plus Individual
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Coverage: ₹1,00,00,000
-Co-payment: Yes (20%)
-Room Rent Cap: ₹25,000/day
-Cashless Hospitals: 50+
-
-Premium: ₹15,000/year
-Add-ons: ₹1,000
-━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Total: ₹16,000/year
-
-[✓] I accept the terms and conditions
-[Proceed to Payment]
-```
+**Total MVP (Phases 1-2):** ~16-20 hours
 
 ---
 
-### 5. Confirm Stage (Payment)
+## Success Metrics
 
-**Table Stakes:**
-- Redirect to payment gateway (from on_init)
-- Handle payment success/failure
-- Send confirm on success
-- Show policy on on_confirm
+How do we know observability is "done"?
 
-**User Sees:**
-- Payment page (BPP's payment gateway)
-- Loading state during confirmation
-- Success/failure message
+### Functional Criteria
+- [ ] Given a transactionId, can view complete trace in Jaeger/Tempo
+- [ ] Trace shows all ONDC actions (search, select, init, confirm, status)
+- [ ] Each span includes request/response payloads
+- [ ] Callbacks (on_search, on_select, etc.) linked to parent trace
+- [ ] Redis operations visible as child spans
+- [ ] Errors marked with span.status = error
+- [ ] Timing data reveals bottlenecks (e.g., slow BPP responses)
 
-**Payment Flow:**
-1. on_init provides `payments[].url` for payment gateway
-2. User completes payment on gateway
-3. Gateway redirects back with status
-4. BAP sends confirm with payment reference
-5. on_confirm returns policy document
+### Debugging Scenarios
+1. **User reports "quote never loaded"** → Trace shows on_select never arrived (gateway timeout)
+2. **BPP returns 500** → Span attributes show BPP error message; error.source = "bpp"
+3. **Redis is slow** → Redis span durations reveal cache latency spike
+4. **Signing failed** → Signing span shows error + stack trace
 
----
-
-### 6. Status Stage (Post-Purchase)
-
-**Table Stakes:**
-- View policy document
-- Check policy status
-- Download policy PDF
-
-**User Sees:**
-- Policy number
-- Coverage period
-- Download links
-- Status (Active/Processing/etc.)
+### Non-Functional Criteria
+- Trace export latency <5s (spans visible in Jaeger within seconds)
+- No performance degradation (auto-instrumentation overhead <5%)
+- No payload truncation for typical ONDC responses (<100KB)
 
 ---
 
-## Feature Priority Matrix
+## Sources
 
-| Feature | Priority | Complexity | Notes |
-|---------|----------|------------|-------|
-| Product selection UI | P0 | Low | Reuse search results card |
-| XInput form rendering | P0 | Medium | Core of the flow |
-| Progress indicator | P0 | Low | UX essential |
-| Quote review page | P0 | Low | Display only |
-| Payment redirect | P0 | Medium | Gateway integration |
-| Policy display | P0 | Low | Display only |
-| Form re-submission | P1 | Medium | Error recovery |
-| Form validation | P1 | Medium | BPP may handle |
-| Premium live update | P2 | Low | Nice to have |
-| Multiple insured | P2 | High | Family plans |
+**Confidence: MEDIUM** — Based on industry-standard observability practices (OpenTelemetry standard, distributed tracing patterns, async system debugging requirements). External verification unavailable due to tool access restrictions.
 
-## Out of Scope (v1)
+**References (from training knowledge):**
+- OpenTelemetry specification for trace semantics
+- OpenTelemetry Node.js SDK documentation
+- Distributed tracing best practices for webhook-based architectures
+- OTLP exporter configuration patterns
+- AsyncLocalStorage usage with Express middleware
 
-- **Offline form caching** — Requires complex state management
-- **Form pre-filling** — User data management not in scope
-- **Comparison view** — Protocol doesn't support well
-- **Renewal flow** — Focus on new purchase first
-- **Claims filing** — Separate flow entirely
+**Domain-specific reasoning:**
+- ONDC BAP architecture (outgoing requests + async callbacks) requires trace correlation
+- transactionId already threads through ONDC protocol (natural correlation key)
+- Insurance payloads contain PII (redaction complexity noted)
+- External dependencies (gateways, BPPs) are opaque (payload capture essential)
+
+**Gaps requiring validation:**
+- OpenTelemetry + tRPC integration patterns (may have quirks)
+- AsyncLocalStorage propagation through tRPC procedure calls
+- OTLP exporter performance characteristics at scale
+- Optimal payload size limits for span attributes
 
 ---
 
-*Features analysis: 2026-02-02 | Source: ONDC FIS13 Health 2.0.1 examples*
+*Features analysis for observability milestone | Based on OpenTelemetry standards & async webhook patterns | 2026-02-09*
