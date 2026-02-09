@@ -10,11 +10,11 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 ## Current Position
 
 Phase: 2 - Core Instrumentation (3 plans total)
-Plan: 2 of 3 complete (02-01, 02-03)
-Status: In progress
-Last activity: 2026-02-09 — Completed 02-01-PLAN.md (Add tRPC tracing middleware)
+Plan: 3 of 3 complete (02-01, 02-02, 02-03)
+Status: Phase complete
+Last activity: 2026-02-09 — Completed 02-02-PLAN.md (Add ONDC search span)
 
-Progress: [████░░░░░░] 29% (4/14 plans complete)
+Progress: [█████░░░░░] 36% (5/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -76,6 +76,9 @@ Key decisions from v1.0 affecting v2.0 work:
 - Serialize body once and reuse for both fetch and span attribute (02-03)
 - Use numeric literals for SpanStatusCode enum to avoid runtime import (02-03)
 - sendWithAck inherits tracing by delegating to send() (02-03)
+- Use startActiveSpan for ONDC business logic spans to enable child span propagation via AsyncLocalStorage (02-02)
+- Capture ONDC attributes at span creation time (immediately after generating IDs) (02-02)
+- Search procedure as prototype for Phase 4 extension to all gateway procedures (02-02)
 
 ### Pending Todos
 
@@ -92,7 +95,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09 12:34:52Z
-Stopped at: Completed 02-01-PLAN.md (Add tRPC tracing middleware)
+Last session: 2026-02-09 12:38:52Z
+Stopped at: Completed 02-02-PLAN.md (Add ONDC search span)
 Resume file: None
-Next step: Complete 02-02 (remaining plan in Phase 2)
+Next step: Phase 2 complete. Ready for Phase 3 (Transaction Context Propagation)
