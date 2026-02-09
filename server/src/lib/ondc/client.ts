@@ -1,4 +1,5 @@
 import type { URL } from "node:url";
+import { type SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Tenant } from "../../entities/tenant";
 import { calculateDigest } from "./signing";
 
@@ -20,6 +21,7 @@ interface ONDCResponse {
  */
 export class ONDCClient {
   tenant: Tenant;
+  private tracer = trace.getTracer("ondc-bap-http", "0.1.0");
 
   constructor(tenant: Tenant) {
     this.tenant = tenant;
@@ -64,31 +66,58 @@ export class ONDCClient {
     method: "POST" | "GET",
     body: object,
   ): Promise<T> {
-    try {
-      const authHeader = await this.createAuthorizationHeader(body);
+    return this.tracer.startActiveSpan("ondc.http.request", async (span) => {
+      try {
+        // HTTP metadata attributes
+        span.setAttribute("http.url", url.toString());
+        span.setAttribute("http.method", method);
 
-      const response = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: authHeader,
-        },
-        body: JSON.stringify(body),
-      });
+        // Full request body capture (16KB limit enforced by SDK spanLimits)
+        const bodyJson = JSON.stringify(body);
+        span.setAttribute("http.request.body", bodyJson);
+        span.setAttribute("http.request.body.size", bodyJson.length);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(
-          `ONDC Request Failed [${response.status}]: ${errorText}`,
-        );
+        // Authorization header - full capture, no truncation (CONTEXT.md decision 4)
+        const authHeader = await this.createAuthorizationHeader(body);
+        span.setAttribute("http.request.header.authorization", authHeader);
+
+        const response = await fetch(url, {
+          method,
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: authHeader,
+          },
+          body: bodyJson,
+        });
+
+        // Response metadata
+        span.setAttribute("http.status_code", response.status);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          span.setAttribute("http.response.body", errorText);
+          throw new Error(
+            `ONDC Request Failed [${response.status}]: ${errorText}`,
+          );
+        }
+
+        const data = await response.json();
+        span.setAttribute("http.response.body", JSON.stringify(data));
+
+        span.setStatus({ code: 1 as typeof SpanStatusCode.OK });
+        return data as T;
+      } catch (error) {
+        span.recordException(error as Error);
+        span.setStatus({
+          code: 2 as typeof SpanStatusCode.ERROR,
+          message: (error as Error).message,
+        });
+        console.error(`[ONDCClient] Error sending to ${url}:`, error);
+        throw error;
+      } finally {
+        span.end();
       }
-
-      const data = await response.json();
-      return data as T;
-    } catch (error) {
-      console.error(`[ONDCClient] Error sending to ${url}:`, error);
-      throw error;
-    }
+    });
   }
 
   async sendWithAck(url: string, body: object): Promise<boolean> {
