@@ -1,4 +1,4 @@
-import { SpanStatusCode, trace } from "@opentelemetry/api";
+import { SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
 import {
@@ -7,9 +7,18 @@ import {
 } from "../../lib/confirm-store";
 import { addInitResponse, createInitEntry } from "../../lib/init-store";
 import { createSearchPayload } from "../../lib/ondc/payload";
-import { addSearchResponse, createSearchEntry } from "../../lib/search-store";
+import {
+  addSearchResponse,
+  createSearchEntry,
+  getSearchEntry,
+} from "../../lib/search-store";
 import { addSelectResponse, createSelectEntry } from "../../lib/select-store";
 import { addStatusResponse, createStatusEntry } from "../../lib/status-store";
+import {
+  createLinkedSpanOptions,
+  restoreTraceContext,
+  serializeTraceContext,
+} from "../../lib/trace-context-store";
 import { publicProcedure, router } from "../trpc";
 
 const tracer = trace.getTracer("ondc-bap", "0.1.0");
@@ -36,11 +45,16 @@ export const gatewayRouter = router({
           span.setAttribute("ondc.domain", tenant.domainCode);
           span.setAttribute("ondc.subscriber_id", tenant.subscriberId);
 
+          // Serialize trace context for callback correlation
+          const traceparent = serializeTraceContext();
+
           await createSearchEntry(
             kv,
             transactionId,
             messageId,
             input.categoryCode,
+            undefined,
+            traceparent,
           );
 
           const payload = createSearchPayload(
@@ -116,23 +130,63 @@ export const gatewayRouter = router({
 
       const transactionId = input.context?.transaction_id;
 
-      if (transactionId) {
-        await addSearchResponse(
-          kv,
-          transactionId,
-          input as Parameters<typeof addSearchResponse>[2],
-        );
-      } else {
+      if (!transactionId) {
         console.warn("[on_search] No transaction_id found in context");
+        return { message: { ack: { status: "ACK" as const } } };
       }
 
-      return {
-        message: {
-          ack: {
-            status: "ACK" as const,
-          },
+      // Retrieve stored trace context from search entry
+      const entry = await getSearchEntry(kv, transactionId);
+      const originalSpanContext = restoreTraceContext(entry?.traceparent);
+
+      if (!entry?.traceparent) {
+        console.warn(
+          "[on_search] No trace context found for transaction:",
+          transactionId,
+        );
+      }
+
+      // Create callback span with link to original search span
+      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "ondc.transaction_id": transactionId,
+          "ondc.action": "on_search",
+          "ondc.bpp_id": input.context?.bpp_id || "unknown",
+          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
         },
-      };
+      });
+
+      return tracer.startActiveSpan("ondc.on_search", spanOptions, async (span) => {
+        try {
+          await addSearchResponse(
+            kv,
+            transactionId,
+            input as Parameters<typeof addSearchResponse>[2],
+          );
+
+          // NACK/error responses from BPP set ERROR status (CONTEXT.md decision 2)
+          if (input.error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
+            });
+          } else {
+            span.setStatus({ code: SpanStatusCode.OK });
+          }
+
+          return { message: { ack: { status: "ACK" as const } } };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   select: publicProcedure
