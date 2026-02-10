@@ -110,6 +110,7 @@ export interface SearchEntry {
   createdAt: number;
   ttlMs: number;
   ttlExpiresAt: number;
+  traceparent?: string;
 }
 
 export interface SearchResultsResponse {
@@ -146,7 +147,7 @@ export function parseTtlToMs(ttl: string): number {
   return (hours * 3600 + minutes * 60 + seconds) * 1000;
 }
 
-const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_STORE_TTL_MS = 30 * 60 * 1000;
 
 // ============================================
 // Store Operations
@@ -158,6 +159,7 @@ export async function createSearchEntry(
   messageId: string,
   categoryCode?: string,
   ttl = "PT5M",
+  traceparent?: string,
 ): Promise<SearchEntry> {
   const now = Date.now();
   const ttlMs = parseTtlToMs(ttl);
@@ -170,6 +172,7 @@ export async function createSearchEntry(
     createdAt: now,
     ttlMs,
     ttlExpiresAt: now + ttlMs,
+    traceparent,
   };
 
   const key = keyFormatter.search(transactionId);
