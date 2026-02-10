@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 2 - Core Instrumentation (3 plans total)
-Plan: 3 of 3 complete (02-01, 02-02, 02-03)
-Status: Phase complete
-Last activity: 2026-02-09 — Completed 02-02-PLAN.md (Add ONDC search span)
+Phase: 3 - Async Callback Correlation (2 plans total)
+Plan: 1 of 2 complete (03-01)
+Status: In progress
+Last activity: 2026-02-10 — Completed 03-01-PLAN.md (Trace Context Storage Foundation)
 
-Progress: [████░░░░░░] 43% (6/14 plans complete)
+Progress: [█████░░░░░] 50% (7/14 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -79,6 +79,9 @@ Key decisions from v1.0 affecting v2.0 work:
 - Use startActiveSpan for ONDC business logic spans to enable child span propagation via AsyncLocalStorage (02-02)
 - Capture ONDC attributes at span creation time (immediately after generating IDs) (02-02)
 - Search procedure as prototype for Phase 4 extension to all gateway procedures (02-02)
+- Use OTel propagation API for W3C traceparent serialization (03-01)
+- Embed traceparent in SearchEntry object for atomic storage (03-01)
+- Extend SearchEntry TTL from 10 to 30 minutes to catch late BPP callbacks (03-01)
 
 ### Pending Todos
 
@@ -95,7 +98,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-09 12:38:52Z
-Stopped at: Completed 02-02-PLAN.md (Add ONDC search span)
+Last session: 2026-02-10 04:17:34Z
+Stopped at: Completed 03-01-PLAN.md (Trace Context Storage Foundation)
 Resume file: None
-Next step: Phase 2 complete. Ready for Phase 3 (Transaction Context Propagation)
+Next step: Ready for 03-02-PLAN.md (Integrate trace context into search/on_search flow)
