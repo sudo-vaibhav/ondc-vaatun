@@ -57,22 +57,21 @@ Plans:
 - [x] 02-03-PLAN.md — Wrap ONDCClient.send() in manual span with full payload and auth header capture
 
 ### Phase 3: Async Callback Correlation
-**Goal**: ONDC callbacks (on_search, on_select, etc.) link back to their originating request traces
+**Goal**: ONDC callbacks (on_search) link back to their originating request traces via transactionId stored in Redis
 **Depends on**: Phase 2
 **Requirements**: OTEL-03, OTEL-04
 **Success Criteria** (what must be TRUE):
-  1. Search request stores trace context in Redis keyed by transactionId
-  2. on_search callback retrieves stored traceId and creates linked span
-  3. Jaeger shows on_search span linked to search span via transactionId attribute
-  4. Redis operations for trace storage appear as child spans with key names
-  5. Trace context TTL matches transaction TTL (24 hours)
-  6. Multiple BPP responses to same search all link to same parent trace
-**Plans**: 3 plans
+  1. Search request stores W3C traceparent in Redis embedded in search entry
+  2. on_search callback retrieves stored traceparent and creates linked span
+  3. SigNoz shows on_search span linked to search span via span link and transactionId attribute
+  4. Redis operations for trace storage appear as child spans with key names (already done in Phase 1)
+  5. Trace context TTL is 30 minutes (embedded in search entry with extended TTL)
+  6. Multiple BPP responses to same search all link to same parent trace as sibling spans
+**Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Add trace context storage to search flow (save traceId/spanId to Redis)
-- [ ] 03-02-PLAN.md — Implement trace restoration in on_search callback handler
-- [ ] 03-03-PLAN.md — Add Redis instrumentation config to capture key names in spans
+- [ ] 03-01-PLAN.md — Create trace context utility module and extend search store with traceparent support
+- [ ] 03-02-PLAN.md — Wire trace context storage into search and restoration into on_search callback
 
 ### Phase 4: Comprehensive Coverage
 **Goal**: All ONDC flows (select, init, confirm, status) fully instrumented with enriched attributes
@@ -120,6 +119,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
 | 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
-| 3. Async Callback Correlation | 0/3 | Not Started | — |
+| 3. Async Callback Correlation | 0/2 | Not Started | — |
 | 4. Comprehensive Coverage | 0/3 | Not Started | — |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |
