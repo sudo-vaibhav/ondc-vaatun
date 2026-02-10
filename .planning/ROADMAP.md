@@ -70,8 +70,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Create trace context utility module and extend search store with traceparent support
-- [ ] 03-02-PLAN.md — Wire trace context storage into search and restoration into on_search callback
+- [x] 03-01-PLAN.md — Create trace context utility module and extend search store with traceparent support
+- [x] 03-02-PLAN.md — Wire trace context storage into search and restoration into on_search callback
 
 ### Phase 4: Comprehensive Coverage
 **Goal**: All ONDC flows (select, init, confirm, status) fully instrumented with enriched attributes
@@ -119,6 +119,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 |-------|----------------|--------|-----------|
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
 | 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
-| 3. Async Callback Correlation | 0/2 | Not Started | — |
+| 3. Async Callback Correlation | 2/2 | Complete | 2026-02-10 |
 | 4. Comprehensive Coverage | 0/3 | Not Started | — |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |

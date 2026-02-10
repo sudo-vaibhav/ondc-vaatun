@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 3 - Async Callback Correlation (2 plans total)
-Plan: 1 of 2 complete (03-01)
-Status: In progress
-Last activity: 2026-02-10 — Completed 03-01-PLAN.md (Trace Context Storage Foundation)
+Phase: 3 - Async Callback Correlation — COMPLETE
+Plan: All plans complete
+Status: Ready for Phase 4
+Last activity: 2026-02-10 — Phase 3 execution complete
 
-Progress: [█████░░░░░] 50% (7/14 plans complete)
+Progress: [██████░░░░] 62% (8/13 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -28,7 +28,7 @@ Progress: [█████░░░░░] 50% (7/14 plans complete)
 - Error source attribution (BAP/gateway/BPP)
 
 **Total phases:** 5
-**Total plans:** 14
+**Total plans:** 13
 **Estimated duration:** 12-20 hours (based on research)
 
 ## v1.0 Performance Metrics (archived)
@@ -82,6 +82,10 @@ Key decisions from v1.0 affecting v2.0 work:
 - Use OTel propagation API for W3C traceparent serialization (03-01)
 - Embed traceparent in SearchEntry object for atomic storage (03-01)
 - Extend SearchEntry TTL from 10 to 30 minutes to catch late BPP callbacks (03-01)
+- Store traceparent inside startActiveSpan callback for correct span context (03-02)
+- Early return in onSearch if no transactionId before trace restoration (03-02)
+- BPP identity attributes (bpp_id, bpp_uri) on callback spans (03-02)
+- NACK/error responses set SpanStatusCode.ERROR on callback spans (03-02)
 
 ### Pending Todos
 
@@ -91,14 +95,14 @@ None yet.
 
 **Known risks from research (PITFALLS.md):**
 1. ✅ ESM import order violation - RESOLVED (01-03: tracing.ts is first import)
-2. tRPC context loss - may need custom middleware for AsyncLocalStorage
-3. Async webhook trace propagation - requires Redis-based correlation
+2. ✅ tRPC context loss - RESOLVED (02-01: tracing middleware applied to publicProcedure)
+3. ✅ Async webhook trace propagation - RESOLVED (03-01/03-02: Redis-based traceparent correlation)
 4. Large ONDC payloads - need truncation to prevent span drops
 5. ✅ Redis instrumentation - RESOLVED (01-01: ioredis configured to capture keys)
 
 ## Session Continuity
 
-Last session: 2026-02-10 04:17:34Z
-Stopped at: Completed 03-01-PLAN.md (Trace Context Storage Foundation)
+Last session: 2026-02-10
+Stopped at: Phase 3 complete
 Resume file: None
-Next step: Ready for 03-02-PLAN.md (Integrate trace context into search/on_search flow)
+Next step: /gsd:discuss-phase 4 or /gsd:plan-phase 4 (Comprehensive Coverage)

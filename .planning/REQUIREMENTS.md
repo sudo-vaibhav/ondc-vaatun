@@ -74,7 +74,7 @@
 
 ### OpenTelemetry Integration
 
-- [ ] **OTEL-01**: OpenTelemetry SDK integrated into Express server with auto-instrumentation
+- [x] **OTEL-01**: OpenTelemetry SDK integrated into Express server with auto-instrumentation
 - [x] **OTEL-02**: Every outgoing ONDC request (search, select, init, confirm, status) creates trace span with full payload
 - [ ] **OTEL-03**: Every callback (on_search, on_select, on_init, on_confirm, on_status) linked to parent trace via transactionId
 - [ ] **OTEL-04**: Internal operations (Redis reads/writes, Ed25519 signing) visible as child spans
@@ -171,8 +171,8 @@
 | OTEL-06 | v2.0 Phase 1 | Complete |
 | OTEL-02 | v2.0 Phase 2 | Complete |
 | OTEL-05 | v2.0 Phase 2 | Complete |
-| OTEL-03 | v2.0 Phase 3 | Pending |
-| OTEL-04 | v2.0 Phase 3 | Pending |
+| OTEL-03 | v2.0 Phase 3 | Complete |
+| OTEL-04 | v2.0 Phase 3 | Complete |
 | OTEL-04 | v2.0 Phase 4 | Pending |
 | OTEL-05 | v2.0 Phase 4 | Pending |
 | OTEL-07 | v2.0 Phase 5 | Pending |
