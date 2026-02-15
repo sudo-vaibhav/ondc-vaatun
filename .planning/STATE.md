@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 3 - Async Callback Correlation — COMPLETE
-Plan: All plans complete
-Status: Ready for Phase 4
-Last activity: 2026-02-10 — Phase 3 execution complete
+Phase: 4 - Comprehensive Coverage — IN PROGRESS
+Plan: 01 of 04 complete
+Status: Executing phase 4
+Last activity: 2026-02-15 — Completed 04-01-PLAN.md (Select Flow Trace Coverage)
 
-Progress: [██████░░░░] 62% (8/13 plans complete)
+Progress: [███████░░░] 69% (9/13 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -86,6 +86,10 @@ Key decisions from v1.0 affecting v2.0 work:
 - Early return in onSearch if no transactionId before trace restoration (03-02)
 - BPP identity attributes (bpp_id, bpp_uri) on callback spans (03-02)
 - NACK/error responses set SpanStatusCode.ERROR on callback spans (03-02)
+- Uniform traceparent field across all transaction stores (select/init/confirm/status) (04-01)
+- 30-minute TTL for select/init/confirm stores to catch late BPP callbacks (04-01)
+- Status store kept at 24h TTL (policy data accessed later) (04-01)
+- Ed25519 signing wrapped in sync callback for proper span hierarchy (04-01)
 
 ### Pending Todos
 
@@ -102,7 +106,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: Phase 3 complete
+Last session: 2026-02-15T16:17:33Z
+Stopped at: Completed 04-01-PLAN.md
 Resume file: None
-Next step: /gsd:discuss-phase 4 or /gsd:plan-phase 4 (Comprehensive Coverage)
+Next step: Execute 04-02-PLAN.md (Init Flow Trace Coverage)
