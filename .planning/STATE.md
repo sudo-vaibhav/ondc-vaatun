@@ -14,7 +14,7 @@ Plan: 02 of 02 complete
 Status: Phase 4 complete, ready for Phase 5
 Last activity: 2026-02-15 — Completed 04-02-PLAN.md (Init/Confirm/Status Flow Trace Coverage)
 
-Progress: [████████░░] 77% (10/13 plans complete)
+Progress: [████████░░] 83% (10/12 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -28,7 +28,7 @@ Progress: [████████░░] 77% (10/13 plans complete)
 - Error source attribution (BAP/gateway/BPP)
 
 **Total phases:** 5
-**Total plans:** 13
+**Total plans:** 12
 **Estimated duration:** 12-20 hours (based on research)
 
 ## v1.0 Performance Metrics (archived)
@@ -112,4 +112,4 @@ None yet.
 Last session: 2026-02-15T16:39:28Z
 Stopped at: Completed 04-02-PLAN.md (Phase 4 complete)
 Resume file: None
-Next step: Begin Phase 5 (Phase-Level Spans)
+Next step: Begin Phase 5 (Error Classification & Logging)

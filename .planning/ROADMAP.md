@@ -15,7 +15,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 1: SDK Foundation** - OpenTelemetry SDK installed and auto-instrumentation verified
 - [x] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
 - [x] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
-- [ ] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
+- [x] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
 - [ ] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
 
 ## Phase Details
@@ -88,8 +88,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Extend stores with traceparent, trace select/on_select, add signing spans
-- [ ] 04-02-PLAN.md — Trace init/on_init, confirm/on_confirm, and status/on_status flows
+- [x] 04-01-PLAN.md — Extend stores with traceparent, trace select/on_select, add signing spans
+- [x] 04-02-PLAN.md — Trace init/on_init, confirm/on_confirm, and status/on_status flows
 
 ### Phase 5: Error Classification & Logging
 **Goal**: Errors classified by source (BAP/gateway/BPP) and logs correlated with traces
@@ -119,5 +119,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
 | 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
 | 3. Async Callback Correlation | 2/2 | Complete | 2026-02-10 |
-| 4. Comprehensive Coverage | 0/2 | Not Started | — |
+| 4. Comprehensive Coverage | 2/2 | Complete | 2026-02-15 |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |
