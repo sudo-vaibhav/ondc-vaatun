@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 4 - Comprehensive Coverage — IN PROGRESS
-Plan: 01 of 04 complete
-Status: Executing phase 4
-Last activity: 2026-02-15 — Completed 04-01-PLAN.md (Select Flow Trace Coverage)
+Phase: 4 - Comprehensive Coverage — COMPLETE
+Plan: 02 of 02 complete
+Status: Phase 4 complete, ready for Phase 5
+Last activity: 2026-02-15 — Completed 04-02-PLAN.md (Init/Confirm/Status Flow Trace Coverage)
 
-Progress: [███████░░░] 69% (9/13 plans complete)
+Progress: [████████░░] 77% (10/13 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -90,6 +90,9 @@ Key decisions from v1.0 affecting v2.0 work:
 - 30-minute TTL for select/init/confirm stores to catch late BPP callbacks (04-01)
 - Status store kept at 24h TTL (policy data accessed later) (04-01)
 - Ed25519 signing wrapped in sync callback for proper span hierarchy (04-01)
+- orderId-based correlation for status flow (getStatusEntry uses orderId only, not transactionId+messageId) (04-02)
+- ondc.payment_url extracted from on_confirm response for payment flow visibility (04-02)
+- ondc.order_id attribute on status spans for filtering/correlation (04-02)
 
 ### Pending Todos
 
@@ -106,7 +109,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-15T16:17:33Z
-Stopped at: Completed 04-01-PLAN.md
+Last session: 2026-02-15T16:39:28Z
+Stopped at: Completed 04-02-PLAN.md (Phase 4 complete)
 Resume file: None
-Next step: Execute 04-02-PLAN.md (Init Flow Trace Coverage)
+Next step: Begin Phase 5 (Phase-Level Spans)
