@@ -4,8 +4,13 @@ import { z } from "zod";
 import {
   addConfirmResponse,
   createConfirmEntry,
+  getConfirmEntry,
 } from "../../lib/confirm-store";
-import { addInitResponse, createInitEntry } from "../../lib/init-store";
+import {
+  addInitResponse,
+  createInitEntry,
+  getInitEntry,
+} from "../../lib/init-store";
 import { createSearchPayload } from "../../lib/ondc/payload";
 import {
   addSearchResponse,
@@ -458,114 +463,140 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant, ondcClient, kv } = ctx;
 
-      const messageId = uuidv7();
+      return tracer.startActiveSpan("ondc.init", async (span) => {
+        try {
+          const messageId = uuidv7();
 
-      await createInitEntry(
-        kv,
-        input.transactionId,
-        messageId,
-        input.itemId,
-        input.providerId,
-        input.bppId,
-        input.bppUri,
-      );
+          // ONDC-specific attributes
+          span.setAttribute("ondc.transaction_id", input.transactionId);
+          span.setAttribute("ondc.message_id", messageId);
+          span.setAttribute("ondc.action", "init");
+          span.setAttribute("ondc.domain", tenant.domainCode);
+          span.setAttribute("ondc.bpp_id", input.bppId);
+          span.setAttribute("ondc.bpp_uri", input.bppUri);
 
-      const items: Array<{
-        id: string;
-        parent_item_id: string;
-        add_ons?: Array<{
-          id: string;
-          quantity?: { selected?: { count: number } };
-        }>;
-        xinput: {
-          form: { id: string };
-          form_response: { submission_id: string; status: string };
-        };
-      }> = [
-        {
-          id: input.itemId,
-          parent_item_id: input.parentItemId,
-          xinput: {
-            form: { id: input.xinputFormId },
-            form_response: {
-              submission_id: input.submissionId,
-              status: "SUCCESS",
+          // Serialize trace context for callback correlation
+          const traceparent = serializeTraceContext();
+
+          await createInitEntry(
+            kv,
+            input.transactionId,
+            messageId,
+            input.itemId,
+            input.providerId,
+            input.bppId,
+            input.bppUri,
+            traceparent,
+          );
+
+          const items: Array<{
+            id: string;
+            parent_item_id: string;
+            add_ons?: Array<{
+              id: string;
+              quantity?: { selected?: { count: number } };
+            }>;
+            xinput: {
+              form: { id: string };
+              form_response: { submission_id: string; status: string };
+            };
+          }> = [
+            {
+              id: input.itemId,
+              parent_item_id: input.parentItemId,
+              xinput: {
+                form: { id: input.xinputFormId },
+                form_response: {
+                  submission_id: input.submissionId,
+                  status: "SUCCESS",
+                },
+              },
             },
-          },
-        },
-      ];
+          ];
 
-      if (input.addOns && input.addOns.length > 0) {
-        items[0].add_ons = input.addOns.map((addon) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }));
-      }
+          if (input.addOns && input.addOns.length > 0) {
+            items[0].add_ons = input.addOns.map((addon) => ({
+              id: addon.id,
+              quantity: { selected: { count: addon.quantity } },
+            }));
+          }
 
-      const payload = {
-        context: {
-          action: "init",
-          bap_id: tenant.subscriberId,
-          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-          bpp_id: input.bppId,
-          bpp_uri: input.bppUri,
-          domain: tenant.domainCode,
-          location: {
-            country: { code: "IND" },
-            city: { code: "*" },
-          },
-          transaction_id: input.transactionId,
-          message_id: messageId,
-          timestamp: new Date().toISOString(),
-          ttl: "P24H",
-          version: "2.0.1",
-        },
-        message: {
-          order: {
-            provider: { id: input.providerId },
-            items: items,
-            fulfillments: [
-              {
-                customer: {
-                  person: { name: input.customerName },
-                  contact: {
-                    email: input.customerEmail,
-                    phone: `+91-${input.customerPhone}`,
+          const payload = {
+            context: {
+              action: "init",
+              bap_id: tenant.subscriberId,
+              bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+              bpp_id: input.bppId,
+              bpp_uri: input.bppUri,
+              domain: tenant.domainCode,
+              location: {
+                country: { code: "IND" },
+                city: { code: "*" },
+              },
+              transaction_id: input.transactionId,
+              message_id: messageId,
+              timestamp: new Date().toISOString(),
+              ttl: "P24H",
+              version: "2.0.1",
+            },
+            message: {
+              order: {
+                provider: { id: input.providerId },
+                items: items,
+                fulfillments: [
+                  {
+                    customer: {
+                      person: { name: input.customerName },
+                      contact: {
+                        email: input.customerEmail,
+                        phone: `+91-${input.customerPhone}`,
+                      },
+                    },
                   },
-                },
+                ],
+                payments: [
+                  {
+                    collected_by: "BPP",
+                    status: "NOT-PAID",
+                    type: "PRE-FULFILLMENT",
+                    params: {
+                      amount: input.amount,
+                      currency: "INR",
+                    },
+                  },
+                ],
               },
-            ],
-            payments: [
-              {
-                collected_by: "BPP",
-                status: "NOT-PAID",
-                type: "PRE-FULFILLMENT",
-                params: {
-                  amount: input.amount,
-                  currency: "INR",
-                },
-              },
-            ],
-          },
-        },
-      };
+            },
+          };
 
-      const initUrl = input.bppUri.endsWith("/")
-        ? `${input.bppUri}init`
-        : `${input.bppUri}/init`;
+          const initUrl = input.bppUri.endsWith("/")
+            ? `${input.bppUri}init`
+            : `${input.bppUri}/init`;
 
-      console.log("[Init] Sending request to:", initUrl);
-      console.log("[Init] Payload:", JSON.stringify(payload, null, 2));
+          console.log("[Init] Sending request to:", initUrl);
+          console.log("[Init] Payload:", JSON.stringify(payload, null, 2));
 
-      const response = await ondcClient.send(initUrl, "POST", payload);
+          const response = await ondcClient.send(initUrl, "POST", payload);
 
-      console.log("[Init] ONDC Response:", JSON.stringify(response, null, 2));
+          console.log("[Init] ONDC Response:", JSON.stringify(response, null, 2));
 
-      return {
-        ...response,
-        transactionId: input.transactionId,
-        messageId,
-      };
+          span.setStatus({ code: SpanStatusCode.OK });
+          return {
+            ...response,
+            transactionId: input.transactionId,
+            messageId,
+          };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   onInit: publicProcedure
@@ -602,28 +633,64 @@ export const gatewayRouter = router({
       const transactionId = input.context?.transaction_id;
       const messageId = input.context?.message_id;
 
-      if (input.error) {
-        console.error("[on_init] BPP returned error:", input.error);
-      }
-
-      if (transactionId && messageId) {
-        await addInitResponse(
-          kv,
-          transactionId,
-          messageId,
-          input as Parameters<typeof addInitResponse>[3],
-        );
-      } else {
+      if (!transactionId || !messageId) {
         console.warn("[on_init] Missing transaction_id or message_id");
+        return { message: { ack: { status: "ACK" as const } } };
       }
 
-      return {
-        message: {
-          ack: {
-            status: "ACK" as const,
-          },
+      // Retrieve stored trace context from init entry
+      const entry = await getInitEntry(kv, transactionId, messageId);
+      const originalSpanContext = restoreTraceContext(entry?.traceparent);
+
+      if (!entry?.traceparent) {
+        console.warn(
+          "[on_init] No trace context found for transaction:",
+          transactionId,
+        );
+      }
+
+      // Create callback span with link to original init span
+      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "ondc.transaction_id": transactionId,
+          "ondc.action": "on_init",
+          "ondc.bpp_id": input.context?.bpp_id || "unknown",
+          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
         },
-      };
+      });
+
+      return tracer.startActiveSpan("ondc.on_init", spanOptions, async (span) => {
+        try {
+          await addInitResponse(
+            kv,
+            transactionId,
+            messageId,
+            input as Parameters<typeof addInitResponse>[3],
+          );
+
+          // NACK/error responses from BPP set ERROR status
+          if (input.error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
+            });
+          } else {
+            span.setStatus({ code: SpanStatusCode.OK });
+          }
+
+          return { message: { ack: { status: "ACK" as const } } };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   confirm: publicProcedure
@@ -667,127 +734,153 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant, ondcClient, kv } = ctx;
 
-      const messageId = input.messageId || uuidv7();
+      return tracer.startActiveSpan("ondc.confirm", async (span) => {
+        try {
+          const messageId = input.messageId || uuidv7();
 
-      await createConfirmEntry(
-        kv,
-        input.transactionId,
-        messageId,
-        input.itemId,
-        input.providerId,
-        input.bppId,
-        input.bppUri,
-        input.quoteId,
-        input.amount,
-      );
+          // ONDC-specific attributes
+          span.setAttribute("ondc.transaction_id", input.transactionId);
+          span.setAttribute("ondc.message_id", messageId);
+          span.setAttribute("ondc.action", "confirm");
+          span.setAttribute("ondc.domain", tenant.domainCode);
+          span.setAttribute("ondc.bpp_id", input.bppId);
+          span.setAttribute("ondc.bpp_uri", input.bppUri);
 
-      const items: Array<{
-        id: string;
-        parent_item_id: string;
-        add_ons?: Array<{
-          id: string;
-          quantity?: { selected?: { count: number } };
-        }>;
-        xinput: {
-          form: { id: string };
-          form_response: { submission_id: string; status: string };
-        };
-      }> = [
-        {
-          id: input.itemId,
-          parent_item_id: input.parentItemId,
-          xinput: {
-            form: { id: input.xinputFormId },
-            form_response: {
-              submission_id: input.submissionId,
-              status: "SUCCESS",
+          // Serialize trace context for callback correlation
+          const traceparent = serializeTraceContext();
+
+          await createConfirmEntry(
+            kv,
+            input.transactionId,
+            messageId,
+            input.itemId,
+            input.providerId,
+            input.bppId,
+            input.bppUri,
+            input.quoteId,
+            input.amount,
+            traceparent,
+          );
+
+          const items: Array<{
+            id: string;
+            parent_item_id: string;
+            add_ons?: Array<{
+              id: string;
+              quantity?: { selected?: { count: number } };
+            }>;
+            xinput: {
+              form: { id: string };
+              form_response: { submission_id: string; status: string };
+            };
+          }> = [
+            {
+              id: input.itemId,
+              parent_item_id: input.parentItemId,
+              xinput: {
+                form: { id: input.xinputFormId },
+                form_response: {
+                  submission_id: input.submissionId,
+                  status: "SUCCESS",
+                },
+              },
             },
-          },
-        },
-      ];
+          ];
 
-      if (input.addOns && input.addOns.length > 0) {
-        items[0].add_ons = input.addOns.map((addon) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }));
-      }
+          if (input.addOns && input.addOns.length > 0) {
+            items[0].add_ons = input.addOns.map((addon) => ({
+              id: addon.id,
+              quantity: { selected: { count: addon.quantity } },
+            }));
+          }
 
-      const payload = {
-        context: {
-          action: "confirm",
-          bap_id: tenant.subscriberId,
-          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-          bpp_id: input.bppId,
-          bpp_uri: input.bppUri,
-          domain: tenant.domainCode,
-          location: {
-            country: { code: "IND" },
-            city: { code: "*" },
-          },
-          transaction_id: input.transactionId,
-          message_id: messageId,
-          timestamp: new Date().toISOString(),
-          ttl: "P24H",
-          version: "2.0.1",
-        },
-        message: {
-          order: {
-            provider: { id: input.providerId },
-            items: items,
-            fulfillments: [
-              {
-                id: "F1",
-                type: "POLICY",
-                customer: {
-                  person: { name: input.customerName },
-                  contact: {
-                    email: input.customerEmail,
-                    phone: `+91-${input.customerPhone}`,
+          const payload = {
+            context: {
+              action: "confirm",
+              bap_id: tenant.subscriberId,
+              bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+              bpp_id: input.bppId,
+              bpp_uri: input.bppUri,
+              domain: tenant.domainCode,
+              location: {
+                country: { code: "IND" },
+                city: { code: "*" },
+              },
+              transaction_id: input.transactionId,
+              message_id: messageId,
+              timestamp: new Date().toISOString(),
+              ttl: "P24H",
+              version: "2.0.1",
+            },
+            message: {
+              order: {
+                provider: { id: input.providerId },
+                items: items,
+                fulfillments: [
+                  {
+                    id: "F1",
+                    type: "POLICY",
+                    customer: {
+                      person: { name: input.customerName },
+                      contact: {
+                        email: input.customerEmail,
+                        phone: `+91-${input.customerPhone}`,
+                      },
+                    },
                   },
+                ],
+                payments: [
+                  {
+                    collected_by: "BPP",
+                    status: "NOT-PAID",
+                    type: "PRE-FULFILLMENT",
+                    params: {
+                      amount: input.amount,
+                      currency: "INR",
+                    },
+                  },
+                ],
+                quote: {
+                  id: input.quoteId,
+                  price: { currency: "INR", value: input.amount },
+                  breakup: input.quoteBreakup,
+                  ttl: "P15D",
                 },
               },
-            ],
-            payments: [
-              {
-                collected_by: "BPP",
-                status: "NOT-PAID",
-                type: "PRE-FULFILLMENT",
-                params: {
-                  amount: input.amount,
-                  currency: "INR",
-                },
-              },
-            ],
-            quote: {
-              id: input.quoteId,
-              price: { currency: "INR", value: input.amount },
-              breakup: input.quoteBreakup,
-              ttl: "P15D",
             },
-          },
-        },
-      };
+          };
 
-      const confirmUrl = input.bppUri.endsWith("/")
-        ? `${input.bppUri}confirm`
-        : `${input.bppUri}/confirm`;
+          const confirmUrl = input.bppUri.endsWith("/")
+            ? `${input.bppUri}confirm`
+            : `${input.bppUri}/confirm`;
 
-      console.log("[Confirm] Sending request to:", confirmUrl);
-      console.log("[Confirm] Payload:", JSON.stringify(payload, null, 2));
+          console.log("[Confirm] Sending request to:", confirmUrl);
+          console.log("[Confirm] Payload:", JSON.stringify(payload, null, 2));
 
-      const response = await ondcClient.send(confirmUrl, "POST", payload);
+          const response = await ondcClient.send(confirmUrl, "POST", payload);
 
-      console.log(
-        "[Confirm] ONDC Response:",
-        JSON.stringify(response, null, 2),
-      );
+          console.log(
+            "[Confirm] ONDC Response:",
+            JSON.stringify(response, null, 2),
+          );
 
-      return {
-        ...response,
-        transactionId: input.transactionId,
-        messageId,
-      };
+          span.setStatus({ code: SpanStatusCode.OK });
+          return {
+            ...response,
+            transactionId: input.transactionId,
+            messageId,
+          };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   onConfirm: publicProcedure
@@ -825,29 +918,71 @@ export const gatewayRouter = router({
       const messageId = input.context?.message_id;
       const orderId = input.message?.order?.id;
 
-      if (input.error) {
-        console.error("[on_confirm] BPP returned error:", input.error);
-      }
-
-      if (transactionId && messageId) {
-        await addConfirmResponse(
-          kv,
-          transactionId,
-          messageId,
-          orderId,
-          input as Parameters<typeof addConfirmResponse>[4],
-        );
-      } else {
+      if (!transactionId || !messageId) {
         console.warn("[on_confirm] Missing transaction_id or message_id");
+        return { message: { ack: { status: "ACK" as const } } };
       }
 
-      return {
-        message: {
-          ack: {
-            status: "ACK" as const,
-          },
+      // Retrieve stored trace context from confirm entry
+      const entry = await getConfirmEntry(kv, transactionId, messageId);
+      const originalSpanContext = restoreTraceContext(entry?.traceparent);
+
+      if (!entry?.traceparent) {
+        console.warn(
+          "[on_confirm] No trace context found for transaction:",
+          transactionId,
+        );
+      }
+
+      // Create callback span with link to original confirm span
+      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "ondc.transaction_id": transactionId,
+          "ondc.action": "on_confirm",
+          "ondc.bpp_id": input.context?.bpp_id || "unknown",
+          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
         },
-      };
+      });
+
+      return tracer.startActiveSpan("ondc.on_confirm", spanOptions, async (span) => {
+        try {
+          // Extract payment URL and add as span attribute
+          const paymentUrl = input.message?.order?.payments?.[0]?.url;
+          if (paymentUrl) {
+            span.setAttribute("ondc.payment_url", paymentUrl);
+          }
+
+          await addConfirmResponse(
+            kv,
+            transactionId,
+            messageId,
+            orderId,
+            input as Parameters<typeof addConfirmResponse>[4],
+          );
+
+          // NACK/error responses from BPP set ERROR status
+          if (input.error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
+            });
+          } else {
+            span.setStatus({ code: SpanStatusCode.OK });
+          }
+
+          return { message: { ack: { status: "ACK" as const } } };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   status: publicProcedure
