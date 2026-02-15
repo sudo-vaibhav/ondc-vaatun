@@ -175,6 +175,7 @@ export interface StatusEntry {
   bppUri: string;
   statusTimestamp: string;
   createdAt: number;
+  traceparent?: string;
 }
 
 export interface StatusResult {
@@ -208,6 +209,7 @@ export async function createStatusEntry(
   transactionId: string,
   bppId: string,
   bppUri: string,
+  traceparent?: string,
 ): Promise<StatusEntry> {
   const entry: StatusEntry = {
     orderId,
@@ -216,6 +218,7 @@ export async function createStatusEntry(
     bppUri,
     statusTimestamp: new Date().toISOString(),
     createdAt: Date.now(),
+    traceparent,
   };
 
   const key = keyFormatter.status(orderId);
@@ -235,9 +238,7 @@ export async function addStatusResponse(
   let entry = await kv.get<StatusEntry>(key);
 
   if (!entry) {
-    console.warn(
-      `[StatusStore] No entry found for: ${orderId}, creating new`,
-    );
+    console.warn(`[StatusStore] No entry found for: ${orderId}, creating new`);
     entry = {
       orderId,
       transactionId: response.context.transaction_id,
@@ -290,10 +291,7 @@ export async function getStatusResponse(
 export function subscribeToStatus(
   kv: TenantKeyValueStore,
   orderId: string,
-  callback: (data: {
-    type: string;
-    orderId: string;
-  }) => void,
+  callback: (data: { type: string; orderId: string }) => void,
 ): () => void {
   const channel = keyFormatter.statusChannel(orderId);
   return kv.subscribe(channel, (data) => {
@@ -321,7 +319,9 @@ export async function getStatusResult(
   const payment = order?.payments?.[0];
   const fulfillment = order?.fulfillments?.[0];
   const policyDocument = order?.documents?.find(
-    (doc) => doc.descriptor?.code === "policy-doc" || doc.mime_type === "application/pdf"
+    (doc) =>
+      doc.descriptor?.code === "policy-doc" ||
+      doc.mime_type === "application/pdf",
   );
 
   return {

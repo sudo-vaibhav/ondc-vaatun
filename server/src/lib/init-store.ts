@@ -155,6 +155,7 @@ export interface InitEntry {
   bppUri: string;
   initTimestamp: string;
   createdAt: number;
+  traceparent?: string;
 }
 
 export interface InitResult {
@@ -172,7 +173,7 @@ export interface InitResult {
   error?: { code?: string; message?: string };
 }
 
-const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_STORE_TTL_MS = 30 * 60 * 1000;
 
 // ============================================
 // Store Operations
@@ -186,6 +187,7 @@ export async function createInitEntry(
   providerId: string,
   bppId: string,
   bppUri: string,
+  traceparent?: string,
 ): Promise<InitEntry> {
   const entry: InitEntry = {
     transactionId,
@@ -196,6 +198,7 @@ export async function createInitEntry(
     bppUri,
     initTimestamp: new Date().toISOString(),
     createdAt: Date.now(),
+    traceparent,
   };
 
   const key = keyFormatter.init(transactionId, messageId);
@@ -242,9 +245,7 @@ export async function addInitResponse(
     ttlMs: DEFAULT_STORE_TTL_MS,
   });
 
-  console.log(
-    `[InitStore] Added response for: ${transactionId}:${messageId}`,
-  );
+  console.log(`[InitStore] Added response for: ${transactionId}:${messageId}`);
 
   const channel = keyFormatter.initChannel(transactionId, messageId);
   await kv.publish(channel, {

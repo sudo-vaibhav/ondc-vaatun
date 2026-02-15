@@ -131,6 +131,7 @@ export interface SelectEntry {
   bppUri: string;
   selectTimestamp: string;
   createdAt: number;
+  traceparent?: string;
 }
 
 export interface SelectResult {
@@ -149,7 +150,7 @@ export interface SelectResult {
   error?: { code?: string; message?: string };
 }
 
-const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_STORE_TTL_MS = 30 * 60 * 1000;
 
 // ============================================
 // Store Operations
@@ -163,6 +164,7 @@ export async function createSelectEntry(
   providerId: string,
   bppId: string,
   bppUri: string,
+  traceparent?: string,
 ): Promise<SelectEntry> {
   const entry: SelectEntry = {
     transactionId,
@@ -173,6 +175,7 @@ export async function createSelectEntry(
     bppUri,
     selectTimestamp: new Date().toISOString(),
     createdAt: Date.now(),
+    traceparent,
   };
 
   const key = keyFormatter.select(transactionId, messageId);

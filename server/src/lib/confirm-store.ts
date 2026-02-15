@@ -196,6 +196,7 @@ export interface ConfirmEntry {
   amount: string;
   confirmTimestamp: string;
   createdAt: number;
+  traceparent?: string;
 }
 
 export interface ConfirmResult {
@@ -213,7 +214,7 @@ export interface ConfirmResult {
   error?: { code?: string; message?: string };
 }
 
-const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_STORE_TTL_MS = 30 * 60 * 1000;
 
 // ============================================
 // Store Operations
@@ -229,6 +230,7 @@ export async function createConfirmEntry(
   bppUri: string,
   quoteId: string,
   amount: string,
+  traceparent?: string,
 ): Promise<ConfirmEntry> {
   const entry: ConfirmEntry = {
     transactionId,
@@ -241,6 +243,7 @@ export async function createConfirmEntry(
     amount,
     confirmTimestamp: new Date().toISOString(),
     createdAt: Date.now(),
+    traceparent,
   };
 
   const key = keyFormatter.confirm(transactionId, messageId);
