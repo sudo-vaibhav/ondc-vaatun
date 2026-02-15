@@ -14,7 +14,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 
 - [x] **Phase 1: SDK Foundation** - OpenTelemetry SDK installed and auto-instrumentation verified
 - [x] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
-- [ ] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
+- [x] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
 - [ ] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
 - [ ] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
 
@@ -84,13 +84,12 @@ Plans:
   4. Status flow creates spans for status request and on_status callback
   5. Ed25519 signing operations appear as child spans with timing
   6. ONDC-specific attributes added: ondc.action, ondc.domain, ondc.bpp_id
-  7. Response payloads captured with 16KB truncation limit
-**Plans**: 3 plans
+  7. All stores extended with traceparent field and 30-min TTL (status keeps 24h)
+**Plans**: 2 plans
 
 Plans:
-- [ ] 04-01-PLAN.md — Add tracing to select and on_select with callback correlation
-- [ ] 04-02-PLAN.md — Add tracing to init/on_init and confirm/on_confirm flows
-- [ ] 04-03-PLAN.md — Add signing spans and ONDC-specific span attributes
+- [ ] 04-01-PLAN.md — Extend stores with traceparent, trace select/on_select, add signing spans
+- [ ] 04-02-PLAN.md — Trace init/on_init, confirm/on_confirm, and status/on_status flows
 
 ### Phase 5: Error Classification & Logging
 **Goal**: Errors classified by source (BAP/gateway/BPP) and logs correlated with traces
@@ -120,5 +119,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
 | 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
 | 3. Async Callback Correlation | 2/2 | Complete | 2026-02-10 |
-| 4. Comprehensive Coverage | 0/3 | Not Started | — |
+| 4. Comprehensive Coverage | 0/2 | Not Started | — |
 | 5. Error Classification & Logging | 0/2 | Not Started | — |
