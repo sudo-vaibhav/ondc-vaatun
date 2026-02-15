@@ -22,7 +22,11 @@ import {
   createSelectEntry,
   getSelectEntry,
 } from "../../lib/select-store";
-import { addStatusResponse, createStatusEntry } from "../../lib/status-store";
+import {
+  addStatusResponse,
+  createStatusEntry,
+  getStatusEntry,
+} from "../../lib/status-store";
 import {
   createLinkedSpanOptions,
   restoreTraceContext,
@@ -997,57 +1001,84 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant, ondcClient, kv } = ctx;
 
-      const messageId = uuidv7();
+      return tracer.startActiveSpan("ondc.status", async (span) => {
+        try {
+          const messageId = uuidv7();
 
-      await createStatusEntry(
-        kv,
-        input.orderId,
-        input.transactionId,
-        input.bppId,
-        input.bppUri,
-      );
+          // ONDC-specific attributes
+          span.setAttribute("ondc.transaction_id", input.transactionId);
+          span.setAttribute("ondc.message_id", messageId);
+          span.setAttribute("ondc.action", "status");
+          span.setAttribute("ondc.domain", tenant.domainCode);
+          span.setAttribute("ondc.bpp_id", input.bppId);
+          span.setAttribute("ondc.bpp_uri", input.bppUri);
+          span.setAttribute("ondc.order_id", input.orderId);
 
-      // Status request is much simpler - just order_id in message
-      const payload = {
-        context: {
-          action: "status",
-          bap_id: tenant.subscriberId,
-          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-          bpp_id: input.bppId,
-          bpp_uri: input.bppUri,
-          domain: tenant.domainCode,
-          location: {
-            country: { code: "IND" },
-            city: { code: "*" },
-          },
-          transaction_id: input.transactionId,
-          message_id: messageId,
-          timestamp: new Date().toISOString(),
-          ttl: "PT10M", // Shorter TTL for status
-          version: "2.0.1",
-        },
-        message: {
-          order_id: input.orderId,
-        },
-      };
+          // Serialize trace context for callback correlation
+          const traceparent = serializeTraceContext();
 
-      const statusUrl = input.bppUri.endsWith("/")
-        ? `${input.bppUri}status`
-        : `${input.bppUri}/status`;
+          await createStatusEntry(
+            kv,
+            input.orderId,
+            input.transactionId,
+            input.bppId,
+            input.bppUri,
+            traceparent,
+          );
 
-      console.log("[Status] Sending request to:", statusUrl);
-      console.log("[Status] Payload:", JSON.stringify(payload, null, 2));
+          // Status request is much simpler - just order_id in message
+          const payload = {
+            context: {
+              action: "status",
+              bap_id: tenant.subscriberId,
+              bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+              bpp_id: input.bppId,
+              bpp_uri: input.bppUri,
+              domain: tenant.domainCode,
+              location: {
+                country: { code: "IND" },
+                city: { code: "*" },
+              },
+              transaction_id: input.transactionId,
+              message_id: messageId,
+              timestamp: new Date().toISOString(),
+              ttl: "PT10M", // Shorter TTL for status
+              version: "2.0.1",
+            },
+            message: {
+              order_id: input.orderId,
+            },
+          };
 
-      const response = await ondcClient.send(statusUrl, "POST", payload);
+          const statusUrl = input.bppUri.endsWith("/")
+            ? `${input.bppUri}status`
+            : `${input.bppUri}/status`;
 
-      console.log("[Status] ONDC Response:", JSON.stringify(response, null, 2));
+          console.log("[Status] Sending request to:", statusUrl);
+          console.log("[Status] Payload:", JSON.stringify(payload, null, 2));
 
-      return {
-        ...response,
-        transactionId: input.transactionId,
-        orderId: input.orderId,
-        messageId,
-      };
+          const response = await ondcClient.send(statusUrl, "POST", payload);
+
+          console.log("[Status] ONDC Response:", JSON.stringify(response, null, 2));
+
+          span.setStatus({ code: SpanStatusCode.OK });
+          return {
+            ...response,
+            transactionId: input.transactionId,
+            orderId: input.orderId,
+            messageId,
+          };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   onStatus: publicProcedure
@@ -1082,27 +1113,65 @@ export const gatewayRouter = router({
       );
 
       const orderId = input.message?.order?.id;
+      const transactionId = input.context?.transaction_id;
 
-      if (input.error) {
-        console.error("[on_status] BPP returned error:", input.error);
-      }
-
-      if (orderId) {
-        await addStatusResponse(
-          kv,
-          orderId,
-          input as Parameters<typeof addStatusResponse>[2],
-        );
-      } else {
+      if (!orderId) {
         console.warn("[on_status] Missing order_id in response");
+        return { message: { ack: { status: "ACK" as const } } };
       }
 
-      return {
-        message: {
-          ack: {
-            status: "ACK" as const,
-          },
+      // Retrieve stored trace context from status entry (keyed by orderId)
+      const entry = await getStatusEntry(kv, orderId);
+      const originalSpanContext = restoreTraceContext(entry?.traceparent);
+
+      if (!entry?.traceparent) {
+        console.warn(
+          "[on_status] No trace context found for order:",
+          orderId,
+        );
+      }
+
+      // Create callback span with link to original status span
+      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "ondc.transaction_id": transactionId || "unknown",
+          "ondc.action": "on_status",
+          "ondc.order_id": orderId,
+          "ondc.bpp_id": input.context?.bpp_id || "unknown",
+          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
         },
-      };
+      });
+
+      return tracer.startActiveSpan("ondc.on_status", spanOptions, async (span) => {
+        try {
+          await addStatusResponse(
+            kv,
+            orderId,
+            input as Parameters<typeof addStatusResponse>[2],
+          );
+
+          // NACK/error responses from BPP set ERROR status
+          if (input.error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
+            });
+          } else {
+            span.setStatus({ code: SpanStatusCode.OK });
+          }
+
+          return { message: { ack: { status: "ACK" as const } } };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 });
