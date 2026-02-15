@@ -12,7 +12,11 @@ import {
   createSearchEntry,
   getSearchEntry,
 } from "../../lib/search-store";
-import { addSelectResponse, createSelectEntry } from "../../lib/select-store";
+import {
+  addSelectResponse,
+  createSelectEntry,
+  getSelectEntry,
+} from "../../lib/select-store";
 import { addStatusResponse, createStatusEntry } from "../../lib/status-store";
 import {
   createLinkedSpanOptions,
@@ -213,95 +217,122 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant, ondcClient, kv } = ctx;
 
-      const messageId = uuidv7();
+      return tracer.startActiveSpan("ondc.select", async (span) => {
+        try {
+          const messageId = uuidv7();
 
-      const items: Array<{
-        id: string;
-        parent_item_id: string;
-        add_ons?: Array<{
-          id: string;
-          quantity?: { selected?: { count: number } };
-        }>;
-        xinput?: {
-          form?: { id?: string };
-          form_response?: { submission_id: string; status: string };
-        };
-      }> = [
-        {
-          id: input.itemId,
-          parent_item_id: input.parentItemId || input.itemId,
-        },
-      ];
+          // ONDC-specific attributes
+          span.setAttribute("ondc.transaction_id", input.transactionId);
+          span.setAttribute("ondc.message_id", messageId);
+          span.setAttribute("ondc.action", "select");
+          span.setAttribute("ondc.domain", tenant.domainCode);
+          span.setAttribute("ondc.subscriber_id", tenant.subscriberId);
+          span.setAttribute("ondc.bpp_id", input.bppId);
+          span.setAttribute("ondc.bpp_uri", input.bppUri);
 
-      if (input.xinputFormId && input.xinputSubmissionId) {
-        items[0].xinput = {
-          form: { id: input.xinputFormId },
-          form_response: {
-            submission_id: input.xinputSubmissionId,
-            status: "APPROVED",
-          },
-        };
-      }
+          // Serialize trace context for callback correlation
+          const traceparent = serializeTraceContext();
 
-      if (input.addOns && input.addOns.length > 0) {
-        items[0].add_ons = input.addOns.map((addon) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }));
-      }
+          const items: Array<{
+            id: string;
+            parent_item_id: string;
+            add_ons?: Array<{
+              id: string;
+              quantity?: { selected?: { count: number } };
+            }>;
+            xinput?: {
+              form?: { id?: string };
+              form_response?: { submission_id: string; status: string };
+            };
+          }> = [
+            {
+              id: input.itemId,
+              parent_item_id: input.parentItemId || input.itemId,
+            },
+          ];
 
-      const payload = {
-        context: {
-          action: "select",
-          bap_id: tenant.subscriberId,
-          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-          bpp_id: input.bppId,
-          bpp_uri: input.bppUri,
-          domain: tenant.domainCode,
-          location: {
-            country: { code: "IND" },
-            city: { code: "*" },
-          },
-          transaction_id: input.transactionId,
-          message_id: messageId,
-          timestamp: new Date().toISOString(),
-          ttl: "PT30S",
-          version: "2.0.1",
-        },
-        message: {
-          order: {
-            provider: { id: input.providerId },
-            items: items,
-          },
-        },
-      };
+          if (input.xinputFormId && input.xinputSubmissionId) {
+            items[0].xinput = {
+              form: { id: input.xinputFormId },
+              form_response: {
+                submission_id: input.xinputSubmissionId,
+                status: "APPROVED",
+              },
+            };
+          }
 
-      const selectUrl = input.bppUri.endsWith("/")
-        ? `${input.bppUri}select`
-        : `${input.bppUri}/select`;
+          if (input.addOns && input.addOns.length > 0) {
+            items[0].add_ons = input.addOns.map((addon) => ({
+              id: addon.id,
+              quantity: { selected: { count: addon.quantity } },
+            }));
+          }
 
-      await createSelectEntry(
-        kv,
-        input.transactionId,
-        messageId,
-        input.itemId,
-        input.providerId,
-        input.bppId,
-        input.bppUri,
-      );
+          const payload = {
+            context: {
+              action: "select",
+              bap_id: tenant.subscriberId,
+              bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+              bpp_id: input.bppId,
+              bpp_uri: input.bppUri,
+              domain: tenant.domainCode,
+              location: {
+                country: { code: "IND" },
+                city: { code: "*" },
+              },
+              transaction_id: input.transactionId,
+              message_id: messageId,
+              timestamp: new Date().toISOString(),
+              ttl: "PT30S",
+              version: "2.0.1",
+            },
+            message: {
+              order: {
+                provider: { id: input.providerId },
+                items: items,
+              },
+            },
+          };
 
-      console.log("[Select] Sending request to:", selectUrl);
-      console.log("[Select] Payload:", JSON.stringify(payload, null, 2));
+          const selectUrl = input.bppUri.endsWith("/")
+            ? `${input.bppUri}select`
+            : `${input.bppUri}/select`;
 
-      const response = await ondcClient.send(selectUrl, "POST", payload);
+          await createSelectEntry(
+            kv,
+            input.transactionId,
+            messageId,
+            input.itemId,
+            input.providerId,
+            input.bppId,
+            input.bppUri,
+            traceparent,
+          );
 
-      console.log("[Select] ONDC Response:", JSON.stringify(response, null, 2));
+          console.log("[Select] Sending request to:", selectUrl);
+          console.log("[Select] Payload:", JSON.stringify(payload, null, 2));
 
-      return {
-        ...response,
-        transactionId: input.transactionId,
-        messageId,
-      };
+          const response = await ondcClient.send(selectUrl, "POST", payload);
+
+          console.log("[Select] ONDC Response:", JSON.stringify(response, null, 2));
+
+          span.setStatus({ code: SpanStatusCode.OK });
+          return {
+            ...response,
+            transactionId: input.transactionId,
+            messageId,
+          };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   onSelect: publicProcedure
@@ -338,28 +369,65 @@ export const gatewayRouter = router({
       const transactionId = input.context?.transaction_id;
       const messageId = input.context?.message_id;
 
-      if (input.error) {
-        console.error("[on_select] BPP returned error:", input.error);
-      }
-
-      if (transactionId && messageId) {
-        await addSelectResponse(
-          kv,
-          transactionId,
-          messageId,
-          input as Parameters<typeof addSelectResponse>[3],
-        );
-      } else {
+      if (!transactionId || !messageId) {
         console.warn("[on_select] Missing transaction_id or message_id");
+        return { message: { ack: { status: "ACK" as const } } };
       }
 
-      return {
-        message: {
-          ack: {
-            status: "ACK" as const,
-          },
+      // Retrieve stored trace context from select entry
+      const entry = await getSelectEntry(kv, transactionId, messageId);
+      const originalSpanContext = restoreTraceContext(entry?.traceparent);
+
+      if (!entry?.traceparent) {
+        console.warn(
+          "[on_select] No trace context found for transaction:",
+          transactionId,
+        );
+      }
+
+      // Create callback span with link to original select span
+      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
+        kind: SpanKind.SERVER,
+        attributes: {
+          "ondc.transaction_id": transactionId,
+          "ondc.message_id": messageId,
+          "ondc.action": "on_select",
+          "ondc.bpp_id": input.context?.bpp_id || "unknown",
+          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
         },
-      };
+      });
+
+      return tracer.startActiveSpan("ondc.on_select", spanOptions, async (span) => {
+        try {
+          await addSelectResponse(
+            kv,
+            transactionId,
+            messageId,
+            input as Parameters<typeof addSelectResponse>[3],
+          );
+
+          // NACK/error responses from BPP set ERROR status
+          if (input.error) {
+            span.setStatus({
+              code: SpanStatusCode.ERROR,
+              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
+            });
+          } else {
+            span.setStatus({ code: SpanStatusCode.OK });
+          }
+
+          return { message: { ack: { status: "ACK" as const } } };
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      });
     }),
 
   init: publicProcedure

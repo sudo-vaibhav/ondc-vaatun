@@ -55,7 +55,26 @@ export class ONDCClient {
       new Date(created * 1000).toISOString(),
     );
 
-    const signature = this.tenant.signMessage(signingString);
+    // Wrap Ed25519 signing in a child span
+    const signature = this.tracer.startActiveSpan(
+      "ondc.sign",
+      (span) => {
+        try {
+          const sig = this.tenant.signMessage(signingString);
+          span.setStatus({ code: 1 as typeof SpanStatusCode.OK });
+          return sig;
+        } catch (error) {
+          span.recordException(error as Error);
+          span.setStatus({
+            code: 2 as typeof SpanStatusCode.ERROR,
+            message: (error as Error).message,
+          });
+          throw error;
+        } finally {
+          span.end();
+        }
+      },
+    );
 
     const keyId = `${this.tenant.subscriberId}|${this.tenant.uniqueKeyId.value}|ed25519`;
     return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
