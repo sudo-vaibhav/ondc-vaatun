@@ -1,6 +1,7 @@
 import { SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
+import { logger } from "../../lib/logger";
 import {
   addConfirmResponse,
   createConfirmEntry,
@@ -78,16 +79,13 @@ export const gatewayRouter = router({
           );
           const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
-          console.log("[Search] Sending request to:", gatewayUrl.toString());
-          console.log("[Search] Payload:", JSON.stringify(payload, null, "\t"));
+          logger.info({ action: "search", url: gatewayUrl.toString() }, "Sending ONDC request");
+          logger.debug({ payload }, "Search payload");
 
           // ondcClient.send() creates its own child span (ondc.http.request from 02-03)
           const response = await ondcClient.send(gatewayUrl, "POST", payload);
 
-          console.log(
-            "[Search] ONDC Response:",
-            JSON.stringify(response, null, 2),
-          );
+          logger.debug({ response }, "ONDC response received");
 
           span.setStatus({ code: SpanStatusCode.OK });
           return {
@@ -138,15 +136,18 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { kv } = ctx;
 
-      console.log(
-        "\n\n[on_search] Request Body:\n\n",
-        JSON.stringify(input, null, "\t"),
+      logger.info(
+        {
+          action: "on_search",
+          transactionId: input.context?.transaction_id,
+        },
+        "Callback received",
       );
 
       const transactionId = input.context?.transaction_id;
 
       if (!transactionId) {
-        console.warn("[on_search] No transaction_id found in context");
+        logger.warn({ action: "on_search" }, "No transaction_id found in context");
         return { message: { ack: { status: "ACK" as const } } };
       }
 
@@ -155,9 +156,12 @@ export const gatewayRouter = router({
       const originalSpanContext = restoreTraceContext(entry?.traceparent);
 
       if (!entry?.traceparent) {
-        console.warn(
-          "[on_search] No trace context found for transaction:",
-          transactionId,
+        logger.warn(
+          {
+            action: "on_search",
+            transactionId,
+          },
+          "No trace context found for transaction",
         );
       }
 
@@ -331,12 +335,12 @@ export const gatewayRouter = router({
             traceparent,
           );
 
-          console.log("[Select] Sending request to:", selectUrl);
-          console.log("[Select] Payload:", JSON.stringify(payload, null, 2));
+          logger.info({ action: "select", url: selectUrl }, "Sending ONDC request");
+          logger.debug({ payload }, "Select payload");
 
           const response = await ondcClient.send(selectUrl, "POST", payload);
 
-          console.log("[Select] ONDC Response:", JSON.stringify(response, null, 2));
+          logger.debug({ response }, "ONDC response received");
 
           span.setStatus({ code: SpanStatusCode.OK });
           return {
@@ -385,16 +389,19 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { kv } = ctx;
 
-      console.log(
-        "\n\n[on_select] Request Body:\n\n",
-        JSON.stringify(input, null, 2),
+      logger.info(
+        {
+          action: "on_select",
+          transactionId: input.context?.transaction_id,
+        },
+        "Callback received",
       );
 
       const transactionId = input.context?.transaction_id;
       const messageId = input.context?.message_id;
 
       if (!transactionId || !messageId) {
-        console.warn("[on_select] Missing transaction_id or message_id");
+        logger.warn({ action: "on_select" }, "Missing transaction_id or message_id");
         return { message: { ack: { status: "ACK" as const } } };
       }
 
@@ -403,9 +410,12 @@ export const gatewayRouter = router({
       const originalSpanContext = restoreTraceContext(entry?.traceparent);
 
       if (!entry?.traceparent) {
-        console.warn(
-          "[on_select] No trace context found for transaction:",
-          transactionId,
+        logger.warn(
+          {
+            action: "on_select",
+            transactionId,
+          },
+          "No trace context found for transaction",
         );
       }
 
@@ -603,12 +613,12 @@ export const gatewayRouter = router({
             ? `${input.bppUri}init`
             : `${input.bppUri}/init`;
 
-          console.log("[Init] Sending request to:", initUrl);
-          console.log("[Init] Payload:", JSON.stringify(payload, null, 2));
+          logger.info({ action: "init", url: initUrl }, "Sending ONDC request");
+          logger.debug({ payload }, "Init payload");
 
           const response = await ondcClient.send(initUrl, "POST", payload);
 
-          console.log("[Init] ONDC Response:", JSON.stringify(response, null, 2));
+          logger.debug({ response }, "ONDC response received");
 
           span.setStatus({ code: SpanStatusCode.OK });
           return {
@@ -657,16 +667,19 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { kv } = ctx;
 
-      console.log(
-        "\n\n[on_init] Request Body:\n\n",
-        JSON.stringify(input, null, "\t"),
+      logger.info(
+        {
+          action: "on_init",
+          transactionId: input.context?.transaction_id,
+        },
+        "Callback received",
       );
 
       const transactionId = input.context?.transaction_id;
       const messageId = input.context?.message_id;
 
       if (!transactionId || !messageId) {
-        console.warn("[on_init] Missing transaction_id or message_id");
+        logger.warn({ action: "on_init" }, "Missing transaction_id or message_id");
         return { message: { ack: { status: "ACK" as const } } };
       }
 
@@ -675,9 +688,12 @@ export const gatewayRouter = router({
       const originalSpanContext = restoreTraceContext(entry?.traceparent);
 
       if (!entry?.traceparent) {
-        console.warn(
-          "[on_init] No trace context found for transaction:",
-          transactionId,
+        logger.warn(
+          {
+            action: "on_init",
+            transactionId,
+          },
+          "No trace context found for transaction",
         );
       }
 
@@ -897,15 +913,12 @@ export const gatewayRouter = router({
             ? `${input.bppUri}confirm`
             : `${input.bppUri}/confirm`;
 
-          console.log("[Confirm] Sending request to:", confirmUrl);
-          console.log("[Confirm] Payload:", JSON.stringify(payload, null, 2));
+          logger.info({ action: "confirm", url: confirmUrl }, "Sending ONDC request");
+          logger.debug({ payload }, "Confirm payload");
 
           const response = await ondcClient.send(confirmUrl, "POST", payload);
 
-          console.log(
-            "[Confirm] ONDC Response:",
-            JSON.stringify(response, null, 2),
-          );
+          logger.debug({ response }, "ONDC response received");
 
           span.setStatus({ code: SpanStatusCode.OK });
           return {
@@ -954,9 +967,12 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { kv } = ctx;
 
-      console.log(
-        "\n\n[on_confirm] Request Body:\n\n",
-        JSON.stringify(input, null, "\t"),
+      logger.info(
+        {
+          action: "on_confirm",
+          transactionId: input.context?.transaction_id,
+        },
+        "Callback received",
       );
 
       const transactionId = input.context?.transaction_id;
@@ -964,7 +980,7 @@ export const gatewayRouter = router({
       const orderId = input.message?.order?.id;
 
       if (!transactionId || !messageId) {
-        console.warn("[on_confirm] Missing transaction_id or message_id");
+        logger.warn({ action: "on_confirm" }, "Missing transaction_id or message_id");
         return { message: { ack: { status: "ACK" as const } } };
       }
 
@@ -973,9 +989,12 @@ export const gatewayRouter = router({
       const originalSpanContext = restoreTraceContext(entry?.traceparent);
 
       if (!entry?.traceparent) {
-        console.warn(
-          "[on_confirm] No trace context found for transaction:",
-          transactionId,
+        logger.warn(
+          {
+            action: "on_confirm",
+            transactionId,
+          },
+          "No trace context found for transaction",
         );
       }
 
@@ -1106,12 +1125,12 @@ export const gatewayRouter = router({
             ? `${input.bppUri}status`
             : `${input.bppUri}/status`;
 
-          console.log("[Status] Sending request to:", statusUrl);
-          console.log("[Status] Payload:", JSON.stringify(payload, null, 2));
+          logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
+          logger.debug({ payload }, "Status payload");
 
           const response = await ondcClient.send(statusUrl, "POST", payload);
 
-          console.log("[Status] ONDC Response:", JSON.stringify(response, null, 2));
+          logger.debug({ response }, "ONDC response received");
 
           span.setStatus({ code: SpanStatusCode.OK });
           return {
@@ -1161,16 +1180,19 @@ export const gatewayRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { kv } = ctx;
 
-      console.log(
-        "\n\n[on_status] Request Body:\n\n",
-        JSON.stringify(input, null, "\t"),
+      logger.info(
+        {
+          action: "on_status",
+          orderId: input.message?.order?.id,
+        },
+        "Callback received",
       );
 
       const orderId = input.message?.order?.id;
       const transactionId = input.context?.transaction_id;
 
       if (!orderId) {
-        console.warn("[on_status] Missing order_id in response");
+        logger.warn({ action: "on_status" }, "Missing order_id in response");
         return { message: { ack: { status: "ACK" as const } } };
       }
 
@@ -1179,9 +1201,12 @@ export const gatewayRouter = router({
       const originalSpanContext = restoreTraceContext(entry?.traceparent);
 
       if (!entry?.traceparent) {
-        console.warn(
-          "[on_status] No trace context found for order:",
-          orderId,
+        logger.warn(
+          {
+            action: "on_status",
+            orderId,
+          },
+          "No trace context found for order",
         );
       }
 

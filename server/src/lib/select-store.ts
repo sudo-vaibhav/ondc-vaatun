@@ -6,6 +6,7 @@ import {
   keyFormatter,
   type TenantKeyValueStore,
 } from "../infra/key-value/redis";
+import { logger } from "./logger";
 
 // ============================================
 // Type Definitions
@@ -181,7 +182,7 @@ export async function createSelectEntry(
   const key = keyFormatter.select(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  console.log(`[SelectStore] Created entry: ${transactionId}:${messageId}`);
+  logger.info({ store: "select", transactionId, messageId }, "Select entry created");
 
   return entry;
 }
@@ -196,8 +197,9 @@ export async function addSelectResponse(
   let entry = await kv.get<SelectEntry>(key);
 
   if (!entry) {
-    console.warn(
-      `[SelectStore] No entry found for: ${transactionId}:${messageId}, creating new`,
+    logger.warn(
+      { store: "select", transactionId, messageId },
+      "No entry found, creating new",
     );
     entry = {
       transactionId,
@@ -222,8 +224,9 @@ export async function addSelectResponse(
     ttlMs: DEFAULT_STORE_TTL_MS,
   });
 
-  console.log(
-    `[SelectStore] Added response for: ${transactionId}:${messageId}`,
+  logger.info(
+    { store: "select", transactionId, messageId },
+    "Response added to select entry",
   );
 
   const channel = keyFormatter.selectChannel(transactionId, messageId);

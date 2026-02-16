@@ -1,6 +1,7 @@
 import type { URL } from "node:url";
 import { type SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Tenant } from "../../entities/tenant";
+import { logger } from "../logger";
 import { classifyErrorSource } from "./error-classifier";
 import { calculateDigest } from "./signing";
 
@@ -47,13 +48,13 @@ export class ONDCClient {
 
     const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
-    console.log(
-      "[Signing] Created:",
-      created,
-      "from timestamp:",
-      bodyWithContext?.context?.timestamp,
-      "→",
-      new Date(created * 1000).toISOString(),
+    logger.debug(
+      {
+        created,
+        timestamp: bodyWithContext?.context?.timestamp,
+        derivedTime: new Date(created * 1000).toISOString(),
+      },
+      "Signature created timestamp",
     );
 
     // Wrap Ed25519 signing in a child span
@@ -148,7 +149,7 @@ export class ONDCClient {
           code: 2 as typeof SpanStatusCode.ERROR,
           message: (error as Error).message,
         });
-        console.error(`[ONDCClient] Error sending to ${url}:`, error);
+        logger.error({ err: error as Error, url: url.toString() }, "ONDC request failed");
         throw error;
       } finally {
         span.end();

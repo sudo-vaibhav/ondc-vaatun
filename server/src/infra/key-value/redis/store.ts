@@ -1,4 +1,5 @@
 import type Redis from "ioredis";
+import { logger } from "../../../lib/logger";
 import type { Tenant } from "../../../entities/tenant";
 import {
   countSubscribersWithPrefix,
@@ -148,7 +149,7 @@ export class TenantKeyValueStore {
 
       subscriber.subscribe(fullChannel, (err) => {
         if (err) {
-          console.error("[KV] Failed to subscribe to channel:", err);
+          logger.error({ err: err as Error, channel }, "Failed to subscribe to Redis channel");
         }
       });
 
@@ -167,12 +168,12 @@ export class TenantKeyValueStore {
           try {
             cb(parsed);
           } catch (error) {
-            console.error("[KV] Error in subscriber callback:", error);
+            logger.error({ err: error as Error }, "Error in subscriber callback");
           }
         }
       });
     } catch (error) {
-      console.error("[KV] Failed to set up subscription:", error);
+      logger.error({ err: error as Error, channel }, "Failed to set up Redis subscription");
     }
   }
 
@@ -186,7 +187,7 @@ export class TenantKeyValueStore {
       await this.#client.del(...keys);
     }
 
-    console.log(
+    logger.info(
       `[KV] Cleared all data for tenant: ${this.tenant.subscriberId}`,
     );
   }

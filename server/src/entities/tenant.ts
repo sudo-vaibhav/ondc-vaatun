@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { URL } from "node:url";
 import { z } from "zod";
+import { logger } from "../lib/logger";
 import { Id } from "../value-objects/id";
 import { UUID } from "../value-objects/uuid";
 
@@ -146,13 +147,16 @@ export class Tenant {
         );
       }
 
-      console.log("[Tenant] Initialized successfully:", {
-        subscriberId: this.subscriberId,
-        subscribeRequestId: this.subscribeRequestId.value,
-        sharedSecretLength: this.sharedSecret.length,
-      });
+      logger.info(
+        {
+          subscriberId: this.subscriberId,
+          subscribeRequestId: this.subscribeRequestId.value,
+          sharedSecretLength: this.sharedSecret.length,
+        },
+        "Tenant initialized successfully",
+      );
     } catch (error) {
-      console.error("[Tenant] Failed to initialize:", error);
+      logger.error({ err: error as Error }, "Failed to initialize Tenant");
       throw error instanceof Error
         ? error
         : new Error("Failed to initialize Tenant");
@@ -182,7 +186,7 @@ export class Tenant {
       decrypted += decipher.final("utf8");
       return decrypted;
     } catch (error) {
-      console.error("[Tenant] Decryption failed:", error);
+      logger.error({ err: error as Error }, "Challenge decryption failed");
       throw new Error("Failed to decrypt challenge");
     }
   }
@@ -204,7 +208,7 @@ export class Tenant {
 
       return signature.toString("base64");
     } catch (error) {
-      console.error("[Tenant] Signing failed:", error);
+      logger.error({ err: error as Error }, "Message signing failed");
       throw new Error("Failed to sign message");
     }
   }

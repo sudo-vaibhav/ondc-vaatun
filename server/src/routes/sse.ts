@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { logger } from "../lib/logger";
 import { Tenant } from "../entities/tenant";
 import { TenantKeyValueStore } from "../infra/key-value/redis";
 import {
@@ -127,13 +128,13 @@ sseRouter.get("/search-stream/:transactionId", async (req, res) => {
 
     // Handle client disconnect
     req.on("close", () => {
-      console.log(
+      logger.info(
         `[SSE] Client disconnected for transaction: ${transactionId}`,
       );
       cleanup();
     });
   } catch (error) {
-    console.error("[SSE] Stream error:", error);
+    logger.error({ err: error as Error }, "SSE stream error");
     cleanup();
     sendEvent("error", {
       message: error instanceof Error ? error.message : "Stream error",

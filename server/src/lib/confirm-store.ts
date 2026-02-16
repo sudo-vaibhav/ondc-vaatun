@@ -6,6 +6,7 @@ import {
   keyFormatter,
   type TenantKeyValueStore,
 } from "../infra/key-value/redis";
+import { logger } from "./logger";
 
 // ============================================
 // Type Definitions
@@ -249,7 +250,7 @@ export async function createConfirmEntry(
   const key = keyFormatter.confirm(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  console.log(`[ConfirmStore] Created entry: ${transactionId}:${messageId}`);
+  logger.info({ store: "confirm", transactionId, messageId }, "Confirm entry created");
 
   return entry;
 }
@@ -265,7 +266,7 @@ export async function addConfirmResponse(
   let entry = await kv.get<ConfirmEntry>(key);
 
   if (!entry) {
-    console.warn(
+    logger.warn(
       `[ConfirmStore] No entry found for: ${transactionId}:${messageId}, creating new`,
     );
     entry = {
@@ -297,7 +298,7 @@ export async function addConfirmResponse(
     ttlMs: DEFAULT_STORE_TTL_MS,
   });
 
-  console.log(
+  logger.info(
     `[ConfirmStore] Added response for: ${transactionId}:${messageId}, orderId: ${orderId}`,
   );
 

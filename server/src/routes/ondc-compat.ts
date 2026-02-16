@@ -11,6 +11,7 @@ import { Router } from "express";
 import { v7 as uuidv7 } from "uuid";
 import { Tenant } from "../entities/tenant";
 import { TenantKeyValueStore } from "../infra/key-value/redis";
+import { logger } from "../lib/logger";
 import { ONDCClient } from "../lib/ondc/client";
 import { createSearchPayload } from "../lib/ondc/payload";
 import { addSearchResponse, createSearchEntry } from "../lib/search-store";
@@ -46,7 +47,7 @@ ondcCompatRouter.get("/health", async (_req, res) => {
     await getContext();
     res.json({ status: "Health OK!!", ready: true });
   } catch (error) {
-    console.error("[health] Service not ready:", error);
+    logger.error({ err: error as Error }, "Health check failed");
     res.status(503).json({ status: "Health FAIL", ready: false });
   }
 });
@@ -66,7 +67,7 @@ ondcCompatRouter.get("/lookup", async (_req, res) => {
 
     res.json(response);
   } catch (error) {
-    console.error("[Lookup] Error:", error);
+    logger.error({ err: error as Error, action: "lookup" }, "Lookup failed");
     res.status(500).json({
       error: "Failed to lookup subscriber",
       details: error instanceof Error ? error.message : String(error),
@@ -133,7 +134,7 @@ ondcCompatRouter.post("/subscribe", async (_req, res) => {
 
     res.json(response);
   } catch (error) {
-    console.error("[Subscribe] Error:", error);
+    logger.error({ err: error as Error, action: "subscribe" }, "Subscribe failed");
     res.status(500).json({
       error: "Internal server error",
       details: error instanceof Error ? error.message : String(error),
@@ -147,7 +148,7 @@ ondcCompatRouter.post("/on_subscribe", async (req, res) => {
     const { tenant } = await getContext();
     const { challenge, subscriber_id } = req.body;
 
-    console.log("[on_subscribe] Request:", JSON.stringify(req.body, null, 2));
+    logger.info({ action: "on_subscribe" }, "Callback received");
 
     if (!challenge) {
       res.status(400).json({ error: "Challenge is required" });
@@ -155,18 +156,18 @@ ondcCompatRouter.post("/on_subscribe", async (req, res) => {
     }
 
     if (subscriber_id && subscriber_id !== tenant.subscriberId) {
-      console.warn("[on_subscribe] Subscriber ID mismatch:", {
+      logger.warn( {
         expected: tenant.subscriberId,
         received: subscriber_id,
       });
     }
 
     const answer = tenant.decryptChallenge(challenge);
-    console.log("[on_subscribe] Answer:", answer);
+    logger.debug({ answer }, "Challenge answer computed");
 
     res.json({ answer });
   } catch (error) {
-    console.error("[on_subscribe] Error:", error);
+    logger.error({ err: error as Error, action: "on_subscribe" }, "on_subscribe callback error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -190,13 +191,13 @@ ondcCompatRouter.post("/search", async (req, res) => {
     );
     const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
-    console.log("[Search] Sending request to:", gatewayUrl.toString());
+    logger.info({ action: "search", url: gatewayUrl.toString() }, "Sending ONDC request");
 
     const response = await ondcClient.send(gatewayUrl, "POST", payload);
 
     res.json({ ...response, transactionId, messageId });
   } catch (error) {
-    console.error("[Search] Error:", error);
+    logger.error({ err: error as Error, action: "search" }, "Search failed");
     res.status(503).json({ status: "Search FAIL", ready: false });
   }
 });
@@ -207,18 +208,18 @@ ondcCompatRouter.post("/on_search", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log("[on_search] Request Body:", JSON.stringify(body, null, "\t"));
+    logger.info({ action: "on_search", transactionId: body.context?.transaction_id }, "Callback received");
 
     const transactionId = body.context?.transaction_id;
     if (transactionId) {
       await addSearchResponse(kv, transactionId, body);
     } else {
-      console.warn("[on_search] No transaction_id found in context");
+      logger.warn({ action: "on_search" }, "No transaction_id found in context");
     }
 
     res.json({ message: { ack: { status: "ACK" } } });
   } catch (error) {
-    console.error("[on_search] Error:", error);
+    logger.error({ err: error as Error, action: "on_search" }, "on_search callback error");
     res.status(500).json({
       message: { ack: { status: "NACK" } },
       error: {
@@ -324,7 +325,7 @@ ondcCompatRouter.post("/select", async (req, res) => {
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
-    console.error("[Select] Error:", error);
+    logger.error({ err: error as Error, action: "select" }, "Select failed");
     res.status(503).json({
       status: "Select FAIL",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -339,24 +340,24 @@ ondcCompatRouter.post("/on_select", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log("[on_select] Request Body:", JSON.stringify(body, null, 2));
+    logger.info({ action: "on_select", transactionId: body.context?.transaction_id }, "Callback received");
 
     const transactionId = body.context?.transaction_id;
     const messageId = body.context?.message_id;
 
     if (body.error) {
-      console.error("[on_select] BPP returned error:", body.error);
+      logger.warn({ action: "on_select", error: body.error }, "BPP returned error");
     }
 
     if (transactionId && messageId) {
       await addSelectResponse(kv, transactionId, messageId, body);
     } else {
-      console.warn("[on_select] Missing transaction_id or message_id");
+      logger.warn({ action: "on_select" }, "Missing transaction_id or message_id");
     }
 
     res.json({ message: { ack: { status: "ACK" } } });
   } catch (error) {
-    console.error("[on_select] Error:", error);
+    logger.error({ err: error as Error, action: "on_select" }, "on_select callback error");
     res.status(500).json({
       message: { ack: { status: "NACK" } },
       error: {
@@ -511,7 +512,7 @@ ondcCompatRouter.post("/init", async (req, res) => {
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
-    console.error("[Init] Error:", error);
+    logger.error({ err: error as Error, action: "init" }, "Init failed");
     res.status(503).json({
       status: "Init FAIL",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -526,25 +527,24 @@ ondcCompatRouter.post("/on_init", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log("\n\n[on_init] Request Body:\n\n", JSON.stringify(body, null, 2));
 
     const transactionId = body.context?.transaction_id;
     const messageId = body.context?.message_id;
 
     if (body.error) {
-      console.error("[on_init] BPP returned error:", body.error);
+      logger.warn({ action: "on_init", error: body.error }, "BPP returned error");
     }
 
     if (transactionId && messageId) {
       const { addInitResponse } = await import("../lib/init-store");
       await addInitResponse(kv, transactionId, messageId, body);
     } else {
-      console.warn("[on_init] Missing transaction_id or message_id");
+      logger.warn({ action: "on_init" }, "Missing transaction_id or message_id");
     }
 
     res.json({ message: { ack: { status: "ACK" } } });
   } catch (error) {
-    console.error("[on_init] Error:", error);
+    logger.error({ err: error as Error, action: "on_init" }, "on_init callback error");
     res.status(500).json({
       message: { ack: { status: "NACK" } },
       error: {
@@ -712,7 +712,7 @@ ondcCompatRouter.post("/confirm", async (req, res) => {
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
-    console.error("[Confirm] Error:", error);
+    logger.error({ err: error as Error, action: "confirm" }, "Confirm failed");
     res.status(503).json({
       status: "Confirm FAIL",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -727,9 +727,12 @@ ondcCompatRouter.post("/on_confirm", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log(
-      "\n\n[on_confirm] Request Body:\n\n",
-      JSON.stringify(body, null, 2),
+    logger.info(
+      {
+        action: "on_confirm",
+        transactionId: body.context?.transaction_id,
+      },
+      "Callback received",
     );
 
     const transactionId = body.context?.transaction_id;
@@ -737,19 +740,19 @@ ondcCompatRouter.post("/on_confirm", async (req, res) => {
     const orderId = body.message?.order?.id;
 
     if (body.error) {
-      console.error("[on_confirm] BPP returned error:", body.error);
+      logger.warn({ action: "on_confirm", error: body.error }, "BPP returned error");
     }
 
     if (transactionId && messageId) {
       const { addConfirmResponse } = await import("../lib/confirm-store");
       await addConfirmResponse(kv, transactionId, messageId, orderId, body);
     } else {
-      console.warn("[on_confirm] Missing transaction_id or message_id");
+      logger.warn({ action: "on_confirm" }, "Missing transaction_id or message_id");
     }
 
     res.json({ message: { ack: { status: "ACK" } } });
   } catch (error) {
-    console.error("[on_confirm] Error:", error);
+    logger.error({ err: error as Error, action: "on_confirm" }, "on_confirm callback error");
     res.status(500).json({
       message: { ack: { status: "NACK" } },
       error: {
@@ -791,7 +794,7 @@ ondcCompatRouter.get("/init-results", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("[init-results] Error:", error);
+    logger.error({ err: error as Error }, "Results retrieval failed");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -826,11 +829,10 @@ ondcCompatRouter.get("/confirm-results", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("[confirm-results] Error:", error);
+    logger.error({ err: error as Error }, "Results retrieval failed");
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // GET /api/ondc/search-results
 ondcCompatRouter.get("/search-results", async (req, res) => {
@@ -860,7 +862,7 @@ ondcCompatRouter.get("/search-results", async (req, res) => {
 
     res.json(results);
   } catch (error) {
-    console.error("[search-results] Error:", error);
+    logger.error({ err: error as Error }, "Results retrieval failed");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -895,7 +897,7 @@ ondcCompatRouter.get("/select-results", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("[select-results] Error:", error);
+    logger.error({ err: error as Error }, "Results retrieval failed");
     res.status(500).json({ error: "Internal server error" });
   }
 });
@@ -952,12 +954,12 @@ ondcCompatRouter.post("/status", async (req, res) => {
       ? `${body.bppUri}status`
       : `${body.bppUri}/status`;
 
-    console.log("[Status] Sending request to:", statusUrl);
-    console.log("[Status] Payload:", JSON.stringify(payload, null, 2));
+    logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
+    // Payload logged via span attributes
 
     const response = await ondcClient.send(statusUrl, "POST", payload);
 
-    console.log("[Status] ONDC Response:", JSON.stringify(response, null, 2));
+    // Response logged via span attributes
 
     res.json({
       ...response,
@@ -966,7 +968,7 @@ ondcCompatRouter.post("/status", async (req, res) => {
       messageId,
     });
   } catch (error) {
-    console.error("[Status] Error:", error);
+    logger.error({ err: error as Error, action: "status" }, "Status failed");
     res.status(503).json({
       status: "Status FAIL",
       error: error instanceof Error ? error.message : "Unknown error",
@@ -981,23 +983,23 @@ ondcCompatRouter.post("/on_status", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log("[on_status] Request Body:", JSON.stringify(body, null, "\t"));
+    logger.info({ action: "on_status", orderId: body.message?.order?.id }, "Callback received");
 
     const orderId = body.message?.order?.id;
 
     if (body.error) {
-      console.error("[on_status] BPP returned error:", body.error);
+      logger.warn({ action: "on_status", error: body.error }, "BPP returned error");
     }
 
     if (orderId) {
       await addStatusResponse(kv, orderId, body);
     } else {
-      console.warn("[on_status] Missing order_id in response");
+      logger.warn({ action: "on_status" }, "Missing order_id in response");
     }
 
     res.json({ message: { ack: { status: "ACK" } } });
   } catch (error) {
-    console.error("[on_status] Error:", error);
+    logger.error({ err: error as Error, action: "on_status" }, "on_status callback error");
     res.status(500).json({
       message: { ack: { status: "NACK" } },
       error: {
@@ -1038,7 +1040,7 @@ ondcCompatRouter.get("/status-results", async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    console.error("[status-results] Error:", error);
+    logger.error({ err: error as Error }, "Results retrieval failed");
     res.status(500).json({ error: "Internal server error" });
   }
 });
