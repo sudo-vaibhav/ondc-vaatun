@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 4 - Comprehensive Coverage — COMPLETE
-Plan: 02 of 02 complete
-Status: Phase 4 complete, ready for Phase 5
-Last activity: 2026-02-15 — Completed 04-02-PLAN.md (Init/Confirm/Status Flow Trace Coverage)
+Phase: 5 - Error Classification & Logging — IN PROGRESS
+Plan: 01 of 02 complete
+Status: Phase 5 in progress
+Last activity: 2026-02-16 — Completed 05-01-PLAN.md (Error Source Classification)
 
-Progress: [████████░░] 83% (10/12 plans complete)
+Progress: [█████████░] 92% (11/12 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -93,6 +93,11 @@ Key decisions from v1.0 affecting v2.0 work:
 - orderId-based correlation for status flow (getStatusEntry uses orderId only, not transactionId+messageId) (04-02)
 - ondc.payment_url extracted from on_confirm response for payment flow visibility (04-02)
 - ondc.order_id attribute on status spans for filtering/correlation (04-02)
+- 4-source error classification: bap (our code), bpp (4xx/5xx), gateway (registry/lookup), network (DNS/timeout/ECONNREFUSED) (05-01)
+- BPP NACK responses get full error object as bpp.error span attribute (05-01)
+- All error spans include error.source, error.message, and error.code (when available) (05-01)
+- HTTP error responses (4xx/5xx) set error.source='bpp' before throw in ONDCClient (05-01)
+- Network failures (no response) classified by error code/message patterns (05-01)
 
 ### Pending Todos
 
@@ -109,7 +114,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-15T16:39:28Z
-Stopped at: Completed 04-02-PLAN.md (Phase 4 complete)
+Last session: 2026-02-16T07:41:16Z
+Stopped at: Completed 05-01-PLAN.md (Error Source Classification)
 Resume file: None
-Next step: Begin Phase 5 (Error Classification & Logging)
+Next step: Continue Phase 5, Plan 02 (Structured Logging Migration)
