@@ -1,6 +1,7 @@
 import type { URL } from "node:url";
 import { type SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Tenant } from "../../entities/tenant";
+import { classifyErrorSource } from "./error-classifier";
 import { calculateDigest } from "./signing";
 
 interface ONDCResponse {
@@ -86,6 +87,8 @@ export class ONDCClient {
     body: object,
   ): Promise<T> {
     return this.tracer.startActiveSpan("ondc.http.request", async (span) => {
+      let response: Response | undefined;
+
       try {
         // HTTP metadata attributes
         span.setAttribute("http.url", url.toString());
@@ -100,7 +103,7 @@ export class ONDCClient {
         const authHeader = await this.createAuthorizationHeader(body);
         span.setAttribute("http.request.header.authorization", authHeader);
 
-        const response = await fetch(url, {
+        response = await fetch(url, {
           method,
           headers: {
             "Content-Type": "application/json",
@@ -115,6 +118,7 @@ export class ONDCClient {
         if (!response.ok) {
           const errorText = await response.text();
           span.setAttribute("http.response.body", errorText);
+          span.setAttribute("error.source", "bpp");
           throw new Error(
             `ONDC Request Failed [${response.status}]: ${errorText}`,
           );
@@ -126,7 +130,20 @@ export class ONDCClient {
         span.setStatus({ code: 1 as typeof SpanStatusCode.OK });
         return data as T;
       } catch (error) {
+        const errorSource = classifyErrorSource(
+          error as Error,
+          response,
+          url.toString(),
+        );
         span.recordException(error as Error);
+        span.setAttribute("error.source", errorSource);
+        span.setAttribute("error.message", (error as Error).message);
+        if ((error as Error & { code?: string }).code) {
+          span.setAttribute(
+            "error.code",
+            (error as Error & { code?: string }).code as string,
+          );
+        }
         span.setStatus({
           code: 2 as typeof SpanStatusCode.ERROR,
           message: (error as Error).message,
