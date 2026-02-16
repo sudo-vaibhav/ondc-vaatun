@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 5 - Error Classification & Logging — IN PROGRESS
-Plan: 01 of 02 complete
-Status: Phase 5 in progress
-Last activity: 2026-02-16 — Completed 05-01-PLAN.md (Error Source Classification)
+Phase: 5 - Error Classification & Logging — COMPLETE
+Plan: 02 of 02 complete
+Status: All phases complete
+Last activity: 2026-02-16 — Completed 05-02-PLAN.md (Structured Logging Migration)
 
-Progress: [█████████░] 92% (11/12 plans complete)
+Progress: [██████████] 100% (12/12 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -98,6 +98,11 @@ Key decisions from v1.0 affecting v2.0 work:
 - All error spans include error.source, error.message, and error.code (when available) (05-01)
 - HTTP error responses (4xx/5xx) set error.source='bpp' before throw in ONDCClient (05-01)
 - Network failures (no response) classified by error code/message patterns (05-01)
+- Pino structured logging with automatic trace context injection (05-02)
+- Dev logs: pino-pretty with colors/timestamps; Prod logs: JSON lines (05-02)
+- Log level hierarchy: debug/info/warn/error with contextual fields (05-02)
+- Use `err` key (not `error`) for Error objects to trigger pino's error serializer (05-02)
+- Zero console.* calls in production code (tracing.ts exempted for chicken-and-egg) (05-02)
 
 ### Pending Todos
 
@@ -114,7 +119,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-16T07:41:16Z
-Stopped at: Completed 05-01-PLAN.md (Error Source Classification)
+Last session: 2026-02-16T13:44:04Z
+Stopped at: Completed 05-02-PLAN.md (Structured Logging Migration) - Milestone v2.0 COMPLETE
 Resume file: None
-Next step: Continue Phase 5, Plan 02 (Structured Logging Migration)
+Next step: Milestone v2.0 complete. All observability features delivered.
