@@ -96,6 +96,8 @@ export const gatewayRouter = router({
             messageId,
           };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -180,6 +182,15 @@ export const gatewayRouter = router({
 
           // NACK/error responses from BPP set ERROR status (CONTEXT.md decision 2)
           if (input.error) {
+            span.setAttribute("error.source", "bpp");
+            span.setAttribute(
+              "error.message",
+              input.error.message || "BPP NACK",
+            );
+            if (input.error.code) {
+              span.setAttribute("error.code", input.error.code);
+            }
+            span.setAttribute("bpp.error", JSON.stringify(input.error));
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
@@ -190,6 +201,8 @@ export const gatewayRouter = router({
 
           return { message: { ack: { status: "ACK" as const } } };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -332,6 +345,8 @@ export const gatewayRouter = router({
             messageId,
           };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -417,6 +432,15 @@ export const gatewayRouter = router({
 
           // NACK/error responses from BPP set ERROR status
           if (input.error) {
+            span.setAttribute("error.source", "bpp");
+            span.setAttribute(
+              "error.message",
+              input.error.message || "BPP NACK",
+            );
+            if (input.error.code) {
+              span.setAttribute("error.code", input.error.code);
+            }
+            span.setAttribute("bpp.error", JSON.stringify(input.error));
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
@@ -427,6 +451,8 @@ export const gatewayRouter = router({
 
           return { message: { ack: { status: "ACK" as const } } };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -591,6 +617,8 @@ export const gatewayRouter = router({
             messageId,
           };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -675,6 +703,15 @@ export const gatewayRouter = router({
 
           // NACK/error responses from BPP set ERROR status
           if (input.error) {
+            span.setAttribute("error.source", "bpp");
+            span.setAttribute(
+              "error.message",
+              input.error.message || "BPP NACK",
+            );
+            if (input.error.code) {
+              span.setAttribute("error.code", input.error.code);
+            }
+            span.setAttribute("bpp.error", JSON.stringify(input.error));
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
@@ -685,6 +722,8 @@ export const gatewayRouter = router({
 
           return { message: { ack: { status: "ACK" as const } } };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -875,6 +914,8 @@ export const gatewayRouter = router({
             messageId,
           };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -967,6 +1008,15 @@ export const gatewayRouter = router({
 
           // NACK/error responses from BPP set ERROR status
           if (input.error) {
+            span.setAttribute("error.source", "bpp");
+            span.setAttribute(
+              "error.message",
+              input.error.message || "BPP NACK",
+            );
+            if (input.error.code) {
+              span.setAttribute("error.code", input.error.code);
+            }
+            span.setAttribute("bpp.error", JSON.stringify(input.error));
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
@@ -977,6 +1027,8 @@ export const gatewayRouter = router({
 
           return { message: { ack: { status: "ACK" as const } } };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -1069,6 +1121,8 @@ export const gatewayRouter = router({
             messageId,
           };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
@@ -1153,6 +1207,15 @@ export const gatewayRouter = router({
 
           // NACK/error responses from BPP set ERROR status
           if (input.error) {
+            span.setAttribute("error.source", "bpp");
+            span.setAttribute(
+              "error.message",
+              input.error.message || "BPP NACK",
+            );
+            if (input.error.code) {
+              span.setAttribute("error.code", input.error.code);
+            }
+            span.setAttribute("bpp.error", JSON.stringify(input.error));
             span.setStatus({
               code: SpanStatusCode.ERROR,
               message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
@@ -1163,6 +1226,8 @@ export const gatewayRouter = router({
 
           return { message: { ack: { status: "ACK" as const } } };
         } catch (error) {
+          span.setAttribute("error.source", "bap");
+          span.setAttribute("error.message", (error as Error).message);
           span.recordException(error as Error);
           span.setStatus({
             code: SpanStatusCode.ERROR,
