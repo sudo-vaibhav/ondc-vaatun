@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [x] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
 - [x] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
 - [x] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
-- [ ] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
+- [x] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
 
 ## Phase Details
 
@@ -106,8 +106,8 @@ Plans:
 **Plans**: 2 plans
 
 Plans:
-- [ ] 05-01-PLAN.md — Add error classification logic to ONDC client and callback handlers
-- [ ] 05-02-PLAN.md — Integrate structured logging with trace context injection
+- [x] 05-01-PLAN.md — Add error classification logic to ONDC client and callback handlers
+- [x] 05-02-PLAN.md — Integrate structured logging with trace context injection
 
 ## Progress
 
@@ -120,4 +120,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 | 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
 | 3. Async Callback Correlation | 2/2 | Complete | 2026-02-10 |
 | 4. Comprehensive Coverage | 2/2 | Complete | 2026-02-15 |
-| 5. Error Classification & Logging | 0/2 | Not Started | — |
+| 5. Error Classification & Logging | 2/2 | Complete | 2026-02-16 |

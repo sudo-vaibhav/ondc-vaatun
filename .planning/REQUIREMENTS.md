@@ -80,8 +80,8 @@
 - [x] **OTEL-04**: Internal operations (Redis reads/writes, Ed25519 signing) visible as child spans
 - [x] **OTEL-05**: HTTP headers, request/response bodies, and timing captured in span attributes
 - [x] **OTEL-06**: OTLP exporter configured for vendor-neutral backend export (Jaeger, Grafana Tempo)
-- [ ] **OTEL-07**: Structured logging with transactionId correlation and trace context
-- [ ] **OTEL-08**: Error classification distinguishes BAP errors, gateway errors, and BPP errors
+- [x] **OTEL-07**: Structured logging with transactionId correlation and trace context
+- [x] **OTEL-08**: Error classification distinguishes BAP errors, gateway errors, and BPP errors
 
 ---
 
@@ -175,8 +175,8 @@
 | OTEL-04 | v2.0 Phase 3 | Complete |
 | OTEL-04 | v2.0 Phase 4 | Complete |
 | OTEL-05 | v2.0 Phase 4 | Complete |
-| OTEL-07 | v2.0 Phase 5 | Pending |
-| OTEL-08 | v2.0 Phase 5 | Pending |
+| OTEL-07 | v2.0 Phase 5 | Complete |
+| OTEL-08 | v2.0 Phase 5 | Complete |
 
 ---
 
