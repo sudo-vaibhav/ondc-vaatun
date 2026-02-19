@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import QuoteBreakdown from "@/components/quote/QuoteBreakdown";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +11,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ReviewSection } from "./ReviewSection";
-import QuoteBreakdown from "@/components/quote/QuoteBreakdown";
 
 interface Nominee {
   firstName: string;
@@ -147,7 +147,10 @@ export function ReviewPage({
       {/* Main content - 2/3 width on desktop */}
       <div className="lg:col-span-2 space-y-6">
         {/* Personal Information Section */}
-        <ReviewSection title="Personal Information" onEdit={() => onEdit("personal")}>
+        <ReviewSection
+          title="Personal Information"
+          onEdit={() => onEdit("personal")}
+        >
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-muted-foreground">Name</dt>
@@ -183,15 +186,22 @@ export function ReviewPage({
         </ReviewSection>
 
         {/* Identity Verification Section */}
-        <ReviewSection title="Identity Verification" onEdit={() => onEdit("identity")}>
+        <ReviewSection
+          title="Identity Verification"
+          onEdit={() => onEdit("identity")}
+        >
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-muted-foreground">PAN</dt>
-              <dd className="font-medium font-mono">{maskPAN(formData.panNumber)}</dd>
+              <dd className="font-medium font-mono">
+                {maskPAN(formData.panNumber)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Date of Birth</dt>
-              <dd className="font-medium">{formatDate(formData.dateOfBirth)}</dd>
+              <dd className="font-medium">
+                {formatDate(formData.dateOfBirth)}
+              </dd>
             </div>
           </dl>
         </ReviewSection>

@@ -18,97 +18,97 @@ import { z } from "zod";
  * Descriptor - Name and descriptions for entities
  */
 export const DescriptorSchema = z.looseObject({
-	name: z.string().optional(),
-	code: z.string().optional(),
-	short_desc: z.string().optional(),
-	long_desc: z.string().optional(),
-	images: z.array(z.looseObject({ url: z.string().optional() })).optional(),
+  name: z.string().optional(),
+  code: z.string().optional(),
+  short_desc: z.string().optional(),
+  long_desc: z.string().optional(),
+  images: z.array(z.looseObject({ url: z.string().optional() })).optional(),
 });
 
 /**
  * Price - Currency and value
  */
 export const PriceSchema = z.looseObject({
-	currency: z.string().optional(),
-	value: z.string().optional(),
+  currency: z.string().optional(),
+  value: z.string().optional(),
 });
 
 /**
  * ONDC Context - Standard context object across all ONDC messages
  */
 export const ONDCContextSchema = z.looseObject({
-	domain: z.string().optional(),
-	action: z.string().optional(),
-	bap_id: z.string().optional(),
-	bap_uri: z.string().optional(),
-	bpp_id: z.string().optional(),
-	bpp_uri: z.string().optional(),
-	transaction_id: z.string().optional(),
-	message_id: z.string().optional(),
-	timestamp: z.string().optional(),
-	ttl: z.string().optional(),
-	version: z.string().optional(),
-	location: z
-		.looseObject({
-			country: z.looseObject({ code: z.string().optional() }).optional(),
-			city: z.looseObject({ code: z.string().optional() }).optional(),
-		})
-		.optional(),
+  domain: z.string().optional(),
+  action: z.string().optional(),
+  bap_id: z.string().optional(),
+  bap_uri: z.string().optional(),
+  bpp_id: z.string().optional(),
+  bpp_uri: z.string().optional(),
+  transaction_id: z.string().optional(),
+  message_id: z.string().optional(),
+  timestamp: z.string().optional(),
+  ttl: z.string().optional(),
+  version: z.string().optional(),
+  location: z
+    .looseObject({
+      country: z.looseObject({ code: z.string().optional() }).optional(),
+      city: z.looseObject({ code: z.string().optional() }).optional(),
+    })
+    .optional(),
 });
 
 /**
  * ONDC Error - Standard error object
  */
 export const ONDCErrorSchema = z.looseObject({
-	type: z.string().optional(),
-	code: z.string().optional(),
-	message: z.string().optional(),
-	path: z.string().optional(),
+  type: z.string().optional(),
+  code: z.string().optional(),
+  message: z.string().optional(),
+  path: z.string().optional(),
 });
 
 /**
  * Quote Breakup Item
  */
 export const QuoteBreakupItemSchema = z.looseObject({
-	title: z.string().optional(),
-	price: PriceSchema.optional(),
-	item: z.looseObject({ id: z.string().optional() }).optional(),
+  title: z.string().optional(),
+  price: PriceSchema.optional(),
+  item: z.looseObject({ id: z.string().optional() }).optional(),
 });
 
 /**
  * Quote - Pricing information with breakup
  */
 export const ONDCQuoteSchema = z.looseObject({
-	id: z.string().optional(),
-	price: PriceSchema.optional(),
-	breakup: z.array(QuoteBreakupItemSchema).optional(),
-	ttl: z.string().optional(),
+  id: z.string().optional(),
+  price: PriceSchema.optional(),
+  breakup: z.array(QuoteBreakupItemSchema).optional(),
+  ttl: z.string().optional(),
 });
 
 /**
  * XInput Form - Form metadata for xinput forms
  */
 export const XInputFormSchema = z.looseObject({
-	id: z.string().optional(),
-	mime_type: z.string().optional(),
-	url: z.string().optional(),
-	resubmit: z.boolean().optional(),
-	multiple_sumbissions: z.boolean().optional(),
+  id: z.string().optional(),
+  mime_type: z.string().optional(),
+  url: z.string().optional(),
+  resubmit: z.boolean().optional(),
+  multiple_sumbissions: z.boolean().optional(),
 });
 
 /**
  * XInput Head - Form navigation metadata
  */
 export const XInputHeadSchema = z.looseObject({
-	descriptor: DescriptorSchema.optional(),
-	index: z
-		.looseObject({
-			min: z.number().optional(),
-			cur: z.number().optional(),
-			max: z.number().optional(),
-		})
-		.optional(),
-	headings: z.array(z.string()).optional(),
+  descriptor: DescriptorSchema.optional(),
+  index: z
+    .looseObject({
+      min: z.number().optional(),
+      cur: z.number().optional(),
+      max: z.number().optional(),
+    })
+    .optional(),
+  headings: z.array(z.string()).optional(),
 });
 
 /**
