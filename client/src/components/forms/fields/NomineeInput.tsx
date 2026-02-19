@@ -8,12 +8,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DateInput } from "./DateInput";
 import {
   NOMINEE_RELATIONSHIPS,
   type NomineeData,
 } from "@/lib/form-schemas/nominee";
 import { cn } from "@/lib/utils";
+import { DateInput } from "./DateInput";
 
 export interface NomineeInputProps {
   /** The nominee object to edit */

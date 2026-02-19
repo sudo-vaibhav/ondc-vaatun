@@ -16,7 +16,7 @@ export const panDobSchema = z.object({
     .length(10, "PAN must be exactly 10 characters")
     .regex(
       /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/,
-      "Invalid PAN format (e.g., ABCDE1234F)"
+      "Invalid PAN format (e.g., ABCDE1234F)",
     ),
   dateOfBirth: z.string().min(1, "Date of birth is required"),
 });
