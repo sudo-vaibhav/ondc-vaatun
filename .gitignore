@@ -61,3 +61,5 @@ node_modules/
 *.txt
 
 *.gen.ts
+
+__pycache__/
