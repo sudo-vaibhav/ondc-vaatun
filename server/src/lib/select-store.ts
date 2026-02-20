@@ -182,7 +182,10 @@ export async function createSelectEntry(
   const key = keyFormatter.select(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  logger.info({ store: "select", transactionId, messageId }, "Select entry created");
+  logger.info(
+    { store: "select", transactionId, messageId },
+    "Select entry created",
+  );
 
   return entry;
 }

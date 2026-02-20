@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { logger } from "../lib/logger";
 import { Tenant } from "../entities/tenant";
+import { logger } from "../lib/logger";
 
-export const siteVerificationRouter = Router();
+export const siteVerificationRouter: Router = Router();
 
 /**
  * Site verification endpoint for ONDC domain verification

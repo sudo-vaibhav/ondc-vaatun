@@ -250,7 +250,10 @@ export async function createConfirmEntry(
   const key = keyFormatter.confirm(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  logger.info({ store: "confirm", transactionId, messageId }, "Confirm entry created");
+  logger.info(
+    { store: "confirm", transactionId, messageId },
+    "Confirm entry created",
+  );
 
   return entry;
 }

@@ -179,10 +179,7 @@ export async function createSearchEntry(
   const key = keyFormatter.search(transactionId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  logger.info(
-    { store: "search", transactionId, ttl },
-    "Search entry created",
-  );
+  logger.info({ store: "search", transactionId, ttl }, "Search entry created");
 
   return entry;
 }

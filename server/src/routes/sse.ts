@@ -1,14 +1,14 @@
 import { Router } from "express";
-import { logger } from "../lib/logger";
 import { Tenant } from "../entities/tenant";
 import { TenantKeyValueStore } from "../infra/key-value/redis";
+import { logger } from "../lib/logger";
 import {
   getSearchEntry,
   getSearchResults,
   subscribeToSearch,
 } from "../lib/search-store";
 
-export const sseRouter = Router();
+export const sseRouter: Router = Router();
 
 /**
  * SSE endpoint for streaming search results

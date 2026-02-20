@@ -1,7 +1,6 @@
 import { SpanKind, SpanStatusCode, trace } from "@opentelemetry/api";
 import { v7 as uuidv7 } from "uuid";
 import { z } from "zod";
-import { logger } from "../../lib/logger";
 import {
   addConfirmResponse,
   createConfirmEntry,
@@ -12,6 +11,7 @@ import {
   createInitEntry,
   getInitEntry,
 } from "../../lib/init-store";
+import { logger } from "../../lib/logger";
 import { createSearchPayload } from "../../lib/ondc/payload";
 import {
   addSearchResponse,
@@ -79,11 +79,14 @@ export const gatewayRouter = router({
           );
           const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
-          logger.info({ action: "search", url: gatewayUrl.toString() }, "Sending ONDC request");
+          logger.info(
+            { action: "search", url: gatewayUrl.toString() },
+            "Sending ONDC request",
+          );
           logger.debug({ payload }, "Search payload");
 
           // ondcClient.send() creates its own child span (ondc.http.request from 02-03)
-          const response = await ondcClient.send(gatewayUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(gatewayUrl, "POST", payload);
 
           logger.debug({ response }, "ONDC response received");
 
@@ -108,116 +111,8 @@ export const gatewayRouter = router({
       });
     }),
 
-  onSearch: publicProcedure
-    .input(
-      z.object({
-        context: z
-          .object({
-            transaction_id: z.string().optional(),
-            message_id: z.string().optional(),
-            bpp_id: z.string().optional(),
-            bpp_uri: z.string().optional(),
-            timestamp: z.string().optional(),
-            ttl: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-        message: z.any().optional(),
-        error: z
-          .object({
-            type: z.string().optional(),
-            code: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { kv } = ctx;
-
-      logger.info(
-        {
-          action: "on_search",
-          transactionId: input.context?.transaction_id,
-        },
-        "Callback received",
-      );
-
-      const transactionId = input.context?.transaction_id;
-
-      if (!transactionId) {
-        logger.warn({ action: "on_search" }, "No transaction_id found in context");
-        return { message: { ack: { status: "ACK" as const } } };
-      }
-
-      // Retrieve stored trace context from search entry
-      const entry = await getSearchEntry(kv, transactionId);
-      const originalSpanContext = restoreTraceContext(entry?.traceparent);
-
-      if (!entry?.traceparent) {
-        logger.warn(
-          {
-            action: "on_search",
-            transactionId,
-          },
-          "No trace context found for transaction",
-        );
-      }
-
-      // Create callback span with link to original search span
-      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
-        kind: SpanKind.SERVER,
-        attributes: {
-          "ondc.transaction_id": transactionId,
-          "ondc.action": "on_search",
-          "ondc.bpp_id": input.context?.bpp_id || "unknown",
-          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
-        },
-      });
-
-      return tracer.startActiveSpan("ondc.on_search", spanOptions, async (span) => {
-        try {
-          await addSearchResponse(
-            kv,
-            transactionId,
-            input as Parameters<typeof addSearchResponse>[2],
-          );
-
-          // NACK/error responses from BPP set ERROR status (CONTEXT.md decision 2)
-          if (input.error) {
-            span.setAttribute("error.source", "bpp");
-            span.setAttribute(
-              "error.message",
-              input.error.message || "BPP NACK",
-            );
-            if (input.error.code) {
-              span.setAttribute("error.code", input.error.code);
-            }
-            span.setAttribute("bpp.error", JSON.stringify(input.error));
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
-            });
-          } else {
-            span.setStatus({ code: SpanStatusCode.OK });
-          }
-
-          return { message: { ack: { status: "ACK" as const } } };
-        } catch (error) {
-          span.setAttribute("error.source", "bap");
-          span.setAttribute("error.message", (error as Error).message);
-          span.recordException(error as Error);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: (error as Error).message,
-          });
-          throw error;
-        } finally {
-          span.end();
-        }
-      });
-    }),
+  // DEPRECATED: onSearch callback tracing moved to ondc-compat.ts — BPPs hit /api/ondc/on_search not tRPC
+  // onSearch procedure commented out — see git history for original implementation
 
   select: publicProcedure
     .input(
@@ -335,10 +230,13 @@ export const gatewayRouter = router({
             traceparent,
           );
 
-          logger.info({ action: "select", url: selectUrl }, "Sending ONDC request");
+          logger.info(
+            { action: "select", url: selectUrl },
+            "Sending ONDC request",
+          );
           logger.debug({ payload }, "Select payload");
 
-          const response = await ondcClient.send(selectUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(selectUrl, "POST", payload);
 
           logger.debug({ response }, "ONDC response received");
 
@@ -363,117 +261,7 @@ export const gatewayRouter = router({
       });
     }),
 
-  onSelect: publicProcedure
-    .input(
-      z.object({
-        context: z
-          .object({
-            transaction_id: z.string().optional(),
-            message_id: z.string().optional(),
-            bpp_id: z.string().optional(),
-            bpp_uri: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-        message: z.any().optional(),
-        error: z
-          .object({
-            type: z.string().optional(),
-            code: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { kv } = ctx;
-
-      logger.info(
-        {
-          action: "on_select",
-          transactionId: input.context?.transaction_id,
-        },
-        "Callback received",
-      );
-
-      const transactionId = input.context?.transaction_id;
-      const messageId = input.context?.message_id;
-
-      if (!transactionId || !messageId) {
-        logger.warn({ action: "on_select" }, "Missing transaction_id or message_id");
-        return { message: { ack: { status: "ACK" as const } } };
-      }
-
-      // Retrieve stored trace context from select entry
-      const entry = await getSelectEntry(kv, transactionId, messageId);
-      const originalSpanContext = restoreTraceContext(entry?.traceparent);
-
-      if (!entry?.traceparent) {
-        logger.warn(
-          {
-            action: "on_select",
-            transactionId,
-          },
-          "No trace context found for transaction",
-        );
-      }
-
-      // Create callback span with link to original select span
-      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
-        kind: SpanKind.SERVER,
-        attributes: {
-          "ondc.transaction_id": transactionId,
-          "ondc.message_id": messageId,
-          "ondc.action": "on_select",
-          "ondc.bpp_id": input.context?.bpp_id || "unknown",
-          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
-        },
-      });
-
-      return tracer.startActiveSpan("ondc.on_select", spanOptions, async (span) => {
-        try {
-          await addSelectResponse(
-            kv,
-            transactionId,
-            messageId,
-            input as Parameters<typeof addSelectResponse>[3],
-          );
-
-          // NACK/error responses from BPP set ERROR status
-          if (input.error) {
-            span.setAttribute("error.source", "bpp");
-            span.setAttribute(
-              "error.message",
-              input.error.message || "BPP NACK",
-            );
-            if (input.error.code) {
-              span.setAttribute("error.code", input.error.code);
-            }
-            span.setAttribute("bpp.error", JSON.stringify(input.error));
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
-            });
-          } else {
-            span.setStatus({ code: SpanStatusCode.OK });
-          }
-
-          return { message: { ack: { status: "ACK" as const } } };
-        } catch (error) {
-          span.setAttribute("error.source", "bap");
-          span.setAttribute("error.message", (error as Error).message);
-          span.recordException(error as Error);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: (error as Error).message,
-          });
-          throw error;
-        } finally {
-          span.end();
-        }
-      });
-    }),
+  // DEPRECATED: onSelect callback tracing moved to ondc-compat.ts — BPPs hit /api/ondc/on_select not tRPC
 
   init: publicProcedure
     .input(
@@ -616,7 +404,7 @@ export const gatewayRouter = router({
           logger.info({ action: "init", url: initUrl }, "Sending ONDC request");
           logger.debug({ payload }, "Init payload");
 
-          const response = await ondcClient.send(initUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(initUrl, "POST", payload);
 
           logger.debug({ response }, "ONDC response received");
 
@@ -641,116 +429,7 @@ export const gatewayRouter = router({
       });
     }),
 
-  onInit: publicProcedure
-    .input(
-      z.object({
-        context: z
-          .object({
-            transaction_id: z.string().optional(),
-            message_id: z.string().optional(),
-            bpp_id: z.string().optional(),
-            bpp_uri: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-        message: z.any().optional(),
-        error: z
-          .object({
-            type: z.string().optional(),
-            code: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { kv } = ctx;
-
-      logger.info(
-        {
-          action: "on_init",
-          transactionId: input.context?.transaction_id,
-        },
-        "Callback received",
-      );
-
-      const transactionId = input.context?.transaction_id;
-      const messageId = input.context?.message_id;
-
-      if (!transactionId || !messageId) {
-        logger.warn({ action: "on_init" }, "Missing transaction_id or message_id");
-        return { message: { ack: { status: "ACK" as const } } };
-      }
-
-      // Retrieve stored trace context from init entry
-      const entry = await getInitEntry(kv, transactionId, messageId);
-      const originalSpanContext = restoreTraceContext(entry?.traceparent);
-
-      if (!entry?.traceparent) {
-        logger.warn(
-          {
-            action: "on_init",
-            transactionId,
-          },
-          "No trace context found for transaction",
-        );
-      }
-
-      // Create callback span with link to original init span
-      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
-        kind: SpanKind.SERVER,
-        attributes: {
-          "ondc.transaction_id": transactionId,
-          "ondc.action": "on_init",
-          "ondc.bpp_id": input.context?.bpp_id || "unknown",
-          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
-        },
-      });
-
-      return tracer.startActiveSpan("ondc.on_init", spanOptions, async (span) => {
-        try {
-          await addInitResponse(
-            kv,
-            transactionId,
-            messageId,
-            input as Parameters<typeof addInitResponse>[3],
-          );
-
-          // NACK/error responses from BPP set ERROR status
-          if (input.error) {
-            span.setAttribute("error.source", "bpp");
-            span.setAttribute(
-              "error.message",
-              input.error.message || "BPP NACK",
-            );
-            if (input.error.code) {
-              span.setAttribute("error.code", input.error.code);
-            }
-            span.setAttribute("bpp.error", JSON.stringify(input.error));
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
-            });
-          } else {
-            span.setStatus({ code: SpanStatusCode.OK });
-          }
-
-          return { message: { ack: { status: "ACK" as const } } };
-        } catch (error) {
-          span.setAttribute("error.source", "bap");
-          span.setAttribute("error.message", (error as Error).message);
-          span.recordException(error as Error);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: (error as Error).message,
-          });
-          throw error;
-        } finally {
-          span.end();
-        }
-      });
-    }),
+  // DEPRECATED: onInit callback tracing moved to ondc-compat.ts — BPPs hit /api/ondc/on_init not tRPC
 
   confirm: publicProcedure
     .input(
@@ -913,10 +592,13 @@ export const gatewayRouter = router({
             ? `${input.bppUri}confirm`
             : `${input.bppUri}/confirm`;
 
-          logger.info({ action: "confirm", url: confirmUrl }, "Sending ONDC request");
+          logger.info(
+            { action: "confirm", url: confirmUrl },
+            "Sending ONDC request",
+          );
           logger.debug({ payload }, "Confirm payload");
 
-          const response = await ondcClient.send(confirmUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(confirmUrl, "POST", payload);
 
           logger.debug({ response }, "ONDC response received");
 
@@ -941,124 +623,7 @@ export const gatewayRouter = router({
       });
     }),
 
-  onConfirm: publicProcedure
-    .input(
-      z.object({
-        context: z
-          .object({
-            transaction_id: z.string().optional(),
-            message_id: z.string().optional(),
-            bpp_id: z.string().optional(),
-            bpp_uri: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-        message: z.any().optional(),
-        error: z
-          .object({
-            type: z.string().optional(),
-            code: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { kv } = ctx;
-
-      logger.info(
-        {
-          action: "on_confirm",
-          transactionId: input.context?.transaction_id,
-        },
-        "Callback received",
-      );
-
-      const transactionId = input.context?.transaction_id;
-      const messageId = input.context?.message_id;
-      const orderId = input.message?.order?.id;
-
-      if (!transactionId || !messageId) {
-        logger.warn({ action: "on_confirm" }, "Missing transaction_id or message_id");
-        return { message: { ack: { status: "ACK" as const } } };
-      }
-
-      // Retrieve stored trace context from confirm entry
-      const entry = await getConfirmEntry(kv, transactionId, messageId);
-      const originalSpanContext = restoreTraceContext(entry?.traceparent);
-
-      if (!entry?.traceparent) {
-        logger.warn(
-          {
-            action: "on_confirm",
-            transactionId,
-          },
-          "No trace context found for transaction",
-        );
-      }
-
-      // Create callback span with link to original confirm span
-      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
-        kind: SpanKind.SERVER,
-        attributes: {
-          "ondc.transaction_id": transactionId,
-          "ondc.action": "on_confirm",
-          "ondc.bpp_id": input.context?.bpp_id || "unknown",
-          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
-        },
-      });
-
-      return tracer.startActiveSpan("ondc.on_confirm", spanOptions, async (span) => {
-        try {
-          // Extract payment URL and add as span attribute
-          const paymentUrl = input.message?.order?.payments?.[0]?.url;
-          if (paymentUrl) {
-            span.setAttribute("ondc.payment_url", paymentUrl);
-          }
-
-          await addConfirmResponse(
-            kv,
-            transactionId,
-            messageId,
-            orderId,
-            input as Parameters<typeof addConfirmResponse>[4],
-          );
-
-          // NACK/error responses from BPP set ERROR status
-          if (input.error) {
-            span.setAttribute("error.source", "bpp");
-            span.setAttribute(
-              "error.message",
-              input.error.message || "BPP NACK",
-            );
-            if (input.error.code) {
-              span.setAttribute("error.code", input.error.code);
-            }
-            span.setAttribute("bpp.error", JSON.stringify(input.error));
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
-            });
-          } else {
-            span.setStatus({ code: SpanStatusCode.OK });
-          }
-
-          return { message: { ack: { status: "ACK" as const } } };
-        } catch (error) {
-          span.setAttribute("error.source", "bap");
-          span.setAttribute("error.message", (error as Error).message);
-          span.recordException(error as Error);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: (error as Error).message,
-          });
-          throw error;
-        } finally {
-          span.end();
-        }
-      });
-    }),
+  // DEPRECATED: onConfirm callback tracing moved to ondc-compat.ts — BPPs hit /api/ondc/on_confirm not tRPC
 
   status: publicProcedure
     .input(
@@ -1125,10 +690,13 @@ export const gatewayRouter = router({
             ? `${input.bppUri}status`
             : `${input.bppUri}/status`;
 
-          logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
+          logger.info(
+            { action: "status", url: statusUrl },
+            "Sending ONDC request",
+          );
           logger.debug({ payload }, "Status payload");
 
-          const response = await ondcClient.send(statusUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(statusUrl, "POST", payload);
 
           logger.debug({ response }, "ONDC response received");
 
@@ -1154,114 +722,5 @@ export const gatewayRouter = router({
       });
     }),
 
-  onStatus: publicProcedure
-    .input(
-      z.object({
-        context: z
-          .object({
-            transaction_id: z.string().optional(),
-            message_id: z.string().optional(),
-            bpp_id: z.string().optional(),
-            bpp_uri: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-        message: z.any().optional(),
-        error: z
-          .object({
-            type: z.string().optional(),
-            code: z.string().optional(),
-            message: z.string().optional(),
-          })
-          .passthrough()
-          .optional(),
-      }),
-    )
-    .mutation(async ({ ctx, input }) => {
-      const { kv } = ctx;
-
-      logger.info(
-        {
-          action: "on_status",
-          orderId: input.message?.order?.id,
-        },
-        "Callback received",
-      );
-
-      const orderId = input.message?.order?.id;
-      const transactionId = input.context?.transaction_id;
-
-      if (!orderId) {
-        logger.warn({ action: "on_status" }, "Missing order_id in response");
-        return { message: { ack: { status: "ACK" as const } } };
-      }
-
-      // Retrieve stored trace context from status entry (keyed by orderId)
-      const entry = await getStatusEntry(kv, orderId);
-      const originalSpanContext = restoreTraceContext(entry?.traceparent);
-
-      if (!entry?.traceparent) {
-        logger.warn(
-          {
-            action: "on_status",
-            orderId,
-          },
-          "No trace context found for order",
-        );
-      }
-
-      // Create callback span with link to original status span
-      const spanOptions = createLinkedSpanOptions(originalSpanContext, {
-        kind: SpanKind.SERVER,
-        attributes: {
-          "ondc.transaction_id": transactionId || "unknown",
-          "ondc.action": "on_status",
-          "ondc.order_id": orderId,
-          "ondc.bpp_id": input.context?.bpp_id || "unknown",
-          "ondc.bpp_uri": input.context?.bpp_uri || "unknown",
-        },
-      });
-
-      return tracer.startActiveSpan("ondc.on_status", spanOptions, async (span) => {
-        try {
-          await addStatusResponse(
-            kv,
-            orderId,
-            input as Parameters<typeof addStatusResponse>[2],
-          );
-
-          // NACK/error responses from BPP set ERROR status
-          if (input.error) {
-            span.setAttribute("error.source", "bpp");
-            span.setAttribute(
-              "error.message",
-              input.error.message || "BPP NACK",
-            );
-            if (input.error.code) {
-              span.setAttribute("error.code", input.error.code);
-            }
-            span.setAttribute("bpp.error", JSON.stringify(input.error));
-            span.setStatus({
-              code: SpanStatusCode.ERROR,
-              message: `BPP error: ${input.error.code || "unknown"} - ${input.error.message || "no message"}`,
-            });
-          } else {
-            span.setStatus({ code: SpanStatusCode.OK });
-          }
-
-          return { message: { ack: { status: "ACK" as const } } };
-        } catch (error) {
-          span.setAttribute("error.source", "bap");
-          span.setAttribute("error.message", (error as Error).message);
-          span.recordException(error as Error);
-          span.setStatus({
-            code: SpanStatusCode.ERROR,
-            message: (error as Error).message,
-          });
-          throw error;
-        } finally {
-          span.end();
-        }
-      });
-    }),
+  // DEPRECATED: onStatus callback tracing moved to ondc-compat.ts — BPPs hit /api/ondc/on_status not tRPC
 });

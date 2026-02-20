@@ -205,7 +205,10 @@ export async function createInitEntry(
   const key = keyFormatter.init(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  logger.info({ store: "init", transactionId, messageId }, "Init entry created");
+  logger.info(
+    { store: "init", transactionId, messageId },
+    "Init entry created",
+  );
 
   return entry;
 }

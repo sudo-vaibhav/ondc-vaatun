@@ -15,49 +15,49 @@ export type ErrorSource = "bap" | "bpp" | "gateway" | "network";
  * - bap: Default fallback (our own validation/code errors)
  */
 export function classifyErrorSource(
-	error: Error,
-	response?: Response,
-	url?: string,
+  error: Error,
+  response?: Response,
+  url?: string,
 ): ErrorSource {
-	// Network failures: fetch threw before getting a response
-	if (!response) {
-		const errorMessage = error.message || "";
-		const errorCode = (error as Error & { code?: string }).code || "";
+  // Network failures: fetch threw before getting a response
+  if (!response) {
+    const errorMessage = error.message || "";
+    const errorCode = (error as Error & { code?: string }).code || "";
 
-		// Common network error patterns
-		if (
-			errorCode === "ECONNREFUSED" ||
-			errorCode === "ETIMEDOUT" ||
-			errorCode === "ENOTFOUND" ||
-			errorMessage.includes("DNS") ||
-			errorMessage.includes("ECONNREFUSED") ||
-			errorMessage.includes("ETIMEDOUT") ||
-			errorMessage.includes("ENOTFOUND") ||
-			error.name === "AbortError"
-		) {
-			return "network";
-		}
-	}
+    // Common network error patterns
+    if (
+      errorCode === "ECONNREFUSED" ||
+      errorCode === "ETIMEDOUT" ||
+      errorCode === "ENOTFOUND" ||
+      errorMessage.includes("DNS") ||
+      errorMessage.includes("ECONNREFUSED") ||
+      errorMessage.includes("ETIMEDOUT") ||
+      errorMessage.includes("ENOTFOUND") ||
+      error.name === "AbortError"
+    ) {
+      return "network";
+    }
+  }
 
-	// BPP returned an HTTP error response
-	if (response && response.status >= 400) {
-		return "bpp";
-	}
+  // BPP returned an HTTP error response
+  if (response && response.status >= 400) {
+    return "bpp";
+  }
 
-	// Gateway/registry operations (lookup, subscribe)
-	if (url) {
-		const urlLower = url.toLowerCase();
-		if (urlLower.includes("/lookup") || urlLower.includes("/subscribe")) {
-			return "gateway";
-		}
-	}
+  // Gateway/registry operations (lookup, subscribe)
+  if (url) {
+    const urlLower = url.toLowerCase();
+    if (urlLower.includes("/lookup") || urlLower.includes("/subscribe")) {
+      return "gateway";
+    }
+  }
 
-	// Error message mentions gateway or registry
-	const errorMessage = error.message?.toLowerCase() || "";
-	if (errorMessage.includes("gateway") || errorMessage.includes("registry")) {
-		return "gateway";
-	}
+  // Error message mentions gateway or registry
+  const errorMessage = error.message?.toLowerCase() || "";
+  if (errorMessage.includes("gateway") || errorMessage.includes("registry")) {
+    return "gateway";
+  }
 
-	// Default: BAP-side error (validation, our code)
-	return "bap";
+  // Default: BAP-side error (validation, our code)
+  return "bap";
 }

@@ -33,7 +33,10 @@ export const registryRouter = router({
 
     const registryUrl = new URL("/v2.0/lookup", tenant.registryUrl);
 
-    logger.info({ action: "lookup", url: registryUrl.toString() }, "Sending registry request");
+    logger.info(
+      { action: "lookup", url: registryUrl.toString() },
+      "Sending registry request",
+    );
     logger.debug({ payload: lookupPayload }, "Lookup payload");
 
     const response = await ondcClient.send<SubscriberDetails[]>(
@@ -103,7 +106,10 @@ export const registryRouter = router({
 
     const registryUrl = new URL("/subscribe", tenant.registryUrl);
 
-    logger.info({ action: "subscribe", url: registryUrl.toString() }, "Sending registry request");
+    logger.info(
+      { action: "subscribe", url: registryUrl.toString() },
+      "Sending registry request",
+    );
     logger.debug({ payload }, "Subscribe payload");
 
     const response = await ondcClient.send(registryUrl, "POST", payload);
