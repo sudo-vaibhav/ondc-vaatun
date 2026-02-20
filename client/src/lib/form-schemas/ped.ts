@@ -67,7 +67,7 @@ export const pedSchema = z
     {
       message: "Please describe your condition",
       path: ["otherDescription"],
-    }
+    },
   );
 
 export type PedData = z.infer<typeof pedSchema>;

@@ -1,10 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
+import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Collapsible,
-  CollapsibleContent,
-} from "@/components/ui/collapsible";
 import { cn } from "@/lib/utils";
 
 export const PED_CONDITIONS = [
@@ -67,10 +64,7 @@ export function PEDSelector({
                 onConditionChange(id, checked === true)
               }
             />
-            <Label
-              htmlFor={`ped-${id}`}
-              className="font-normal cursor-pointer"
-            >
+            <Label htmlFor={`ped-${id}`} className="font-normal cursor-pointer">
               {label}
             </Label>
           </div>

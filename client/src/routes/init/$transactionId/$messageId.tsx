@@ -6,7 +6,7 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { trpc } from "@/trpc/client";
@@ -307,7 +307,9 @@ function InitPollingPage() {
     <div className="min-h-screen bg-background flex items-center justify-center">
       <div className="text-center space-y-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary mx-auto" />
-        <h2 className="text-lg font-semibold">Waiting for insurer response...</h2>
+        <h2 className="text-lg font-semibold">
+          Waiting for insurer response...
+        </h2>
         <p className="text-sm text-muted-foreground">
           Your application is being processed
         </p>

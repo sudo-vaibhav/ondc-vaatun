@@ -576,9 +576,7 @@ test.describe("Gateway API", () => {
       }
     });
 
-    test("on_status stores policy details for polling", async ({
-      request,
-    }) => {
+    test("on_status stores policy details for polling", async ({ request }) => {
       const transactionId = `test-${Date.now()}-${Math.random().toString(36).slice(2)}`;
       const orderId = `order-${Date.now()}-${Math.random().toString(36).slice(2)}`;
 

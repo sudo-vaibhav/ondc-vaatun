@@ -61,10 +61,7 @@ export function initKey(transactionId: string, messageId: string): string {
 /**
  * Format an init Pub/Sub channel
  */
-export function initChannel(
-  transactionId: string,
-  messageId: string,
-): string {
+export function initChannel(transactionId: string, messageId: string): string {
   return `${KEY_PREFIXES.INIT}:${transactionId}:${messageId}:updates`;
 }
 

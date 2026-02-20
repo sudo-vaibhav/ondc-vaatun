@@ -42,7 +42,7 @@ export function PolicyDetailsSection({
   const coverageTag = item?.tags?.find(
     (t) =>
       t.descriptor?.code === "GENERAL_INFO" ||
-      t.descriptor?.name === "General Information"
+      t.descriptor?.name === "General Information",
   );
   const coverageDetails = coverageTag?.list || [];
 

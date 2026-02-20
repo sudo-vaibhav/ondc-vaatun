@@ -526,7 +526,10 @@ ondcCompatRouter.post("/on_init", async (req, res) => {
     const { kv } = await getContext();
     const body = req.body;
 
-    console.log("\n\n[on_init] Request Body:\n\n", JSON.stringify(body, null, 2));
+    console.log(
+      "\n\n[on_init] Request Body:\n\n",
+      JSON.stringify(body, null, 2),
+    );
 
     const transactionId = body.context?.transaction_id;
     const messageId = body.context?.message_id;
@@ -830,7 +833,6 @@ ondcCompatRouter.get("/confirm-results", async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 });
-
 
 // GET /api/ondc/search-results
 ondcCompatRouter.get("/search-results", async (req, res) => {

@@ -242,9 +242,7 @@ export async function addInitResponse(
     ttlMs: DEFAULT_STORE_TTL_MS,
   });
 
-  console.log(
-    `[InitStore] Added response for: ${transactionId}:${messageId}`,
-  );
+  console.log(`[InitStore] Added response for: ${transactionId}:${messageId}`);
 
   const channel = keyFormatter.initChannel(transactionId, messageId);
   await kv.publish(channel, {

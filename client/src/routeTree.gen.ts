@@ -8,255 +8,255 @@
 // You should NOT make any changes in this file as it will be overwritten.
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
-import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
-import { Route as DirectoryIndexRouteImport } from './routes/directory/index'
-import { Route as SearchResultsTransactionIdRouteImport } from './routes/search-results/$transactionId'
-import { Route as SearchResultsStreamedTransactionIdRouteImport } from './routes/search-results-streamed/$transactionId'
-import { Route as PolicyOrderIdRouteImport } from './routes/policy/$orderId'
-import { Route as PolicySuccessOrderIdRouteImport } from './routes/policy-success/$orderId'
-import { Route as PaymentCallbackTransactionIdRouteImport } from './routes/payment-callback/$transactionId'
-import { Route as MotorSearchIdRouteImport } from './routes/motor/$searchId'
-import { Route as HealthSearchIdRouteImport } from './routes/health/$searchId'
-import { Route as QuoteTransactionIdMessageIdRouteImport } from './routes/quote/$transactionId/$messageId'
-import { Route as InitTransactionIdMessageIdRouteImport } from './routes/init/$transactionId/$messageId'
+import { Route as rootRouteImport } from "./routes/__root";
+import { Route as DirectoryIndexRouteImport } from "./routes/directory/index";
+import { Route as HealthSearchIdRouteImport } from "./routes/health/$searchId";
+import { Route as IndexRouteImport } from "./routes/index";
+import { Route as InitTransactionIdMessageIdRouteImport } from "./routes/init/$transactionId/$messageId";
+import { Route as MotorSearchIdRouteImport } from "./routes/motor/$searchId";
+import { Route as PaymentCallbackTransactionIdRouteImport } from "./routes/payment-callback/$transactionId";
+import { Route as PolicyOrderIdRouteImport } from "./routes/policy/$orderId";
+import { Route as PolicySuccessOrderIdRouteImport } from "./routes/policy-success/$orderId";
+import { Route as QuoteTransactionIdMessageIdRouteImport } from "./routes/quote/$transactionId/$messageId";
+import { Route as SearchResultsTransactionIdRouteImport } from "./routes/search-results/$transactionId";
+import { Route as SearchResultsStreamedTransactionIdRouteImport } from "./routes/search-results-streamed/$transactionId";
 
 const IndexRoute = IndexRouteImport.update({
-  id: '/',
-  path: '/',
+  id: "/",
+  path: "/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const DirectoryIndexRoute = DirectoryIndexRouteImport.update({
-  id: '/directory/',
-  path: '/directory/',
+  id: "/directory/",
+  path: "/directory/",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const SearchResultsTransactionIdRoute =
   SearchResultsTransactionIdRouteImport.update({
-    id: '/search-results/$transactionId',
-    path: '/search-results/$transactionId',
+    id: "/search-results/$transactionId",
+    path: "/search-results/$transactionId",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const SearchResultsStreamedTransactionIdRoute =
   SearchResultsStreamedTransactionIdRouteImport.update({
-    id: '/search-results-streamed/$transactionId',
-    path: '/search-results-streamed/$transactionId',
+    id: "/search-results-streamed/$transactionId",
+    path: "/search-results-streamed/$transactionId",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const PolicyOrderIdRoute = PolicyOrderIdRouteImport.update({
-  id: '/policy/$orderId',
-  path: '/policy/$orderId',
+  id: "/policy/$orderId",
+  path: "/policy/$orderId",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const PolicySuccessOrderIdRoute = PolicySuccessOrderIdRouteImport.update({
-  id: '/policy-success/$orderId',
-  path: '/policy-success/$orderId',
+  id: "/policy-success/$orderId",
+  path: "/policy-success/$orderId",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const PaymentCallbackTransactionIdRoute =
   PaymentCallbackTransactionIdRouteImport.update({
-    id: '/payment-callback/$transactionId',
-    path: '/payment-callback/$transactionId',
+    id: "/payment-callback/$transactionId",
+    path: "/payment-callback/$transactionId",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const MotorSearchIdRoute = MotorSearchIdRouteImport.update({
-  id: '/motor/$searchId',
-  path: '/motor/$searchId',
+  id: "/motor/$searchId",
+  path: "/motor/$searchId",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const HealthSearchIdRoute = HealthSearchIdRouteImport.update({
-  id: '/health/$searchId',
-  path: '/health/$searchId',
+  id: "/health/$searchId",
+  path: "/health/$searchId",
   getParentRoute: () => rootRouteImport,
-} as any)
+} as any);
 const QuoteTransactionIdMessageIdRoute =
   QuoteTransactionIdMessageIdRouteImport.update({
-    id: '/quote/$transactionId/$messageId',
-    path: '/quote/$transactionId/$messageId',
+    id: "/quote/$transactionId/$messageId",
+    path: "/quote/$transactionId/$messageId",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 const InitTransactionIdMessageIdRoute =
   InitTransactionIdMessageIdRouteImport.update({
-    id: '/init/$transactionId/$messageId',
-    path: '/init/$transactionId/$messageId',
+    id: "/init/$transactionId/$messageId",
+    path: "/init/$transactionId/$messageId",
     getParentRoute: () => rootRouteImport,
-  } as any)
+  } as any);
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/health/$searchId': typeof HealthSearchIdRoute
-  '/motor/$searchId': typeof MotorSearchIdRoute
-  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
-  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
-  '/policy/$orderId': typeof PolicyOrderIdRoute
-  '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
-  '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
-  '/directory/': typeof DirectoryIndexRoute
-  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
-  '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
+  "/": typeof IndexRoute;
+  "/health/$searchId": typeof HealthSearchIdRoute;
+  "/motor/$searchId": typeof MotorSearchIdRoute;
+  "/payment-callback/$transactionId": typeof PaymentCallbackTransactionIdRoute;
+  "/policy-success/$orderId": typeof PolicySuccessOrderIdRoute;
+  "/policy/$orderId": typeof PolicyOrderIdRoute;
+  "/search-results-streamed/$transactionId": typeof SearchResultsStreamedTransactionIdRoute;
+  "/search-results/$transactionId": typeof SearchResultsTransactionIdRoute;
+  "/directory/": typeof DirectoryIndexRoute;
+  "/init/$transactionId/$messageId": typeof InitTransactionIdMessageIdRoute;
+  "/quote/$transactionId/$messageId": typeof QuoteTransactionIdMessageIdRoute;
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/health/$searchId': typeof HealthSearchIdRoute
-  '/motor/$searchId': typeof MotorSearchIdRoute
-  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
-  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
-  '/policy/$orderId': typeof PolicyOrderIdRoute
-  '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
-  '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
-  '/directory': typeof DirectoryIndexRoute
-  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
-  '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
+  "/": typeof IndexRoute;
+  "/health/$searchId": typeof HealthSearchIdRoute;
+  "/motor/$searchId": typeof MotorSearchIdRoute;
+  "/payment-callback/$transactionId": typeof PaymentCallbackTransactionIdRoute;
+  "/policy-success/$orderId": typeof PolicySuccessOrderIdRoute;
+  "/policy/$orderId": typeof PolicyOrderIdRoute;
+  "/search-results-streamed/$transactionId": typeof SearchResultsStreamedTransactionIdRoute;
+  "/search-results/$transactionId": typeof SearchResultsTransactionIdRoute;
+  "/directory": typeof DirectoryIndexRoute;
+  "/init/$transactionId/$messageId": typeof InitTransactionIdMessageIdRoute;
+  "/quote/$transactionId/$messageId": typeof QuoteTransactionIdMessageIdRoute;
 }
 export interface FileRoutesById {
-  __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/health/$searchId': typeof HealthSearchIdRoute
-  '/motor/$searchId': typeof MotorSearchIdRoute
-  '/payment-callback/$transactionId': typeof PaymentCallbackTransactionIdRoute
-  '/policy-success/$orderId': typeof PolicySuccessOrderIdRoute
-  '/policy/$orderId': typeof PolicyOrderIdRoute
-  '/search-results-streamed/$transactionId': typeof SearchResultsStreamedTransactionIdRoute
-  '/search-results/$transactionId': typeof SearchResultsTransactionIdRoute
-  '/directory/': typeof DirectoryIndexRoute
-  '/init/$transactionId/$messageId': typeof InitTransactionIdMessageIdRoute
-  '/quote/$transactionId/$messageId': typeof QuoteTransactionIdMessageIdRoute
+  __root__: typeof rootRouteImport;
+  "/": typeof IndexRoute;
+  "/health/$searchId": typeof HealthSearchIdRoute;
+  "/motor/$searchId": typeof MotorSearchIdRoute;
+  "/payment-callback/$transactionId": typeof PaymentCallbackTransactionIdRoute;
+  "/policy-success/$orderId": typeof PolicySuccessOrderIdRoute;
+  "/policy/$orderId": typeof PolicyOrderIdRoute;
+  "/search-results-streamed/$transactionId": typeof SearchResultsStreamedTransactionIdRoute;
+  "/search-results/$transactionId": typeof SearchResultsTransactionIdRoute;
+  "/directory/": typeof DirectoryIndexRoute;
+  "/init/$transactionId/$messageId": typeof InitTransactionIdMessageIdRoute;
+  "/quote/$transactionId/$messageId": typeof QuoteTransactionIdMessageIdRoute;
 }
 export interface FileRouteTypes {
-  fileRoutesByFullPath: FileRoutesByFullPath
+  fileRoutesByFullPath: FileRoutesByFullPath;
   fullPaths:
-    | '/'
-    | '/health/$searchId'
-    | '/motor/$searchId'
-    | '/payment-callback/$transactionId'
-    | '/policy-success/$orderId'
-    | '/policy/$orderId'
-    | '/search-results-streamed/$transactionId'
-    | '/search-results/$transactionId'
-    | '/directory/'
-    | '/init/$transactionId/$messageId'
-    | '/quote/$transactionId/$messageId'
-  fileRoutesByTo: FileRoutesByTo
+    | "/"
+    | "/health/$searchId"
+    | "/motor/$searchId"
+    | "/payment-callback/$transactionId"
+    | "/policy-success/$orderId"
+    | "/policy/$orderId"
+    | "/search-results-streamed/$transactionId"
+    | "/search-results/$transactionId"
+    | "/directory/"
+    | "/init/$transactionId/$messageId"
+    | "/quote/$transactionId/$messageId";
+  fileRoutesByTo: FileRoutesByTo;
   to:
-    | '/'
-    | '/health/$searchId'
-    | '/motor/$searchId'
-    | '/payment-callback/$transactionId'
-    | '/policy-success/$orderId'
-    | '/policy/$orderId'
-    | '/search-results-streamed/$transactionId'
-    | '/search-results/$transactionId'
-    | '/directory'
-    | '/init/$transactionId/$messageId'
-    | '/quote/$transactionId/$messageId'
+    | "/"
+    | "/health/$searchId"
+    | "/motor/$searchId"
+    | "/payment-callback/$transactionId"
+    | "/policy-success/$orderId"
+    | "/policy/$orderId"
+    | "/search-results-streamed/$transactionId"
+    | "/search-results/$transactionId"
+    | "/directory"
+    | "/init/$transactionId/$messageId"
+    | "/quote/$transactionId/$messageId";
   id:
-    | '__root__'
-    | '/'
-    | '/health/$searchId'
-    | '/motor/$searchId'
-    | '/payment-callback/$transactionId'
-    | '/policy-success/$orderId'
-    | '/policy/$orderId'
-    | '/search-results-streamed/$transactionId'
-    | '/search-results/$transactionId'
-    | '/directory/'
-    | '/init/$transactionId/$messageId'
-    | '/quote/$transactionId/$messageId'
-  fileRoutesById: FileRoutesById
+    | "__root__"
+    | "/"
+    | "/health/$searchId"
+    | "/motor/$searchId"
+    | "/payment-callback/$transactionId"
+    | "/policy-success/$orderId"
+    | "/policy/$orderId"
+    | "/search-results-streamed/$transactionId"
+    | "/search-results/$transactionId"
+    | "/directory/"
+    | "/init/$transactionId/$messageId"
+    | "/quote/$transactionId/$messageId";
+  fileRoutesById: FileRoutesById;
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  HealthSearchIdRoute: typeof HealthSearchIdRoute
-  MotorSearchIdRoute: typeof MotorSearchIdRoute
-  PaymentCallbackTransactionIdRoute: typeof PaymentCallbackTransactionIdRoute
-  PolicySuccessOrderIdRoute: typeof PolicySuccessOrderIdRoute
-  PolicyOrderIdRoute: typeof PolicyOrderIdRoute
-  SearchResultsStreamedTransactionIdRoute: typeof SearchResultsStreamedTransactionIdRoute
-  SearchResultsTransactionIdRoute: typeof SearchResultsTransactionIdRoute
-  DirectoryIndexRoute: typeof DirectoryIndexRoute
-  InitTransactionIdMessageIdRoute: typeof InitTransactionIdMessageIdRoute
-  QuoteTransactionIdMessageIdRoute: typeof QuoteTransactionIdMessageIdRoute
+  IndexRoute: typeof IndexRoute;
+  HealthSearchIdRoute: typeof HealthSearchIdRoute;
+  MotorSearchIdRoute: typeof MotorSearchIdRoute;
+  PaymentCallbackTransactionIdRoute: typeof PaymentCallbackTransactionIdRoute;
+  PolicySuccessOrderIdRoute: typeof PolicySuccessOrderIdRoute;
+  PolicyOrderIdRoute: typeof PolicyOrderIdRoute;
+  SearchResultsStreamedTransactionIdRoute: typeof SearchResultsStreamedTransactionIdRoute;
+  SearchResultsTransactionIdRoute: typeof SearchResultsTransactionIdRoute;
+  DirectoryIndexRoute: typeof DirectoryIndexRoute;
+  InitTransactionIdMessageIdRoute: typeof InitTransactionIdMessageIdRoute;
+  QuoteTransactionIdMessageIdRoute: typeof QuoteTransactionIdMessageIdRoute;
 }
 
-declare module '@tanstack/react-router' {
+declare module "@tanstack/react-router" {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/directory/': {
-      id: '/directory/'
-      path: '/directory'
-      fullPath: '/directory/'
-      preLoaderRoute: typeof DirectoryIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search-results/$transactionId': {
-      id: '/search-results/$transactionId'
-      path: '/search-results/$transactionId'
-      fullPath: '/search-results/$transactionId'
-      preLoaderRoute: typeof SearchResultsTransactionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/search-results-streamed/$transactionId': {
-      id: '/search-results-streamed/$transactionId'
-      path: '/search-results-streamed/$transactionId'
-      fullPath: '/search-results-streamed/$transactionId'
-      preLoaderRoute: typeof SearchResultsStreamedTransactionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policy/$orderId': {
-      id: '/policy/$orderId'
-      path: '/policy/$orderId'
-      fullPath: '/policy/$orderId'
-      preLoaderRoute: typeof PolicyOrderIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/policy-success/$orderId': {
-      id: '/policy-success/$orderId'
-      path: '/policy-success/$orderId'
-      fullPath: '/policy-success/$orderId'
-      preLoaderRoute: typeof PolicySuccessOrderIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/payment-callback/$transactionId': {
-      id: '/payment-callback/$transactionId'
-      path: '/payment-callback/$transactionId'
-      fullPath: '/payment-callback/$transactionId'
-      preLoaderRoute: typeof PaymentCallbackTransactionIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/motor/$searchId': {
-      id: '/motor/$searchId'
-      path: '/motor/$searchId'
-      fullPath: '/motor/$searchId'
-      preLoaderRoute: typeof MotorSearchIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/health/$searchId': {
-      id: '/health/$searchId'
-      path: '/health/$searchId'
-      fullPath: '/health/$searchId'
-      preLoaderRoute: typeof HealthSearchIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/quote/$transactionId/$messageId': {
-      id: '/quote/$transactionId/$messageId'
-      path: '/quote/$transactionId/$messageId'
-      fullPath: '/quote/$transactionId/$messageId'
-      preLoaderRoute: typeof QuoteTransactionIdMessageIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/init/$transactionId/$messageId': {
-      id: '/init/$transactionId/$messageId'
-      path: '/init/$transactionId/$messageId'
-      fullPath: '/init/$transactionId/$messageId'
-      preLoaderRoute: typeof InitTransactionIdMessageIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
+    "/": {
+      id: "/";
+      path: "/";
+      fullPath: "/";
+      preLoaderRoute: typeof IndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/directory/": {
+      id: "/directory/";
+      path: "/directory";
+      fullPath: "/directory/";
+      preLoaderRoute: typeof DirectoryIndexRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/search-results/$transactionId": {
+      id: "/search-results/$transactionId";
+      path: "/search-results/$transactionId";
+      fullPath: "/search-results/$transactionId";
+      preLoaderRoute: typeof SearchResultsTransactionIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/search-results-streamed/$transactionId": {
+      id: "/search-results-streamed/$transactionId";
+      path: "/search-results-streamed/$transactionId";
+      fullPath: "/search-results-streamed/$transactionId";
+      preLoaderRoute: typeof SearchResultsStreamedTransactionIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/policy/$orderId": {
+      id: "/policy/$orderId";
+      path: "/policy/$orderId";
+      fullPath: "/policy/$orderId";
+      preLoaderRoute: typeof PolicyOrderIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/policy-success/$orderId": {
+      id: "/policy-success/$orderId";
+      path: "/policy-success/$orderId";
+      fullPath: "/policy-success/$orderId";
+      preLoaderRoute: typeof PolicySuccessOrderIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/payment-callback/$transactionId": {
+      id: "/payment-callback/$transactionId";
+      path: "/payment-callback/$transactionId";
+      fullPath: "/payment-callback/$transactionId";
+      preLoaderRoute: typeof PaymentCallbackTransactionIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/motor/$searchId": {
+      id: "/motor/$searchId";
+      path: "/motor/$searchId";
+      fullPath: "/motor/$searchId";
+      preLoaderRoute: typeof MotorSearchIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/health/$searchId": {
+      id: "/health/$searchId";
+      path: "/health/$searchId";
+      fullPath: "/health/$searchId";
+      preLoaderRoute: typeof HealthSearchIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/quote/$transactionId/$messageId": {
+      id: "/quote/$transactionId/$messageId";
+      path: "/quote/$transactionId/$messageId";
+      fullPath: "/quote/$transactionId/$messageId";
+      preLoaderRoute: typeof QuoteTransactionIdMessageIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
+    "/init/$transactionId/$messageId": {
+      id: "/init/$transactionId/$messageId";
+      path: "/init/$transactionId/$messageId";
+      fullPath: "/init/$transactionId/$messageId";
+      preLoaderRoute: typeof InitTransactionIdMessageIdRouteImport;
+      parentRoute: typeof rootRouteImport;
+    };
   }
 }
 
@@ -273,7 +273,7 @@ const rootRouteChildren: RootRouteChildren = {
   DirectoryIndexRoute: DirectoryIndexRoute,
   InitTransactionIdMessageIdRoute: InitTransactionIdMessageIdRoute,
   QuoteTransactionIdMessageIdRoute: QuoteTransactionIdMessageIdRoute,
-}
+};
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
-  ._addFileTypes<FileRouteTypes>()
+  ._addFileTypes<FileRouteTypes>();

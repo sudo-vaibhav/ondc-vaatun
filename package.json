@@ -39,6 +39,7 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@opentelemetry/resources": "^2.5.1",
     "dotenv": "^17.2.3"
   }
 }

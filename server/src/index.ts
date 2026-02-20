@@ -1,4 +1,4 @@
-import './tracing'; // MUST BE FIRST IMPORT
+import "./tracing"; // MUST BE FIRST IMPORT
 
 import ngrok from "@ngrok/ngrok";
 import { app } from "./app";
