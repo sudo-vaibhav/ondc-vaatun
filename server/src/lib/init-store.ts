@@ -6,6 +6,7 @@ import {
   keyFormatter,
   type TenantKeyValueStore,
 } from "../infra/key-value/redis";
+import { logger } from "./logger";
 
 // ============================================
 // Type Definitions
@@ -155,6 +156,7 @@ export interface InitEntry {
   bppUri: string;
   initTimestamp: string;
   createdAt: number;
+  traceparent?: string;
 }
 
 export interface InitResult {
@@ -172,7 +174,7 @@ export interface InitResult {
   error?: { code?: string; message?: string };
 }
 
-const DEFAULT_STORE_TTL_MS = 10 * 60 * 1000;
+const DEFAULT_STORE_TTL_MS = 30 * 60 * 1000;
 
 // ============================================
 // Store Operations
@@ -186,6 +188,7 @@ export async function createInitEntry(
   providerId: string,
   bppId: string,
   bppUri: string,
+  traceparent?: string,
 ): Promise<InitEntry> {
   const entry: InitEntry = {
     transactionId,
@@ -196,12 +199,16 @@ export async function createInitEntry(
     bppUri,
     initTimestamp: new Date().toISOString(),
     createdAt: Date.now(),
+    traceparent,
   };
 
   const key = keyFormatter.init(transactionId, messageId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  console.log(`[InitStore] Created entry: ${transactionId}:${messageId}`);
+  logger.info(
+    { store: "init", transactionId, messageId },
+    "Init entry created",
+  );
 
   return entry;
 }
@@ -216,8 +223,9 @@ export async function addInitResponse(
   let entry = await kv.get<InitEntry>(key);
 
   if (!entry) {
-    console.warn(
-      `[InitStore] No entry found for: ${transactionId}:${messageId}, creating new`,
+    logger.warn(
+      { store: "init", transactionId, messageId },
+      "No entry found, creating new",
     );
     entry = {
       transactionId,
@@ -242,7 +250,10 @@ export async function addInitResponse(
     ttlMs: DEFAULT_STORE_TTL_MS,
   });
 
-  console.log(`[InitStore] Added response for: ${transactionId}:${messageId}`);
+  logger.info(
+    { store: "init", transactionId, messageId },
+    "Response added to init entry",
+  );
 
   const channel = keyFormatter.initChannel(transactionId, messageId);
   await kv.publish(channel, {

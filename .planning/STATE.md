@@ -9,12 +9,12 @@ See: .planning/PROJECT.md (updated 2026-02-09)
 
 ## Current Position
 
-Phase: 3 - Async Callback Correlation — COMPLETE
-Plan: All plans complete
-Status: Ready for Phase 4
-Last activity: 2026-02-10 — Phase 3 execution complete
+Phase: 5 - Error Classification & Logging — COMPLETE
+Plan: 02 of 02 complete
+Status: All phases complete
+Last activity: 2026-02-16 — Completed 05-02-PLAN.md (Structured Logging Migration)
 
-Progress: [██████░░░░] 62% (8/13 plans complete)
+Progress: [██████████] 100% (12/12 plans complete)
 
 ## v2.0 Milestone Overview
 
@@ -28,7 +28,7 @@ Progress: [██████░░░░] 62% (8/13 plans complete)
 - Error source attribution (BAP/gateway/BPP)
 
 **Total phases:** 5
-**Total plans:** 13
+**Total plans:** 12
 **Estimated duration:** 12-20 hours (based on research)
 
 ## v1.0 Performance Metrics (archived)
@@ -86,6 +86,23 @@ Key decisions from v1.0 affecting v2.0 work:
 - Early return in onSearch if no transactionId before trace restoration (03-02)
 - BPP identity attributes (bpp_id, bpp_uri) on callback spans (03-02)
 - NACK/error responses set SpanStatusCode.ERROR on callback spans (03-02)
+- Uniform traceparent field across all transaction stores (select/init/confirm/status) (04-01)
+- 30-minute TTL for select/init/confirm stores to catch late BPP callbacks (04-01)
+- Status store kept at 24h TTL (policy data accessed later) (04-01)
+- Ed25519 signing wrapped in sync callback for proper span hierarchy (04-01)
+- orderId-based correlation for status flow (getStatusEntry uses orderId only, not transactionId+messageId) (04-02)
+- ondc.payment_url extracted from on_confirm response for payment flow visibility (04-02)
+- ondc.order_id attribute on status spans for filtering/correlation (04-02)
+- 4-source error classification: bap (our code), bpp (4xx/5xx), gateway (registry/lookup), network (DNS/timeout/ECONNREFUSED) (05-01)
+- BPP NACK responses get full error object as bpp.error span attribute (05-01)
+- All error spans include error.source, error.message, and error.code (when available) (05-01)
+- HTTP error responses (4xx/5xx) set error.source='bpp' before throw in ONDCClient (05-01)
+- Network failures (no response) classified by error code/message patterns (05-01)
+- Pino structured logging with automatic trace context injection (05-02)
+- Dev logs: pino-pretty with colors/timestamps; Prod logs: JSON lines (05-02)
+- Log level hierarchy: debug/info/warn/error with contextual fields (05-02)
+- Use `err` key (not `error`) for Error objects to trigger pino's error serializer (05-02)
+- Zero console.* calls in production code (tracing.ts exempted for chicken-and-egg) (05-02)
 
 ### Pending Todos
 
@@ -102,7 +119,7 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-02-10
-Stopped at: Phase 3 complete
+Last session: 2026-02-16T13:44:04Z
+Stopped at: Completed 05-02-PLAN.md (Structured Logging Migration) - Milestone v2.0 COMPLETE
 Resume file: None
-Next step: /gsd:discuss-phase 4 or /gsd:plan-phase 4 (Comprehensive Coverage)
+Next step: Milestone v2.0 complete. All observability features delivered.

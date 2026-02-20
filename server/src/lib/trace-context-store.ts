@@ -8,9 +8,9 @@
 import {
   context,
   propagation,
-  trace,
   type SpanContext,
   type SpanOptions,
+  trace,
 } from "@opentelemetry/api";
 
 /**

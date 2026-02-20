@@ -6,6 +6,7 @@ import {
   keyFormatter,
   type TenantKeyValueStore,
 } from "../infra/key-value/redis";
+import { logger } from "./logger";
 
 // ============================================
 // Type Definitions
@@ -178,9 +179,7 @@ export async function createSearchEntry(
   const key = keyFormatter.search(transactionId);
   await kv.set(key, entry, { ttlMs: DEFAULT_STORE_TTL_MS });
 
-  console.log(
-    `[SearchStore] Created entry for transaction: ${transactionId} (TTL: ${ttl})`,
-  );
+  logger.info({ store: "search", transactionId, ttl }, "Search entry created");
 
   return entry;
 }
@@ -194,8 +193,9 @@ export async function addSearchResponse(
   let entry = await kv.get<SearchEntry>(key);
 
   if (!entry) {
-    console.warn(
-      `[SearchStore] No entry found for transaction: ${transactionId}, creating new`,
+    logger.warn(
+      { store: "search", transactionId },
+      "No entry found, creating new",
     );
     const now = Date.now();
     const ttlMs = parseTtlToMs(response.context.ttl || "PT5M");
@@ -219,8 +219,9 @@ export async function addSearchResponse(
   const responsesKey = keyFormatter.searchResponses(transactionId);
   const count = await kv.listPush(responsesKey, responseWithTimestamp);
 
-  console.log(
-    `[SearchStore] Added response for transaction: ${transactionId} (total: ${count})`,
+  logger.info(
+    { store: "search", transactionId, count },
+    "Response added to search entry",
   );
 
   const channel = keyFormatter.searchChannel(transactionId);
@@ -330,5 +331,5 @@ export async function getAllTransactionIds(
 
 export async function clearStore(kv: TenantKeyValueStore): Promise<void> {
   await kv.clear();
-  console.log("[SearchStore] Store cleared");
+  logger.info({ store: "search" }, "Store cleared");
 }

@@ -2,15 +2,16 @@ import "./tracing"; // MUST BE FIRST IMPORT
 
 import ngrok from "@ngrok/ngrok";
 import { app } from "./app";
+import { logger } from "./lib/logger";
 
 const PORT = process.env.PORT || 4822;
 const NGROK_DOMAIN = process.env.SUBSCRIBER_ID;
 
 app.listen(PORT, async () => {
-  console.log(`[Server] Running on http://localhost:${PORT}`);
-  console.log(`[Server] tRPC endpoint: http://localhost:${PORT}/api/trpc`);
-  console.log(`[Server] Health check: http://localhost:${PORT}/health`);
-  console.log(`[Server] API docs: http://localhost:${PORT}/api/reference`);
+  logger.info({ port: PORT }, "Server started");
+  logger.info({ endpoint: `/api/trpc` }, "tRPC endpoint available");
+  logger.info({ endpoint: `/health` }, "Health check available");
+  logger.info({ endpoint: `/api/reference` }, "API docs available");
 
   // Start ngrok tunnel in non-production environments if authtoken is configured
   const isProduction = process.env.NODE_ENV === "production";
@@ -21,11 +22,11 @@ app.listen(PORT, async () => {
         authtoken_from_env: true,
         domain: NGROK_DOMAIN,
       });
-      console.log(`[ngrok] Tunnel established at: ${listener.url()}`);
+      logger.info({ url: listener.url() }, "ngrok tunnel established");
     } catch (err) {
-      console.error("[ngrok] Failed to establish tunnel:", err);
+      logger.error({ err }, "Failed to establish ngrok tunnel");
     }
   } else if (isProduction) {
-    console.log("[ngrok] Skipped in production environment");
+    logger.info("ngrok skipped in production environment");
   }
 });

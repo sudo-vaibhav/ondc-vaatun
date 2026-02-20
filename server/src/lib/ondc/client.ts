@@ -1,6 +1,8 @@
 import type { URL } from "node:url";
 import { type SpanStatusCode, trace } from "@opentelemetry/api";
 import type { Tenant } from "../../entities/tenant";
+import { logger } from "../logger";
+import { classifyErrorSource } from "./error-classifier";
 import { calculateDigest } from "./signing";
 
 interface ONDCResponse {
@@ -46,16 +48,32 @@ export class ONDCClient {
 
     const signingString = `(created): ${created}\n(expires): ${expires}\ndigest: BLAKE-512=${digest}`;
 
-    console.log(
-      "[Signing] Created:",
-      created,
-      "from timestamp:",
-      bodyWithContext?.context?.timestamp,
-      "→",
-      new Date(created * 1000).toISOString(),
+    logger.debug(
+      {
+        created,
+        timestamp: bodyWithContext?.context?.timestamp,
+        derivedTime: new Date(created * 1000).toISOString(),
+      },
+      "Signature created timestamp",
     );
 
-    const signature = this.tenant.signMessage(signingString);
+    // Wrap Ed25519 signing in a child span
+    const signature = this.tracer.startActiveSpan("ondc.sign", (span) => {
+      try {
+        const sig = this.tenant.signMessage(signingString);
+        span.setStatus({ code: 1 as typeof SpanStatusCode.OK });
+        return sig;
+      } catch (error) {
+        span.recordException(error as Error);
+        span.setStatus({
+          code: 2 as typeof SpanStatusCode.ERROR,
+          message: (error as Error).message,
+        });
+        throw error;
+      } finally {
+        span.end();
+      }
+    });
 
     const keyId = `${this.tenant.subscriberId}|${this.tenant.uniqueKeyId.value}|ed25519`;
     return `Signature keyId="${keyId}",algorithm="ed25519",created="${created}",expires="${expires}",headers="(created) (expires) digest",signature="${signature}"`;
@@ -67,6 +85,8 @@ export class ONDCClient {
     body: object,
   ): Promise<T> {
     return this.tracer.startActiveSpan("ondc.http.request", async (span) => {
+      let response: Response | undefined;
+
       try {
         // HTTP metadata attributes
         span.setAttribute("http.url", url.toString());
@@ -81,7 +101,7 @@ export class ONDCClient {
         const authHeader = await this.createAuthorizationHeader(body);
         span.setAttribute("http.request.header.authorization", authHeader);
 
-        const response = await fetch(url, {
+        response = await fetch(url, {
           method,
           headers: {
             "Content-Type": "application/json",
@@ -96,6 +116,7 @@ export class ONDCClient {
         if (!response.ok) {
           const errorText = await response.text();
           span.setAttribute("http.response.body", errorText);
+          span.setAttribute("error.source", "bpp");
           throw new Error(
             `ONDC Request Failed [${response.status}]: ${errorText}`,
           );
@@ -107,12 +128,28 @@ export class ONDCClient {
         span.setStatus({ code: 1 as typeof SpanStatusCode.OK });
         return data as T;
       } catch (error) {
+        const errorSource = classifyErrorSource(
+          error as Error,
+          response,
+          url.toString(),
+        );
         span.recordException(error as Error);
+        span.setAttribute("error.source", errorSource);
+        span.setAttribute("error.message", (error as Error).message);
+        if ((error as Error & { code?: string }).code) {
+          span.setAttribute(
+            "error.code",
+            (error as Error & { code?: string }).code as string,
+          );
+        }
         span.setStatus({
           code: 2 as typeof SpanStatusCode.ERROR,
           message: (error as Error).message,
         });
-        console.error(`[ONDCClient] Error sending to ${url}:`, error);
+        logger.error(
+          { err: error as Error, url: url.toString() },
+          "ONDC request failed",
+        );
         throw error;
       } finally {
         span.end();

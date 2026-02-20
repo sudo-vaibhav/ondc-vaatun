@@ -1,7 +1,8 @@
 import { Router } from "express";
 import { Tenant } from "../entities/tenant";
+import { logger } from "../lib/logger";
 
-export const siteVerificationRouter = Router();
+export const siteVerificationRouter: Router = Router();
 
 /**
  * Site verification endpoint for ONDC domain verification
@@ -48,7 +49,7 @@ siteVerificationRouter.get("/ondc-site-verification.html", (_req, res) => {
     res.setHeader("Content-Type", "text/html");
     res.send(html);
   } catch (error) {
-    console.error("[Site Verification] Error:", error);
+    logger.error({ err: error as Error }, "Site verification error");
     res.status(500).send("Error generating verification page");
   }
 });

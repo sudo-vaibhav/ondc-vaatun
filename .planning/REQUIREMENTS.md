@@ -76,12 +76,12 @@
 
 - [x] **OTEL-01**: OpenTelemetry SDK integrated into Express server with auto-instrumentation
 - [x] **OTEL-02**: Every outgoing ONDC request (search, select, init, confirm, status) creates trace span with full payload
-- [ ] **OTEL-03**: Every callback (on_search, on_select, on_init, on_confirm, on_status) linked to parent trace via transactionId
-- [ ] **OTEL-04**: Internal operations (Redis reads/writes, Ed25519 signing) visible as child spans
+- [x] **OTEL-03**: Every callback (on_search, on_select, on_init, on_confirm, on_status) linked to parent trace via transactionId
+- [x] **OTEL-04**: Internal operations (Redis reads/writes, Ed25519 signing) visible as child spans
 - [x] **OTEL-05**: HTTP headers, request/response bodies, and timing captured in span attributes
-- [ ] **OTEL-06**: OTLP exporter configured for vendor-neutral backend export (Jaeger, Grafana Tempo)
-- [ ] **OTEL-07**: Structured logging with transactionId correlation and trace context
-- [ ] **OTEL-08**: Error classification distinguishes BAP errors, gateway errors, and BPP errors
+- [x] **OTEL-06**: OTLP exporter configured for vendor-neutral backend export (Jaeger, Grafana Tempo)
+- [x] **OTEL-07**: Structured logging with transactionId correlation and trace context
+- [x] **OTEL-08**: Error classification distinguishes BAP errors, gateway errors, and BPP errors
 
 ---
 
