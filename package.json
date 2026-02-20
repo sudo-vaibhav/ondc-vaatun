@@ -39,7 +39,10 @@
     "typescript": "^5.9.3"
   },
   "dependencies": {
+    "@opentelemetry/exporter-logs-otlp-http": "^0.212.0",
+    "@opentelemetry/instrumentation-pino": "^0.57.0",
     "@opentelemetry/resources": "^2.5.1",
+    "@opentelemetry/sdk-logs": "^0.212.0",
     "dotenv": "^17.2.3"
   }
 }
