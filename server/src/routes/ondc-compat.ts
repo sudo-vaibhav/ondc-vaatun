@@ -215,47 +215,62 @@ ondcCompatRouter.post("/on_subscribe", async (req, res) => {
 
 // POST /api/ondc/search
 ondcCompatRouter.post("/search", async (req, res) => {
-  try {
-    const { tenant, ondcClient, kv } = await getContext();
-    const { categoryCode } = req.body || {};
+  const { tenant, ondcClient, kv } = await getContext();
 
-    const transactionId = uuidv7();
-    const messageId = uuidv7();
-    const traceparent = serializeTraceContext();
+  tracer.startActiveSpan("ondc.search", async (span) => {
+    try {
+      const { categoryCode } = req.body || {};
+      const transactionId = uuidv7();
+      const messageId = uuidv7();
 
-    await createSearchEntry(
-      kv,
-      transactionId,
-      messageId,
-      categoryCode,
-      undefined,
-      traceparent,
-    );
+      span.setAttribute("ondc.action", "search");
+      span.setAttribute("ondc.transaction_id", transactionId);
+      span.setAttribute("ondc.message_id", messageId);
+      span.setAttribute("ondc.domain", tenant.domainCode);
 
-    const payload = createSearchPayload(
-      tenant,
-      transactionId,
-      messageId,
-      categoryCode,
-    );
-    const gatewayUrl = new URL("search", tenant.gatewayUrl);
+      const traceparent = serializeTraceContext();
 
-    logger.info(
-      { action: "search", url: gatewayUrl.toString() },
-      "Sending ONDC request",
-    );
+      await createSearchEntry(
+        kv,
+        transactionId,
+        messageId,
+        categoryCode,
+        undefined,
+        traceparent,
+      );
 
-    const response = await ondcClient.send<Record<string, unknown>>(
-      gatewayUrl,
-      "POST",
-      payload,
-    );
+      const payload = createSearchPayload(
+        tenant,
+        transactionId,
+        messageId,
+        categoryCode,
+      );
+      const gatewayUrl = new URL("search", tenant.gatewayUrl);
 
-    res.json({ ...response, transactionId, messageId });
-  } catch (error) {
-    logger.error({ err: error as Error, action: "search" }, "Search failed");
-    res.status(503).json({ status: "Search FAIL", ready: false });
-  }
+      logger.info(
+        { action: "search", url: gatewayUrl.toString() },
+        "Sending ONDC request",
+      );
+
+      const response = await ondcClient.send<Record<string, unknown>>(
+        gatewayUrl,
+        "POST",
+        payload,
+      );
+
+      span.setStatus({ code: SpanStatusCode.OK });
+      res.json({ ...response, transactionId, messageId });
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      });
+      logger.error({ err: error as Error, action: "search" }, "Search failed");
+      res.status(503).json({ status: "Search FAIL", ready: false });
+    } finally {
+      span.end();
+    }
+  });
 });
 
 // POST /api/ondc/on_search - ONDC callback
@@ -328,111 +343,128 @@ ondcCompatRouter.post("/on_search", async (req, res) => {
 
 // POST /api/ondc/select
 ondcCompatRouter.post("/select", async (req, res) => {
-  try {
-    const { tenant, ondcClient, kv } = await getContext();
-    const body = req.body;
+  const { tenant, ondcClient, kv } = await getContext();
+  const body = req.body;
 
-    if (
-      !body.transactionId ||
-      !body.bppId ||
-      !body.bppUri ||
-      !body.providerId ||
-      !body.itemId
-    ) {
-      res.status(400).json({
-        error: "Missing required fields",
-        required: ["transactionId", "bppId", "bppUri", "providerId", "itemId"],
-      });
-      return;
-    }
+  if (
+    !body.transactionId ||
+    !body.bppId ||
+    !body.bppUri ||
+    !body.providerId ||
+    !body.itemId
+  ) {
+    res.status(400).json({
+      error: "Missing required fields",
+      required: ["transactionId", "bppId", "bppUri", "providerId", "itemId"],
+    });
+    return;
+  }
 
-    const messageId = uuidv7();
-    const traceparent = serializeTraceContext();
+  tracer.startActiveSpan("ondc.select", async (span) => {
+    try {
+      const messageId = uuidv7();
 
-    const items: Array<{
-      id: string;
-      parent_item_id: string;
-      add_ons?: Array<{
+      span.setAttribute("ondc.action", "select");
+      span.setAttribute("ondc.transaction_id", body.transactionId);
+      span.setAttribute("ondc.message_id", messageId);
+      span.setAttribute("ondc.domain", tenant.domainCode);
+      span.setAttribute("ondc.bpp_id", body.bppId);
+      span.setAttribute("ondc.bpp_uri", body.bppUri);
+
+      const traceparent = serializeTraceContext();
+
+      const items: Array<{
         id: string;
-        quantity?: { selected?: { count: number } };
-      }>;
-      xinput?: {
-        form?: { id?: string };
-        form_response?: { submission_id: string; status: string };
-      };
-    }> = [
-      { id: body.itemId, parent_item_id: body.parentItemId || body.itemId },
-    ];
+        parent_item_id: string;
+        add_ons?: Array<{
+          id: string;
+          quantity?: { selected?: { count: number } };
+        }>;
+        xinput?: {
+          form?: { id?: string };
+          form_response?: { submission_id: string; status: string };
+        };
+      }> = [
+        { id: body.itemId, parent_item_id: body.parentItemId || body.itemId },
+      ];
 
-    if (body.xinputFormId && body.xinputSubmissionId) {
-      items[0].xinput = {
-        form: { id: body.xinputFormId },
-        form_response: {
-          submission_id: body.xinputSubmissionId,
-          status: "APPROVED",
+      if (body.xinputFormId && body.xinputSubmissionId) {
+        items[0].xinput = {
+          form: { id: body.xinputFormId },
+          form_response: {
+            submission_id: body.xinputSubmissionId,
+            status: "APPROVED",
+          },
+        };
+      }
+
+      if (body.addOns?.length > 0) {
+        items[0].add_ons = body.addOns.map(
+          (addon: { id: string; quantity: number }) => ({
+            id: addon.id,
+            quantity: { selected: { count: addon.quantity } },
+          }),
+        );
+      }
+
+      const payload = {
+        context: {
+          action: "select",
+          bap_id: tenant.subscriberId,
+          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+          bpp_id: body.bppId,
+          bpp_uri: body.bppUri,
+          domain: tenant.domainCode,
+          location: { country: { code: "IND" }, city: { code: "*" } },
+          transaction_id: body.transactionId,
+          message_id: messageId,
+          timestamp: new Date().toISOString(),
+          ttl: "PT30S",
+          version: "2.0.1",
+        },
+        message: {
+          order: { provider: { id: body.providerId }, items },
         },
       };
-    }
 
-    if (body.addOns?.length > 0) {
-      items[0].add_ons = body.addOns.map(
-        (addon: { id: string; quantity: number }) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }),
+      const selectUrl = body.bppUri.endsWith("/")
+        ? `${body.bppUri}select`
+        : `${body.bppUri}/select`;
+
+      await createSelectEntry(
+        kv,
+        body.transactionId,
+        messageId,
+        body.itemId,
+        body.providerId,
+        body.bppId,
+        body.bppUri,
+        traceparent,
       );
+
+      const response = await ondcClient.send<Record<string, unknown>>(
+        selectUrl,
+        "POST",
+        payload,
+      );
+
+      span.setStatus({ code: SpanStatusCode.OK });
+      res.json({ ...response, transactionId: body.transactionId, messageId });
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      });
+      logger.error({ err: error as Error, action: "select" }, "Select failed");
+      res.status(503).json({
+        status: "Select FAIL",
+        error: error instanceof Error ? error.message : "Unknown error",
+        ready: false,
+      });
+    } finally {
+      span.end();
     }
-
-    const payload = {
-      context: {
-        action: "select",
-        bap_id: tenant.subscriberId,
-        bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-        bpp_id: body.bppId,
-        bpp_uri: body.bppUri,
-        domain: tenant.domainCode,
-        location: { country: { code: "IND" }, city: { code: "*" } },
-        transaction_id: body.transactionId,
-        message_id: messageId,
-        timestamp: new Date().toISOString(),
-        ttl: "PT30S",
-        version: "2.0.1",
-      },
-      message: {
-        order: { provider: { id: body.providerId }, items },
-      },
-    };
-
-    const selectUrl = body.bppUri.endsWith("/")
-      ? `${body.bppUri}select`
-      : `${body.bppUri}/select`;
-
-    await createSelectEntry(
-      kv,
-      body.transactionId,
-      messageId,
-      body.itemId,
-      body.providerId,
-      body.bppId,
-      body.bppUri,
-      traceparent,
-    );
-
-    const response = await ondcClient.send<Record<string, unknown>>(
-      selectUrl,
-      "POST",
-      payload,
-    );
-
-    res.json({ ...response, transactionId: body.transactionId, messageId });
-  } catch (error) {
-    logger.error({ err: error as Error, action: "select" }, "Select failed");
-    res.status(503).json({
-      status: "Select FAIL",
-      error: error instanceof Error ? error.message : "Unknown error",
-      ready: false,
-    });
-  }
+  });
 });
 
 // POST /api/ondc/on_select - ONDC callback
@@ -510,159 +542,176 @@ ondcCompatRouter.post("/on_select", async (req, res) => {
 
 // POST /api/ondc/init
 ondcCompatRouter.post("/init", async (req, res) => {
-  try {
-    const { tenant, ondcClient, kv } = await getContext();
-    const body = req.body;
+  const { tenant, ondcClient, kv } = await getContext();
+  const body = req.body;
 
-    if (
-      !body.transactionId ||
-      !body.bppId ||
-      !body.bppUri ||
-      !body.providerId ||
-      !body.itemId ||
-      !body.parentItemId ||
-      !body.xinputFormId ||
-      !body.submissionId ||
-      !body.customerName ||
-      !body.customerEmail ||
-      !body.customerPhone ||
-      !body.amount
-    ) {
-      res.status(400).json({
-        error: "Missing required fields",
-        required: [
-          "transactionId",
-          "bppId",
-          "bppUri",
-          "providerId",
-          "itemId",
-          "parentItemId",
-          "xinputFormId",
-          "submissionId",
-          "customerName",
-          "customerEmail",
-          "customerPhone",
-          "amount",
-        ],
-      });
-      return;
-    }
+  if (
+    !body.transactionId ||
+    !body.bppId ||
+    !body.bppUri ||
+    !body.providerId ||
+    !body.itemId ||
+    !body.parentItemId ||
+    !body.xinputFormId ||
+    !body.submissionId ||
+    !body.customerName ||
+    !body.customerEmail ||
+    !body.customerPhone ||
+    !body.amount
+  ) {
+    res.status(400).json({
+      error: "Missing required fields",
+      required: [
+        "transactionId",
+        "bppId",
+        "bppUri",
+        "providerId",
+        "itemId",
+        "parentItemId",
+        "xinputFormId",
+        "submissionId",
+        "customerName",
+        "customerEmail",
+        "customerPhone",
+        "amount",
+      ],
+    });
+    return;
+  }
 
-    const messageId = uuidv7();
-    const traceparent = serializeTraceContext();
+  tracer.startActiveSpan("ondc.init", async (span) => {
+    try {
+      const messageId = uuidv7();
 
-    await createInitEntry(
-      kv,
-      body.transactionId,
-      messageId,
-      body.itemId,
-      body.providerId,
-      body.bppId,
-      body.bppUri,
-      traceparent,
-    );
+      span.setAttribute("ondc.action", "init");
+      span.setAttribute("ondc.transaction_id", body.transactionId);
+      span.setAttribute("ondc.message_id", messageId);
+      span.setAttribute("ondc.domain", tenant.domainCode);
+      span.setAttribute("ondc.bpp_id", body.bppId);
+      span.setAttribute("ondc.bpp_uri", body.bppUri);
 
-    const items: Array<{
-      id: string;
-      parent_item_id: string;
-      add_ons?: Array<{
+      const traceparent = serializeTraceContext();
+
+      await createInitEntry(
+        kv,
+        body.transactionId,
+        messageId,
+        body.itemId,
+        body.providerId,
+        body.bppId,
+        body.bppUri,
+        traceparent,
+      );
+
+      const items: Array<{
         id: string;
-        quantity?: { selected?: { count: number } };
-      }>;
-      xinput: {
-        form: { id: string };
-        form_response: { submission_id: string; status: string };
-      };
-    }> = [
-      {
-        id: body.itemId,
-        parent_item_id: body.parentItemId,
+        parent_item_id: string;
+        add_ons?: Array<{
+          id: string;
+          quantity?: { selected?: { count: number } };
+        }>;
         xinput: {
-          form: { id: body.xinputFormId },
-          form_response: {
-            submission_id: body.submissionId,
-            status: "SUCCESS",
+          form: { id: string };
+          form_response: { submission_id: string; status: string };
+        };
+      }> = [
+        {
+          id: body.itemId,
+          parent_item_id: body.parentItemId,
+          xinput: {
+            form: { id: body.xinputFormId },
+            form_response: {
+              submission_id: body.submissionId,
+              status: "SUCCESS",
+            },
           },
         },
-      },
-    ];
+      ];
 
-    if (body.addOns && body.addOns.length > 0) {
-      items[0].add_ons = body.addOns.map(
-        (addon: { id: string; quantity: number }) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }),
-      );
-    }
+      if (body.addOns && body.addOns.length > 0) {
+        items[0].add_ons = body.addOns.map(
+          (addon: { id: string; quantity: number }) => ({
+            id: addon.id,
+            quantity: { selected: { count: addon.quantity } },
+          }),
+        );
+      }
 
-    const payload = {
-      context: {
-        action: "init",
-        bap_id: tenant.subscriberId,
-        bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-        bpp_id: body.bppId,
-        bpp_uri: body.bppUri,
-        domain: tenant.domainCode,
-        location: {
-          country: { code: "IND" },
-          city: { code: "*" },
+      const payload = {
+        context: {
+          action: "init",
+          bap_id: tenant.subscriberId,
+          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+          bpp_id: body.bppId,
+          bpp_uri: body.bppUri,
+          domain: tenant.domainCode,
+          location: {
+            country: { code: "IND" },
+            city: { code: "*" },
+          },
+          transaction_id: body.transactionId,
+          message_id: messageId,
+          timestamp: new Date().toISOString(),
+          ttl: "P24H",
+          version: "2.0.1",
         },
-        transaction_id: body.transactionId,
-        message_id: messageId,
-        timestamp: new Date().toISOString(),
-        ttl: "P24H",
-        version: "2.0.1",
-      },
-      message: {
-        order: {
-          provider: { id: body.providerId },
-          items: items,
-          fulfillments: [
-            {
-              customer: {
-                person: { name: body.customerName },
-                contact: {
-                  email: body.customerEmail,
-                  phone: `+91-${body.customerPhone}`,
+        message: {
+          order: {
+            provider: { id: body.providerId },
+            items: items,
+            fulfillments: [
+              {
+                customer: {
+                  person: { name: body.customerName },
+                  contact: {
+                    email: body.customerEmail,
+                    phone: `+91-${body.customerPhone}`,
+                  },
                 },
               },
-            },
-          ],
-          payments: [
-            {
-              collected_by: "BPP",
-              status: "NOT-PAID",
-              type: "PRE-FULFILLMENT",
-              params: {
-                amount: body.amount,
-                currency: "INR",
+            ],
+            payments: [
+              {
+                collected_by: "BPP",
+                status: "NOT-PAID",
+                type: "PRE-FULFILLMENT",
+                params: {
+                  amount: body.amount,
+                  currency: "INR",
+                },
               },
-            },
-          ],
+            ],
+          },
         },
-      },
-    };
+      };
 
-    const initUrl = body.bppUri.endsWith("/")
-      ? `${body.bppUri}init`
-      : `${body.bppUri}/init`;
+      const initUrl = body.bppUri.endsWith("/")
+        ? `${body.bppUri}init`
+        : `${body.bppUri}/init`;
 
-    const response = await ondcClient.send<Record<string, unknown>>(
-      initUrl,
-      "POST",
-      payload,
-    );
+      const response = await ondcClient.send<Record<string, unknown>>(
+        initUrl,
+        "POST",
+        payload,
+      );
 
-    res.json({ ...response, transactionId: body.transactionId, messageId });
-  } catch (error) {
-    logger.error({ err: error as Error, action: "init" }, "Init failed");
-    res.status(503).json({
-      status: "Init FAIL",
-      error: error instanceof Error ? error.message : "Unknown error",
-      ready: false,
-    });
-  }
+      span.setStatus({ code: SpanStatusCode.OK });
+      res.json({ ...response, transactionId: body.transactionId, messageId });
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      });
+      logger.error({ err: error as Error, action: "init" }, "Init failed");
+      res.status(503).json({
+        status: "Init FAIL",
+        error: error instanceof Error ? error.message : "Unknown error",
+        ready: false,
+      });
+    } finally {
+      span.end();
+    }
+  });
 });
 
 // POST /api/ondc/on_init - ONDC callback
@@ -736,174 +785,194 @@ ondcCompatRouter.post("/on_init", async (req, res) => {
 
 // POST /api/ondc/confirm
 ondcCompatRouter.post("/confirm", async (req, res) => {
-  try {
-    const { tenant, ondcClient, kv } = await getContext();
-    const body = req.body;
+  const { tenant, ondcClient, kv } = await getContext();
+  const body = req.body;
 
-    if (
-      !body.transactionId ||
-      !body.bppId ||
-      !body.bppUri ||
-      !body.providerId ||
-      !body.itemId ||
-      !body.parentItemId ||
-      !body.xinputFormId ||
-      !body.submissionId ||
-      !body.customerName ||
-      !body.customerEmail ||
-      !body.customerPhone ||
-      !body.quoteId ||
-      !body.amount ||
-      !body.quoteBreakup
-    ) {
-      res.status(400).json({
-        error: "Missing required fields",
-        required: [
-          "transactionId",
-          "bppId",
-          "bppUri",
-          "providerId",
-          "itemId",
-          "parentItemId",
-          "xinputFormId",
-          "submissionId",
-          "customerName",
-          "customerEmail",
-          "customerPhone",
-          "quoteId",
-          "amount",
-          "quoteBreakup",
-        ],
-      });
-      return;
-    }
+  if (
+    !body.transactionId ||
+    !body.bppId ||
+    !body.bppUri ||
+    !body.providerId ||
+    !body.itemId ||
+    !body.parentItemId ||
+    !body.xinputFormId ||
+    !body.submissionId ||
+    !body.customerName ||
+    !body.customerEmail ||
+    !body.customerPhone ||
+    !body.quoteId ||
+    !body.amount ||
+    !body.quoteBreakup
+  ) {
+    res.status(400).json({
+      error: "Missing required fields",
+      required: [
+        "transactionId",
+        "bppId",
+        "bppUri",
+        "providerId",
+        "itemId",
+        "parentItemId",
+        "xinputFormId",
+        "submissionId",
+        "customerName",
+        "customerEmail",
+        "customerPhone",
+        "quoteId",
+        "amount",
+        "quoteBreakup",
+      ],
+    });
+    return;
+  }
 
-    const messageId = body.messageId || uuidv7();
-    const traceparent = serializeTraceContext();
+  tracer.startActiveSpan("ondc.confirm", async (span) => {
+    try {
+      const messageId = body.messageId || uuidv7();
 
-    await createConfirmEntry(
-      kv,
-      body.transactionId,
-      messageId,
-      body.itemId,
-      body.providerId,
-      body.bppId,
-      body.bppUri,
-      body.quoteId,
-      body.amount,
-      traceparent,
-    );
+      span.setAttribute("ondc.action", "confirm");
+      span.setAttribute("ondc.transaction_id", body.transactionId);
+      span.setAttribute("ondc.message_id", messageId);
+      span.setAttribute("ondc.domain", tenant.domainCode);
+      span.setAttribute("ondc.bpp_id", body.bppId);
+      span.setAttribute("ondc.bpp_uri", body.bppUri);
 
-    const items: Array<{
-      id: string;
-      parent_item_id: string;
-      add_ons?: Array<{
+      const traceparent = serializeTraceContext();
+
+      await createConfirmEntry(
+        kv,
+        body.transactionId,
+        messageId,
+        body.itemId,
+        body.providerId,
+        body.bppId,
+        body.bppUri,
+        body.quoteId,
+        body.amount,
+        traceparent,
+      );
+
+      const items: Array<{
         id: string;
-        quantity?: { selected?: { count: number } };
-      }>;
-      xinput: {
-        form: { id: string };
-        form_response: { submission_id: string; status: string };
-      };
-    }> = [
-      {
-        id: body.itemId,
-        parent_item_id: body.parentItemId,
+        parent_item_id: string;
+        add_ons?: Array<{
+          id: string;
+          quantity?: { selected?: { count: number } };
+        }>;
         xinput: {
-          form: { id: body.xinputFormId },
-          form_response: {
-            submission_id: body.submissionId,
-            status: "SUCCESS",
+          form: { id: string };
+          form_response: { submission_id: string; status: string };
+        };
+      }> = [
+        {
+          id: body.itemId,
+          parent_item_id: body.parentItemId,
+          xinput: {
+            form: { id: body.xinputFormId },
+            form_response: {
+              submission_id: body.submissionId,
+              status: "SUCCESS",
+            },
           },
         },
-      },
-    ];
+      ];
 
-    if (body.addOns && body.addOns.length > 0) {
-      items[0].add_ons = body.addOns.map(
-        (addon: { id: string; quantity: number }) => ({
-          id: addon.id,
-          quantity: { selected: { count: addon.quantity } },
-        }),
-      );
-    }
+      if (body.addOns && body.addOns.length > 0) {
+        items[0].add_ons = body.addOns.map(
+          (addon: { id: string; quantity: number }) => ({
+            id: addon.id,
+            quantity: { selected: { count: addon.quantity } },
+          }),
+        );
+      }
 
-    const payload = {
-      context: {
-        action: "confirm",
-        bap_id: tenant.subscriberId,
-        bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-        bpp_id: body.bppId,
-        bpp_uri: body.bppUri,
-        domain: tenant.domainCode,
-        location: {
-          country: { code: "IND" },
-          city: { code: "*" },
+      const payload = {
+        context: {
+          action: "confirm",
+          bap_id: tenant.subscriberId,
+          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+          bpp_id: body.bppId,
+          bpp_uri: body.bppUri,
+          domain: tenant.domainCode,
+          location: {
+            country: { code: "IND" },
+            city: { code: "*" },
+          },
+          transaction_id: body.transactionId,
+          message_id: messageId,
+          timestamp: new Date().toISOString(),
+          ttl: "P24H",
+          version: "2.0.1",
         },
-        transaction_id: body.transactionId,
-        message_id: messageId,
-        timestamp: new Date().toISOString(),
-        ttl: "P24H",
-        version: "2.0.1",
-      },
-      message: {
-        order: {
-          provider: { id: body.providerId },
-          items: items,
-          fulfillments: [
-            {
-              customer: {
-                person: { name: body.customerName },
-                contact: {
-                  email: body.customerEmail,
-                  phone: `+91-${body.customerPhone}`,
+        message: {
+          order: {
+            provider: { id: body.providerId },
+            items: items,
+            fulfillments: [
+              {
+                customer: {
+                  person: { name: body.customerName },
+                  contact: {
+                    email: body.customerEmail,
+                    phone: `+91-${body.customerPhone}`,
+                  },
                 },
               },
-            },
-          ],
-          payments: [
-            {
-              collected_by: "BPP",
-              status: "PAID",
-              type: "PRE-FULFILLMENT",
-              params: {
-                amount: body.amount,
-                currency: "INR",
+            ],
+            payments: [
+              {
+                collected_by: "BPP",
+                status: "PAID",
+                type: "PRE-FULFILLMENT",
+                params: {
+                  amount: body.amount,
+                  currency: "INR",
+                },
               },
+            ],
+            quote: {
+              id: body.quoteId,
+              price: {
+                currency: "INR",
+                value: body.amount,
+              },
+              breakup: body.quoteBreakup,
+              ttl: "P15D",
             },
-          ],
-          quote: {
-            id: body.quoteId,
-            price: {
-              currency: "INR",
-              value: body.amount,
-            },
-            breakup: body.quoteBreakup,
-            ttl: "P15D",
           },
         },
-      },
-    };
+      };
 
-    const confirmUrl = body.bppUri.endsWith("/")
-      ? `${body.bppUri}confirm`
-      : `${body.bppUri}/confirm`;
+      const confirmUrl = body.bppUri.endsWith("/")
+        ? `${body.bppUri}confirm`
+        : `${body.bppUri}/confirm`;
 
-    const response = await ondcClient.send<Record<string, unknown>>(
-      confirmUrl,
-      "POST",
-      payload,
-    );
+      const response = await ondcClient.send<Record<string, unknown>>(
+        confirmUrl,
+        "POST",
+        payload,
+      );
 
-    res.json({ ...response, transactionId: body.transactionId, messageId });
-  } catch (error) {
-    logger.error({ err: error as Error, action: "confirm" }, "Confirm failed");
-    res.status(503).json({
-      status: "Confirm FAIL",
-      error: error instanceof Error ? error.message : "Unknown error",
-      ready: false,
-    });
-  }
+      span.setStatus({ code: SpanStatusCode.OK });
+      res.json({ ...response, transactionId: body.transactionId, messageId });
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      });
+      logger.error(
+        { err: error as Error, action: "confirm" },
+        "Confirm failed",
+      );
+      res.status(503).json({
+        status: "Confirm FAIL",
+        error: error instanceof Error ? error.message : "Unknown error",
+        ready: false,
+      });
+    } finally {
+      span.end();
+    }
+  });
 });
 
 // POST /api/ondc/on_confirm - ONDC callback
@@ -1118,83 +1187,97 @@ ondcCompatRouter.get("/select-results", async (req, res) => {
 
 // POST /api/ondc/status
 ondcCompatRouter.post("/status", async (req, res) => {
-  try {
-    const { tenant, ondcClient, kv } = await getContext();
-    const body = req.body;
+  const { tenant, ondcClient, kv } = await getContext();
+  const body = req.body;
 
-    if (!body.transactionId || !body.orderId || !body.bppId || !body.bppUri) {
-      res.status(400).json({
-        error: "Missing required fields",
-        required: ["transactionId", "orderId", "bppId", "bppUri"],
-      });
-      return;
-    }
-
-    const messageId = uuidv7();
-    const traceparent = serializeTraceContext();
-
-    await createStatusEntry(
-      kv,
-      body.orderId,
-      body.transactionId,
-      body.bppId,
-      body.bppUri,
-      traceparent,
-    );
-
-    // Status request is much simpler - just order_id in message
-    const payload = {
-      context: {
-        action: "status",
-        bap_id: tenant.subscriberId,
-        bap_uri: `https://${tenant.subscriberId}/api/ondc`,
-        bpp_id: body.bppId,
-        bpp_uri: body.bppUri,
-        domain: tenant.domainCode,
-        location: {
-          country: { code: "IND" },
-          city: { code: "*" },
-        },
-        transaction_id: body.transactionId,
-        message_id: messageId,
-        timestamp: new Date().toISOString(),
-        ttl: "PT10M", // Shorter TTL for status
-        version: "2.0.1",
-      },
-      message: {
-        order_id: body.orderId,
-      },
-    };
-
-    const statusUrl = body.bppUri.endsWith("/")
-      ? `${body.bppUri}status`
-      : `${body.bppUri}/status`;
-
-    logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
-    // Payload logged via span attributes
-
-    const response = await ondcClient.send<Record<string, unknown>>(
-      statusUrl,
-      "POST",
-      payload,
-    );
-
-    // Response logged via span attributes
-
-    res.json({
-      ...response,
-      transactionId: body.transactionId,
-      orderId: body.orderId,
-      messageId,
+  if (!body.transactionId || !body.orderId || !body.bppId || !body.bppUri) {
+    res.status(400).json({
+      error: "Missing required fields",
+      required: ["transactionId", "orderId", "bppId", "bppUri"],
     });
-  } catch (error) {
-    logger.error({ err: error as Error, action: "status" }, "Status failed");
-    res.status(503).json({
-      status: "Status FAIL",
-      error: error instanceof Error ? error.message : "Unknown error",
-      ready: false,
-    });
+    return;
   }
+
+  tracer.startActiveSpan("ondc.status", async (span) => {
+    try {
+      const messageId = uuidv7();
+
+      span.setAttribute("ondc.action", "status");
+      span.setAttribute("ondc.transaction_id", body.transactionId);
+      span.setAttribute("ondc.message_id", messageId);
+      span.setAttribute("ondc.domain", tenant.domainCode);
+      span.setAttribute("ondc.bpp_id", body.bppId);
+      span.setAttribute("ondc.bpp_uri", body.bppUri);
+      span.setAttribute("ondc.order_id", body.orderId);
+
+      const traceparent = serializeTraceContext();
+
+      await createStatusEntry(
+        kv,
+        body.orderId,
+        body.transactionId,
+        body.bppId,
+        body.bppUri,
+        traceparent,
+      );
+
+      const payload = {
+        context: {
+          action: "status",
+          bap_id: tenant.subscriberId,
+          bap_uri: `https://${tenant.subscriberId}/api/ondc`,
+          bpp_id: body.bppId,
+          bpp_uri: body.bppUri,
+          domain: tenant.domainCode,
+          location: {
+            country: { code: "IND" },
+            city: { code: "*" },
+          },
+          transaction_id: body.transactionId,
+          message_id: messageId,
+          timestamp: new Date().toISOString(),
+          ttl: "PT10M",
+          version: "2.0.1",
+        },
+        message: {
+          order_id: body.orderId,
+        },
+      };
+
+      const statusUrl = body.bppUri.endsWith("/")
+        ? `${body.bppUri}status`
+        : `${body.bppUri}/status`;
+
+      logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
+
+      const response = await ondcClient.send<Record<string, unknown>>(
+        statusUrl,
+        "POST",
+        payload,
+      );
+
+      span.setStatus({ code: SpanStatusCode.OK });
+      res.json({
+        ...response,
+        transactionId: body.transactionId,
+        orderId: body.orderId,
+        messageId,
+      });
+    } catch (error) {
+      span.setStatus({
+        code: SpanStatusCode.ERROR,
+        message: (error as Error).message,
+      });
+      logger.error({ err: error as Error, action: "status" }, "Status failed");
+      res.status(503).json({
+        status: "Status FAIL",
+        error: error instanceof Error ? error.message : "Unknown error",
+        ready: false,
+      });
+    } finally {
+      span.end();
+    }
+  });
 });
 
 // POST /api/ondc/on_status - ONDC callback

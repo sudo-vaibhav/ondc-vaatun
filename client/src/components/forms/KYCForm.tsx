@@ -290,7 +290,7 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
         currentStep={currentStep}
         totalSteps={5}
         stepTitles={STEP_TITLES}
-        className="mb-8"
+        className="mb-6 sm:mb-8"
       />
 
       <form onSubmit={handleFinalSubmit}>
@@ -575,22 +575,23 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
         </MultiStepForm>
 
         {/* Navigation buttons */}
-        <div className="flex justify-between mt-8">
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-between gap-3 mt-8">
           <Button
             type="button"
             variant="outline"
             onClick={goToPrevStep}
             disabled={currentStep === 0}
+            className="w-full sm:w-auto"
           >
             Previous
           </Button>
 
           {currentStep < 4 ? (
-            <Button type="button" onClick={goToNextStep}>
+            <Button type="button" onClick={goToNextStep} className="w-full sm:w-auto">
               Next
             </Button>
           ) : (
-            <Button type="submit" disabled={!termsAccepted}>
+            <Button type="submit" disabled={!termsAccepted} className="w-full sm:w-auto">
               Submit
             </Button>
           )}
