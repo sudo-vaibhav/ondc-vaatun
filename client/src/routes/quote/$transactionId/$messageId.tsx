@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
 import { useState } from "react";
+import { KYCForm, type KYCFormData } from "@/components/forms";
 import { AddOnSelector } from "@/components/quote/AddOnSelector";
 import { CoverageDetails } from "@/components/quote/CoverageDetails";
 import QuoteBreakdown from "@/components/quote/QuoteBreakdown";
@@ -8,9 +9,8 @@ import { QuoteHeader } from "@/components/quote/QuoteHeader";
 import { TermsCollapsible } from "@/components/quote/TermsCollapsible";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
-import { KYCForm, type KYCFormData } from "@/components/forms";
 import { storeConfirmData } from "@/lib/confirm-data";
+import { trpc } from "@/trpc/client";
 
 export const Route = createFileRoute("/quote/$transactionId/$messageId")({
   component: QuotePage,
@@ -323,7 +323,9 @@ function QuotePage() {
           ) : (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-xl font-semibold">Complete Your Application</h2>
+                <h2 className="text-xl font-semibold">
+                  Complete Your Application
+                </h2>
                 <Button
                   variant="ghost"
                   size="sm"

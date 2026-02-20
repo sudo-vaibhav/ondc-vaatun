@@ -1,4 +1,5 @@
 import { Loader2 } from "lucide-react";
+import QuoteBreakdown from "@/components/quote/QuoteBreakdown";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -10,7 +11,6 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { ReviewSection } from "./ReviewSection";
-import QuoteBreakdown from "@/components/quote/QuoteBreakdown";
 
 interface Nominee {
   firstName: string;
@@ -147,7 +147,10 @@ export function ReviewPage({
       {/* Main content - 2/3 width on desktop */}
       <div className="lg:col-span-2 space-y-6">
         {/* Personal Information Section */}
-        <ReviewSection title="Personal Information" onEdit={() => onEdit("personal")}>
+        <ReviewSection
+          title="Personal Information"
+          onEdit={() => onEdit("personal")}
+        >
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-muted-foreground">Name</dt>
@@ -183,23 +186,35 @@ export function ReviewPage({
         </ReviewSection>
 
         {/* Identity Verification Section */}
-        <ReviewSection title="Identity Verification" onEdit={() => onEdit("identity")}>
+        <ReviewSection
+          title="Identity Verification"
+          onEdit={() => onEdit("identity")}
+        >
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-muted-foreground">PAN</dt>
-              <dd className="font-medium font-mono">{maskPAN(formData.panNumber)}</dd>
+              <dd className="font-medium font-mono">
+                {maskPAN(formData.panNumber)}
+              </dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Date of Birth</dt>
-              <dd className="font-medium">{formatDate(formData.dateOfBirth)}</dd>
+              <dd className="font-medium">
+                {formatDate(formData.dateOfBirth)}
+              </dd>
             </div>
           </dl>
         </ReviewSection>
 
         {/* Health Information Section */}
-        <ReviewSection title="Health Information" onEdit={() => onEdit("health")}>
+        <ReviewSection
+          title="Health Information"
+          onEdit={() => onEdit("health")}
+        >
           <dl>
-            <dt className="text-sm text-muted-foreground">Pre-existing Conditions</dt>
+            <dt className="text-sm text-muted-foreground">
+              Pre-existing Conditions
+            </dt>
             <dd className="font-medium">
               {formData.hasPED && formData.conditions ? (
                 (() => {
@@ -207,7 +222,11 @@ export function ReviewPage({
                     .filter(([_, value]) => value)
                     .map(([key]) => key);
                   if (selectedConditions.length === 0) {
-                    return <span className="text-muted-foreground">None declared</span>;
+                    return (
+                      <span className="text-muted-foreground">
+                        None declared
+                      </span>
+                    );
                   }
                   return (
                     <ul className="list-disc list-inside">
@@ -230,13 +249,13 @@ export function ReviewPage({
 
         {/* Nominee Details Section - only render if nominees exist */}
         {hasNominees && (
-          <ReviewSection title="Nominee Details" onEdit={() => onEdit("nominee")}>
+          <ReviewSection
+            title="Nominee Details"
+            onEdit={() => onEdit("nominee")}
+          >
             <div className="space-y-4">
               {formData.nominees!.map((nominee, index) => (
-                <div
-                  key={index}
-                  className={index > 0 ? "pt-4 border-t" : ""}
-                >
+                <div key={index} className={index > 0 ? "pt-4 border-t" : ""}>
                   <p className="text-sm text-muted-foreground mb-2">
                     Nominee {index + 1}
                   </p>
@@ -248,11 +267,17 @@ export function ReviewPage({
                       </dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">Date of Birth</dt>
-                      <dd className="font-medium">{formatDate(nominee.dateOfBirth)}</dd>
+                      <dt className="text-sm text-muted-foreground">
+                        Date of Birth
+                      </dt>
+                      <dd className="font-medium">
+                        {formatDate(nominee.dateOfBirth)}
+                      </dd>
                     </div>
                     <div>
-                      <dt className="text-sm text-muted-foreground">Relationship</dt>
+                      <dt className="text-sm text-muted-foreground">
+                        Relationship
+                      </dt>
                       <dd className="font-medium">
                         {formatRelationship(nominee.relationship)}
                       </dd>
@@ -302,7 +327,9 @@ export function ReviewPage({
             <Separator className="my-4" />
             <div className="flex justify-between items-center font-bold text-lg">
               <span>Total Premium</span>
-              <span>{formatCurrency(quote.price.value, quote.price.currency)}</span>
+              <span>
+                {formatCurrency(quote.price.value, quote.price.currency)}
+              </span>
             </div>
           </CardContent>
           <CardFooter>

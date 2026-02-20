@@ -1,280 +1,225 @@
-# Pitfalls Research: ONDC Health Insurance BAP
+# Pitfalls: OpenTelemetry Integration for ONDC BAP
 
-**Research Date:** 2026-02-02
-**Source:** ONDC GitHub discussions, error codes, protocol analysis
+**Project:** ONDC Health Insurance BAP - Observability (v2.0)
+**Researched:** 2026-02-09
+**Confidence:** MEDIUM
 
 ## Executive Summary
 
-ONDC implementations commonly fail on: signature verification, context field consistency, xinput form handling, and payment flow integration. Health insurance adds complexity with multi-step forms and PED declarations.
+OpenTelemetry integration has 5 critical pitfalls and 6 moderate ones. The most dangerous are ESM import order (silent failure), tRPC context loss (orphaned spans), and async webhook trace propagation (broken correlation). All are preventable with awareness.
 
 ## Critical Pitfalls
 
-### 1. Context Field Inconsistency
+### 1. ESM Import Order Violation
 
-**Problem:** Every request in a transaction must have matching context fields. Changing `bap_id`, `bpp_id`, `transaction_id`, or `domain` mid-flow causes rejection.
+**What goes wrong:** Auto-instrumentation silently fails. No spans appear for Express, HTTP, or ioredis.
 
-**Symptoms:**
-- BPP returns NACK
-- Error: "Context mismatch"
-- Silent failures
+**Why it happens:** OpenTelemetry must patch module loaders BEFORE target libraries are imported. If Express imports before `tracing.ts`, the monkey-patching misses it.
+
+**Specific to this stack:**
+- `server/src/index.ts` currently imports `./app` which imports Express
+- Dev uses `tsx --env-file ../.env src/index.ts` which runs entry point directly
 
 **Prevention:**
 ```typescript
-// Store context from first successful on_search
-const baseContext = {
-  domain: 'ONDC:FIS13',
-  bap_id: env.SUBSCRIBER_ID,
-  bap_uri: env.SUBSCRIBER_URL,
-  bpp_id: onSearchResponse.context.bpp_id,
-  bpp_uri: onSearchResponse.context.bpp_uri,
-  transaction_id: originalTransactionId,
-  // message_id changes per request
-  // timestamp changes per request
-};
-
-// Reuse for all subsequent requests
-const selectContext = {
-  ...baseContext,
-  action: 'select',
-  message_id: uuid(),
-  timestamp: new Date().toISOString(),
-};
+// server/src/index.ts
+import './tracing';        // MUST be first import
+import { app } from './app'; // After tracing
 ```
 
-**Phase to Address:** Select implementation (Phase 1)
+**Detection:** No HTTP/Express spans in Jaeger despite requests working. Enable `OTEL_LOG_LEVEL=debug` to verify instrumentation loaded.
 
 ---
 
-### 2. XInput Form Submission ID Mismatch
+### 2. tRPC Context Loss (Orphaned Spans)
 
-**Problem:** The `submission_id` in select/init request must exactly match what the BPP's form returned. Typos or UUID generation on BAP side causes rejection.
+**What goes wrong:** Manual spans created inside tRPC procedures are not children of the HTTP request span. They appear as separate root traces.
 
-**Symptoms:**
-- BPP returns "Invalid submission"
-- Form appears to hang
-- Infinite form loop
+**Why it happens:** tRPC middleware may break Node.js AsyncLocalStorage chain. If trace context is lost between Express handler and tRPC procedure, spans become orphaned.
 
-**Prevention:**
+**Prevention:** Create a tRPC middleware that explicitly carries trace context:
+
 ```typescript
-// WRONG: Generating our own ID
-const formResponse = {
-  status: 'SUCCESS',
-  submission_id: uuid(), // BAD!
-};
+// server/src/trpc/tracing-middleware.ts
+import { trace, context } from '@opentelemetry/api';
 
-// RIGHT: Use exactly what BPP's form returned
-const formResponse = {
-  status: 'SUCCESS',
-  submission_id: messageFromIframe.submissionId, // From postMessage
-};
-```
-
-**Phase to Address:** XInput form handling (Phase 2)
-
----
-
-### 3. Form Index Tracking
-
-**Problem:** BPP provides `xinput.head.index.cur` and `xinput.head.index.max`. BAP must track which form step user is on and not skip steps.
-
-**Symptoms:**
-- "Invalid form sequence" errors
-- Unexpected form repeats
-- State machine confusion
-
-**Prevention:**
-```typescript
-interface FormProgress {
-  currentIndex: number;  // From xinput.head.index.cur
-  maxIndex: number;      // From xinput.head.index.max
-  headings: string[];    // From xinput.head.headings
-}
-
-// Validate before allowing submission
-function canSubmitForm(progress: FormProgress, attemptedIndex: number): boolean {
-  return attemptedIndex === progress.currentIndex;
-}
-```
-
-**Phase to Address:** XInput form handling (Phase 2)
-
----
-
-### 4. TTL Expiry
-
-**Problem:** ONDC requests have TTL (typically P24H = 24 hours). If user abandons flow and returns later, transaction may be expired.
-
-**Symptoms:**
-- BPP returns "Transaction expired"
-- Stale data in Redis
-- User confusion
-
-**Prevention:**
-```typescript
-// Check TTL before any operation
-const transaction = await getTransaction(transactionId);
-const ttlExpiry = new Date(transaction.createdAt);
-ttlExpiry.setHours(ttlExpiry.getHours() + 24);
-
-if (new Date() > ttlExpiry) {
-  throw new TRPCError({
-    code: 'BAD_REQUEST',
-    message: 'Transaction expired. Please start a new search.',
-  });
-}
-```
-
-**Phase to Address:** All phases (utility function)
-
----
-
-### 5. Payment Gateway Integration
-
-**Problem:** on_init provides payment URL. User must complete payment on BPP's gateway, then BAP must send confirm with correct payment reference.
-
-**Symptoms:**
-- Payment succeeds but policy not issued
-- Double payments
-- Lost transactions
-
-**Prevention:**
-```typescript
-// 1. Store payment URL from on_init
-const paymentUrl = onInitResponse.message.order.payments[0].url;
-const paymentId = onInitResponse.message.order.payments[0].id;
-
-// 2. Redirect user to payment gateway with return URL
-const returnUrl = `${bapUrl}/payment-callback?txn=${transactionId}`;
-window.location.href = `${paymentUrl}&return_url=${encodeURIComponent(returnUrl)}`;
-
-// 3. On callback, verify payment status before confirm
-// 4. Include payment reference in confirm request
-```
-
-**Phase to Address:** Confirm flow (Phase 4)
-
----
-
-### 6. Missing ACK Handling
-
-**Problem:** If BAP doesn't return proper ACK to callbacks, BPP may retry or mark transaction as failed.
-
-**Symptoms:**
-- Duplicate callbacks
-- Transaction stuck in pending
-- BPP timeout errors
-
-**Prevention:**
-```typescript
-// Always return ACK immediately, process async
-app.post('/api/trpc/gateway.onSelect', async (req, res) => {
-  // Validate signature first
-  if (!verifySignature(req)) {
-    return res.json({
-      message: { ack: { status: 'NACK' } },
-      error: { code: '401', message: 'Invalid signature' }
-    });
-  }
-
-  // Queue for processing, return ACK immediately
-  await queue.add('process-on-select', req.body);
-
-  return res.json({
-    message: { ack: { status: 'ACK' } }
+export const tracingMiddleware = t.middleware(async ({ path, type, next }) => {
+  const tracer = trace.getTracer('ondc-bap');
+  return tracer.startActiveSpan(`trpc.${path}`, async (span) => {
+    span.setAttribute('rpc.method', path);
+    span.setAttribute('rpc.type', type);
+    try {
+      const result = await next();
+      return result;
+    } catch (error) {
+      span.recordException(error);
+      span.setStatus({ code: SpanStatusCode.ERROR });
+      throw error;
+    } finally {
+      span.end();
+    }
   });
 });
 ```
 
-**Phase to Address:** All callback handlers
+**Detection:** Span appears as root (no parent) in Jaeger. Should be child of HTTP span.
 
 ---
 
-### 7. Health Insurance Specific: PED Declaration
+### 3. Async Webhook Trace Propagation Failure
 
-**Problem:** Pre-Existing Disease declarations are legally binding. If user skips or lies, claim may be rejected later. BAP must ensure user acknowledges this.
+**What goes wrong:** on_search, on_select callbacks create new traces instead of linking to the original search/select trace.
 
-**Symptoms:**
-- Claims rejected months later
-- User complaints
-- Legal issues
+**Why it happens:** ONDC callbacks arrive as separate HTTP requests from BPPs. There's no W3C traceparent header (BPPs don't propagate it). The only correlation key is transactionId.
 
 **Prevention:**
+
+1. On outgoing request: Store trace context in Redis
 ```typescript
-// When rendering PED form, add clear disclaimer
-const PEDFormWrapper = ({ children }) => (
-  <div>
-    <Alert variant="warning">
-      <AlertTitle>Important: Pre-Existing Disease Declaration</AlertTitle>
-      <AlertDescription>
-        You must declare all existing health conditions. Failure to disclose
-        may result in claim rejection.
-      </AlertDescription>
-    </Alert>
-    {children}
-    <Checkbox required>
-      I confirm the above information is true and complete
-    </Checkbox>
-  </div>
-);
+const span = trace.getActiveSpan();
+await redis.set(`trace:tx:${transactionId}`, JSON.stringify({
+  traceId: span.spanContext().traceId,
+  spanId: span.spanContext().spanId,
+}), 'EX', 86400);
 ```
 
-**Phase to Address:** XInput form handling (Phase 2)
+2. On callback: Restore parent context via span link
+```typescript
+const stored = await redis.get(`trace:tx:${transactionId}`);
+if (stored) {
+  const { traceId } = JSON.parse(stored);
+  const carrier = { traceparent: `00-${traceId}-...-01` };
+  const parentContext = propagation.extract(ROOT_CONTEXT, carrier);
+  // Create span with link to parent
+}
+```
+
+**Detection:** Callbacks appear as separate traces in Jaeger. Query by transactionId shows 2+ unlinked traces.
 
 ---
 
-### 8. Callback URL Mismatch
+### 4. Large Span Attribute Size Limits
 
-**Problem:** BPP sends callbacks to `bap_uri` from context. If this doesn't match the actual endpoint or is unreachable, callbacks are lost.
+**What goes wrong:** ONDC payloads (especially on_search with multiple providers) can be 50-200KB. Spans with full payloads get silently dropped by exporters or backends.
 
-**Symptoms:**
-- on_* callbacks never arrive
-- Transaction stuck waiting
-- Works locally, fails in production
+**Why it happens:** OTLP has default attribute value limits. BatchSpanProcessor may drop oversized spans.
 
 **Prevention:**
 ```typescript
-// Ensure bap_uri in context matches actual endpoint
-const bapUri = process.env.SUBSCRIBER_URL;
+// Configure span limits in SDK initialization
+const sdk = new NodeSDK({
+  spanLimits: {
+    attributeValueLengthLimit: 16384, // 16KB max per attribute
+  },
+});
 
-// Verify endpoint is reachable
-// In dev: use ngrok and ensure tunnel is active
-// In prod: verify DNS and SSL
+// Truncate payloads before setting attributes
+function safeSetPayload(span, key, payload) {
+  const json = JSON.stringify(payload);
+  span.setAttribute(key, json.length > 16000 ? json.slice(0, 16000) + '...[truncated]' : json);
+}
+```
 
-// Log callback receipts for debugging
-app.use('/api/trpc/gateway.on*', (req, res, next) => {
-  console.log(`Callback received: ${req.path}`, {
-    transactionId: req.body?.context?.transaction_id,
-    action: req.body?.context?.action,
-  });
-  next();
+**Detection:** Spans appear in Jaeger but payload attributes are missing. Check exporter debug logs.
+
+---
+
+### 5. Redis Instrumentation Missing Key Details
+
+**What goes wrong:** Redis spans show generic "redis.command" but not which key was accessed or what data was stored.
+
+**Why it happens:** Default ioredis instrumentation captures command name but may not include arguments due to security/size concerns.
+
+**Prevention:**
+```typescript
+getNodeAutoInstrumentations({
+  '@opentelemetry/instrumentation-ioredis': {
+    dbStatementSerializer: (cmdName, cmdArgs) => {
+      return `${cmdName} ${cmdArgs[0] || ''}`; // Include key name
+    },
+  },
 });
 ```
 
-**Phase to Address:** All phases (infrastructure)
+**Detection:** Redis spans show "SET" but not "SET search:019b..." — check span attributes for db.statement.
 
 ---
 
-## Error Codes Reference
+## Moderate Pitfalls
 
-| Code | Meaning | Common Cause |
-|------|---------|--------------|
-| 20001 | Invalid signature | Wrong key or signing algorithm |
-| 20002 | Invalid request | Schema validation failed |
-| 30001 | Provider not found | Wrong bpp_id |
-| 30002 | Item not found | Item ID changed or expired |
-| 40001 | Business error | Check error.message for details |
-| 50001 | Internal error | BPP issue, retry |
+### 6. Express 5.x Compatibility
 
-## Checklist Before Each Phase
+**What goes wrong:** Express 5.x changed middleware/routing internals. Auto-instrumentation may not create spans correctly or may create duplicates.
 
-- [ ] Context fields consistent with search response
-- [ ] TTL checked before operations
-- [ ] Signature verification enabled for callbacks
-- [ ] ACK returned immediately on callbacks
-- [ ] Error responses include proper ONDC error codes
-- [ ] Redis keys have appropriate TTL
-- [ ] Logs include transaction_id for debugging
+**Prevention:** Test span lifecycle explicitly. If auto-instrumentation fails, use manual Express middleware as fallback.
+
+### 7. Fetch Instrumentation Missing
+
+**What goes wrong:** Outgoing HTTP calls to ONDC registry/gateway show no client spans.
+
+**Why it happens:** Node.js native `fetch` (Node 18+) needs separate instrumentation from http/https modules. The ONDC client uses `fetch()`.
+
+**Prevention:** Verify `auto-instrumentations-node` includes fetch support. If not, add `@opentelemetry/instrumentation-fetch` explicitly.
+
+### 8. Dev vs Production Config Mismatch
+
+**What goes wrong:** Tracing works in dev (`tsx watch`) but fails in production build.
+
+**Prevention:** Test production build locally before deploying. Validate env vars exist. Ensure instrumentation file survives bundling.
+
+### 9. Span Naming Inconsistencies
+
+**What goes wrong:** Generic span names like "middleware" or "handler" instead of "ondc.search".
+
+**Prevention:** Always use explicit span names with semantic conventions.
+
+### 10. Missing Resource Attributes
+
+**What goes wrong:** Can't distinguish dev/staging/production traces in Jaeger.
+
+**Prevention:** Set `service.name`, `service.version`, `deployment.environment` in SDK resource config.
+
+### 11. Forgetting to Flush on Shutdown
+
+**What goes wrong:** Last spans before server shutdown are lost.
+
+**Prevention:** Handle SIGTERM to flush spans before exit.
+
+## Phase-Specific Warnings
+
+| Phase | Likely Pitfall | Mitigation |
+|-------|---------------|------------|
+| Phase 1: SDK Setup | ESM import order (#1) | Validate with test request + Jaeger |
+| Phase 1: SDK Setup | Span size limits (#4) | Configure spanLimits upfront |
+| Phase 2: Core Instrumentation | tRPC context loss (#2) | Implement tracing middleware |
+| Phase 2: Core Instrumentation | Express 5.x (#6) | Test span lifecycle |
+| Phase 2: Core Instrumentation | Fetch missing (#7) | Verify client spans |
+| Phase 3: Async Flows | Webhook propagation (#3) | Store trace context in Redis |
+| Phase 4: Custom Attributes | Redis details (#5) | Configure dbStatementSerializer |
+| Phase 5: Validation | Dev/prod mismatch (#8) | Test production build |
+
+## Validation Checklist
+
+Before deploying OpenTelemetry:
+
+- [ ] ESM import order: `tracing.ts` runs before any app code
+- [ ] tRPC spans: nested under HTTP request spans (not orphaned)
+- [ ] Webhook traces: on_search continues search trace (via Redis)
+- [ ] Large payloads: 200KB ONDC response logged without span drop
+- [ ] Redis details: Span shows command + key name
+- [ ] Fetch spans: Outgoing ONDC API calls visible
+- [ ] Express 5.x: No duplicate or missing spans
+- [ ] Dev vs prod: Tracing works in both environments
+- [ ] Resource attributes: service.name, deployment.environment set
+- [ ] Graceful shutdown: Spans flush on SIGTERM
+
+## Sources
+
+- OpenTelemetry JavaScript SDK patterns (general knowledge)
+- Node.js ESM instrumentation requirements
+- tRPC middleware async context patterns
+- Express 5.x changes from 4.x
+- Confidence: MEDIUM (custom patterns need validation)
 
 ---
-
-*Pitfalls analysis: 2026-02-02 | Source: ONDC FIS13 spec + GitHub discussions*
+*Pitfalls analysis for v2.0 Observability | 2026-02-09*

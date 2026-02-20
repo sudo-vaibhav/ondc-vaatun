@@ -2,94 +2,107 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-02-02)
+See: .planning/PROJECT.md (updated 2026-02-09)
 
 **Core value:** Enable rapid implementation of ONDC health insurance features through rich embedded protocol context
-**Current focus:** Milestone v1.0 Complete
+**Current focus:** Milestone v2.0 — Observability & Traceability
 
 ## Current Position
 
-Phase: 5 of 5 (Protocol Context & Testing) - COMPLETE
-Plan: 3 of 3 complete
-Status: Milestone Complete
-Last activity: 2026-02-05 - Completed Phase 5 verification
+Phase: 5 - Error Classification & Logging — COMPLETE
+Plan: 02 of 02 complete
+Status: All phases complete
+Last activity: 2026-02-16 — Completed 05-02-PLAN.md (Structured Logging Migration)
 
-Progress: [██████████] 100% (19/19 plans complete)
+Progress: [██████████] 100% (12/12 plans complete)
 
-## Performance Metrics
+## v2.0 Milestone Overview
 
-**Velocity:**
+**Goal:** Full end-to-end request traceability across BAP → Gateway → BPP using OpenTelemetry
+
+**Target features:**
+- Distributed traces for all ONDC protocol operations
+- transactionId-based correlation across async callbacks
+- Full payload capture with timing data
+- OTLP export to SigNoz (ClickHouse-backed)
+- Error source attribution (BAP/gateway/BPP)
+
+**Total phases:** 5
+**Total plans:** 12
+**Estimated duration:** 12-20 hours (based on research)
+
+## v1.0 Performance Metrics (archived)
+
 - Total plans completed: 19
 - Average duration: 5.4 min
 - Total execution time: 1.88 hours
-
-**By Phase:**
-
-| Phase | Plans | Total | Avg/Plan |
-|-------|-------|-------|----------|
-| 01-select-flow | 3 | 30 min | 10 min |
-| 02-form-infrastructure | 4 | 15 min | 3.75 min |
-| 03-init-flow | 5 | 24 min | 4.8 min |
-| 04-confirm-status | 4 | 13 min | 3.25 min |
-| 05-protocol-context | 3 | 24 min | 8 min |
-
-**Recent Trend:**
-- Last 5 plans: 04-03 (2 min), 04-04 (1 min), 05-01 (6 min), 05-02 (11 min), 05-03 (7 min)
-- Trend: Consistent fast execution (averaging 5-6 min recent)
-
-*Updated after each plan completion*
 
 ## Accumulated Context
 
 ### Decisions
 
 Decisions are logged in PROJECT.md Key Decisions table.
-Recent decisions affecting current work:
+Key decisions from v1.0 affecting v2.0 work:
 
-- Health insurance only for v1 - Focus over breadth
-- No quote comparison - ONDC protocol doesn't standardize this
-- Embed protocol specs in codebase - Enables vibe-coding with immediate YAML example access
 - Response schemas use z.looseObject() for BPP passthrough - Allow extra fields
 - Request schemas use z.object() for strict validation - Control outgoing payloads
-- E2E testing required for all endpoints - Ensures compliance and prevents regressions
-- Manual component creation for shadcn/ui - Monorepo structure requires direct Radix dependency installation
-- Native img for provider logos - Vite project, not Next.js
-- All add-ons unselected by default - Per CONTEXT.md
-- Smart polling with refetchInterval stop condition - Stops on hasResponse OR error
-- ABC Insurance is reliable test BPP - Use for E2E and manual testing; other BPPs may 500
-- React Hook Form with @hookform/resolvers for forms - Performant uncontrolled inputs, Zod integration
-- Spring physics (damping 25, stiffness 300) for form slide transitions - Matches RotatingText feel
-- Numbered circles for progress indicator - Clearer for 3-5 step forms
-- Collapsible for PED "Other" field animation - Smooth expand/collapse
-- PED_CONDITIONS constant exported for schema reuse
-- UUID generation uses native crypto.randomUUID() with fallback
-- Form submission ID generated on submit, not on mount
-- Zod 4 uses message param instead of errorMap for enum validation
-- PAN masked with last 4 digits visible (XXXXXX1234 format)
-- Use base schema for type inference with ZodEffects refinement schemas
-- ReviewPage accepts PEDConditions object (not string array) for conditions
-- Init mutation auto-retries 3 times with exponential backoff before showing error
-- Payment URL auto-redirects after 3 seconds with manual button backup
-- BPP errors displayed directly to users
-- Confirm store keyed by transactionId+messageId (like init-store)
-- Status store keyed by orderId only (simpler lookup after on_confirm)
-- Status store uses 24h TTL (policy data may be accessed later)
-- Policy document extraction by code='policy-doc' or mime_type='application/pdf'
-- Confirm includes quote object with id, price, breakup, ttl per FIS13
-- Status request uses PT10M ttl (quick lookups vs P24H for confirm)
-- Status message only contains order_id (minimal payload per spec)
-- OpenAPI docs disabled - openapi.json removed from project
-- Payment callback triggers confirm immediately on mount
-- Status polling: 2-minute timeout, 3-second intervals
-- NOT-PAID state shows retry option
-- Policy success page uses Captain Otter celebration animation
-- Policy view page uses simple status + download link (not full details)
-- Validity formatted as "Valid: Jan 1, 2026 - Dec 31, 2026"
-- Status tests use individual fields (provider, items, documents) not nested policy object
-- Document extraction test verifies policyDocument field (code='policy-doc' or mime_type='application/pdf')
+- ABC Insurance is reliable test BPP - Use for E2E and manual testing
 - Init/confirm REST API routes follow same pattern as select (validation → store → call BPP → return)
-- Init/confirm flow tests verify endpoint, callback storage, and error storage (3 tests per flow)
-- Tests check payments array structure directly (no derived paymentUrl field)
+
+### v2.0 Decisions
+
+- OpenTelemetry (OTLP) for vendor-neutral tracing
+- SigNoz as trace backend (ClickHouse storage, OTLP-native, local Docker)
+- Full payload logging (no PII redaction for now)
+- Server-side tracing only (frontend deferred)
+- transactionId as correlation key for traces
+- HTTP exporter over gRPC (simpler, fewer deps)
+- Programmatic config (tracing.ts) over --require flag
+- 16KB payload truncation limit to prevent span bloat
+- Auto-instrumentation for HTTP/Express/ioredis
+- Manual spans for tRPC procedures and ONDC business logic
+- Disable FS/DNS instrumentation to reduce trace noise (01-01)
+- Configure ioredis to capture Redis key names for debugging (01-01)
+- Optional OTEL env vars with sensible defaults (localhost:4831, service name "ondc-bap") (01-01)
+- Use port range 4830-4836 for SigNoz services to avoid conflicts (01-02)
+- HTTP OTLP on port 4831 (container 4318) for BAP trace export (01-02)
+- 72h trace retention in ClickHouse for local development (01-02)
+- Separate OTel collector config file mounted as Docker volume (01-02)
+- Tracing import placed as first line before all other imports (critical for auto-instrumentation) (01-03)
+- Tracer name "ondc-bap-trpc" version "0.1.0" for tRPC-specific spans (02-01)
+- Span naming: trpc.{type}.{path} for easy filtering by procedure type (02-01)
+- Applied tracing middleware to publicProcedure base - all procedures inherit automatically (02-01)
+- Capture full Authorization header without truncation (CONTEXT.md decision 4) (02-03)
+- Serialize body once and reuse for both fetch and span attribute (02-03)
+- Use numeric literals for SpanStatusCode enum to avoid runtime import (02-03)
+- sendWithAck inherits tracing by delegating to send() (02-03)
+- Use startActiveSpan for ONDC business logic spans to enable child span propagation via AsyncLocalStorage (02-02)
+- Capture ONDC attributes at span creation time (immediately after generating IDs) (02-02)
+- Search procedure as prototype for Phase 4 extension to all gateway procedures (02-02)
+- Use OTel propagation API for W3C traceparent serialization (03-01)
+- Embed traceparent in SearchEntry object for atomic storage (03-01)
+- Extend SearchEntry TTL from 10 to 30 minutes to catch late BPP callbacks (03-01)
+- Store traceparent inside startActiveSpan callback for correct span context (03-02)
+- Early return in onSearch if no transactionId before trace restoration (03-02)
+- BPP identity attributes (bpp_id, bpp_uri) on callback spans (03-02)
+- NACK/error responses set SpanStatusCode.ERROR on callback spans (03-02)
+- Uniform traceparent field across all transaction stores (select/init/confirm/status) (04-01)
+- 30-minute TTL for select/init/confirm stores to catch late BPP callbacks (04-01)
+- Status store kept at 24h TTL (policy data accessed later) (04-01)
+- Ed25519 signing wrapped in sync callback for proper span hierarchy (04-01)
+- orderId-based correlation for status flow (getStatusEntry uses orderId only, not transactionId+messageId) (04-02)
+- ondc.payment_url extracted from on_confirm response for payment flow visibility (04-02)
+- ondc.order_id attribute on status spans for filtering/correlation (04-02)
+- 4-source error classification: bap (our code), bpp (4xx/5xx), gateway (registry/lookup), network (DNS/timeout/ECONNREFUSED) (05-01)
+- BPP NACK responses get full error object as bpp.error span attribute (05-01)
+- All error spans include error.source, error.message, and error.code (when available) (05-01)
+- HTTP error responses (4xx/5xx) set error.source='bpp' before throw in ONDCClient (05-01)
+- Network failures (no response) classified by error code/message patterns (05-01)
+- Pino structured logging with automatic trace context injection (05-02)
+- Dev logs: pino-pretty with colors/timestamps; Prod logs: JSON lines (05-02)
+- Log level hierarchy: debug/info/warn/error with contextual fields (05-02)
+- Use `err` key (not `error`) for Error objects to trigger pino's error serializer (05-02)
+- Zero console.* calls in production code (tracing.ts exempted for chicken-and-egg) (05-02)
 
 ### Pending Todos
 
@@ -97,12 +110,16 @@ None yet.
 
 ### Blockers/Concerns
 
-None yet.
+**Known risks from research (PITFALLS.md):**
+1. ✅ ESM import order violation - RESOLVED (01-03: tracing.ts is first import)
+2. ✅ tRPC context loss - RESOLVED (02-01: tracing middleware applied to publicProcedure)
+3. ✅ Async webhook trace propagation - RESOLVED (03-01/03-02: Redis-based traceparent correlation)
+4. Large ONDC payloads - need truncation to prevent span drops
+5. ✅ Redis instrumentation - RESOLVED (01-01: ioredis configured to capture keys)
 
 ## Session Continuity
 
-Last session: 2026-02-05
-Stopped at: Milestone v1.0 Complete
+Last session: 2026-02-16T13:44:04Z
+Stopped at: Completed 05-02-PLAN.md (Structured Logging Migration) - Milestone v2.0 COMPLETE
 Resume file: None
-
-**Milestone Complete:** All 19 plans executed across 5 phases. All requirements verified. Ready for production deployment.
+Next step: Milestone v2.0 complete. All observability features delivered.

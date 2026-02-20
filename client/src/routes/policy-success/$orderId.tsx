@@ -1,14 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Download, FileText, AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Download, FileText, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
+import { PolicyDetailsSection, PolicySummaryCard } from "@/components/policy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
-import {
-  PolicySummaryCard,
-  PolicyDetailsSection,
-} from "@/components/policy";
 import { parseValidity } from "@/lib/validity";
+import { trpc } from "@/trpc/client";
 
 export const Route = createFileRoute("/policy-success/$orderId")({
   component: PolicySuccessPage,
@@ -19,12 +16,13 @@ function PolicySuccessPage() {
 
   const { data, isLoading, error } = trpc.results.getStatusResults.useQuery(
     { orderId },
-    { staleTime: 5 * 60 * 1000 } // Cache for 5 minutes
+    { staleTime: 5 * 60 * 1000 }, // Cache for 5 minutes
   );
 
   // Open PDF in new tab
   const handleDownload = () => {
-    const policyDoc = data && "policyDocument" in data ? data.policyDocument : undefined;
+    const policyDoc =
+      data && "policyDocument" in data ? data.policyDocument : undefined;
     if (policyDoc?.url) {
       window.open(policyDoc.url, "_blank");
     }
@@ -64,19 +62,23 @@ function PolicySuccessPage() {
   }
 
   // Extract data with type guards
-  const policyDocument = "policyDocument" in data ? data.policyDocument : undefined;
+  const policyDocument =
+    "policyDocument" in data ? data.policyDocument : undefined;
   const items = "items" in data ? data.items : undefined;
   const provider = "provider" in data ? data.provider : undefined;
   const quote = "quote" in data ? data.quote : undefined;
   const fulfillments = "fulfillments" in data ? data.fulfillments : undefined;
-  const paymentStatus = "paymentStatus" in data ? data.paymentStatus : undefined;
+  const paymentStatus =
+    "paymentStatus" in data ? data.paymentStatus : undefined;
 
   // Extract coverage amount from tags
   const coverageTag = items?.[0]?.tags?.find(
-    (t: { descriptor?: { code?: string } }) => t.descriptor?.code === "GENERAL_INFO"
+    (t: { descriptor?: { code?: string } }) =>
+      t.descriptor?.code === "GENERAL_INFO",
   );
   const coverageAmount = coverageTag?.list?.find(
-    (l: { descriptor?: { code?: string } }) => l.descriptor?.code === "SUM_INSURED"
+    (l: { descriptor?: { code?: string } }) =>
+      l.descriptor?.code === "SUM_INSURED",
   )?.value;
 
   // Parse validity from item time

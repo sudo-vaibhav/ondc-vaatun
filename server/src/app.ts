@@ -4,6 +4,7 @@ import cors from "cors";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
+import { logger } from "./lib/logger";
 import { ondcCompatRouter } from "./routes/ondc-compat";
 import { siteVerificationRouter } from "./routes/site-verification";
 import { sseRouter } from "./routes/sse";
@@ -110,7 +111,7 @@ app.use(
     res: express.Response,
     next: express.NextFunction,
   ) => {
-    console.error("[Server Error]", err);
+    logger.error({ err }, "Express error handler caught error");
 
     // If headers already sent, delegate to Express's default handler
     if (res.headersSent) {

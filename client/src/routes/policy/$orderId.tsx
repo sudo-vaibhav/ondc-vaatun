@@ -1,17 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  Download,
-  RefreshCw,
   AlertCircle,
-  Loader2,
   ArrowLeft,
+  Download,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
+import { PaymentStatusBadge } from "@/components/policy";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { trpc } from "@/trpc/client";
-import { PaymentStatusBadge } from "@/components/policy";
-import { parseValidity } from "@/lib/validity";
 import { cn } from "@/lib/utils";
+import { parseValidity } from "@/lib/validity";
+import { trpc } from "@/trpc/client";
 
 export const Route = createFileRoute("/policy/$orderId")({
   component: PolicyViewPage,
@@ -24,7 +24,7 @@ function PolicyViewPage() {
   const { data, isLoading, error, refetch, isFetching } =
     trpc.results.getStatusResults.useQuery(
       { orderId },
-      { staleTime: 5 * 60 * 1000 }
+      { staleTime: 5 * 60 * 1000 },
     );
 
   if (isLoading) {
@@ -67,9 +67,11 @@ function PolicyViewPage() {
   const items = "items" in data ? data.items : undefined;
   const provider = "provider" in data ? data.provider : undefined;
   const quote = "quote" in data ? data.quote : undefined;
-  const paymentStatus = "paymentStatus" in data ? data.paymentStatus : undefined;
+  const paymentStatus =
+    "paymentStatus" in data ? data.paymentStatus : undefined;
   const orderStatus = "orderStatus" in data ? data.orderStatus : undefined;
-  const policyDocument = "policyDocument" in data ? data.policyDocument : undefined;
+  const policyDocument =
+    "policyDocument" in data ? data.policyDocument : undefined;
 
   // Parse validity
   const itemTime = items?.[0]?.time;
@@ -105,9 +107,7 @@ function PolicyViewPage() {
             {/* Status */}
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">Payment Status</span>
-              {paymentStatus && (
-                <PaymentStatusBadge status={paymentStatus} />
-              )}
+              {paymentStatus && <PaymentStatusBadge status={paymentStatus} />}
             </div>
 
             {/* Order Status */}
@@ -128,9 +128,7 @@ function PolicyViewPage() {
             {provider?.descriptor?.name && (
               <div className="flex items-center justify-between">
                 <span className="text-muted-foreground">Provider</span>
-                <span className="font-medium">
-                  {provider.descriptor.name}
-                </span>
+                <span className="font-medium">{provider.descriptor.name}</span>
               </div>
             )}
 

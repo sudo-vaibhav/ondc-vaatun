@@ -1,34 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
-import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
 import { Plus } from "lucide-react";
-
-import { useFormPersistence } from "@/hooks/useFormPersistence";
-import { generateSubmissionId } from "@/lib/submission-id";
-
-import { MultiStepForm } from "./MultiStepForm";
-import { FormStep } from "./FormStep";
-import { StepProgress } from "./StepProgress";
-import { ResumePrompt } from "./ResumePrompt";
-
+import { useCallback, useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+import { useFormPersistence } from "@/hooks/useFormPersistence";
+import type { NomineeData } from "@/lib/form-schemas/nominee";
+import { panDobSchema } from "@/lib/form-schemas/pan-dob";
+import { personalInfoSchema } from "@/lib/form-schemas/personal-info";
+import { generateSubmissionId } from "@/lib/submission-id";
+import { ReviewPage } from "../review";
+import { FormStep } from "./FormStep";
 import {
-  PANInput,
-  PhoneInput,
   DateInput,
-  PEDSelector,
   NomineeInput,
+  PANInput,
   type PEDConditionId,
   type PEDConditions,
+  PEDSelector,
+  PhoneInput,
 } from "./fields";
-import { ReviewPage } from "../review";
-
-import { personalInfoSchema } from "@/lib/form-schemas/personal-info";
-import { panDobSchema } from "@/lib/form-schemas/pan-dob";
-import type { NomineeData } from "@/lib/form-schemas/nominee";
+import { MultiStepForm } from "./MultiStepForm";
+import { ResumePrompt } from "./ResumePrompt";
+import { StepProgress } from "./StepProgress";
 
 // Define PED conditions schema inline (to avoid ZodEffects complexity from pedSchema.refine())
 const conditionsSchema = z.object({
@@ -48,12 +44,16 @@ const baseKycSchema = z.object({
   hasPED: z.boolean(),
   conditions: conditionsSchema,
   otherDescription: z.string().optional(),
-  nominees: z.array(z.object({
-    firstName: z.string(),
-    lastName: z.string(),
-    dateOfBirth: z.string(),
-    relationship: z.string(),
-  })).max(2),
+  nominees: z
+    .array(
+      z.object({
+        firstName: z.string(),
+        lastName: z.string(),
+        dateOfBirth: z.string(),
+        relationship: z.string(),
+      }),
+    )
+    .max(2),
   termsAccepted: z.boolean(),
 });
 
@@ -72,7 +72,7 @@ const kycFormSchema = baseKycSchema.refine(
   {
     message: "Please describe your condition",
     path: ["otherDescription"],
-  }
+  },
 );
 
 // Use base schema for type inference to avoid ZodEffects complexity
@@ -132,7 +132,7 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [showNomineeForm, setShowNomineeForm] = useState(false);
 
-  const { getStoredData, saveData, clearData, hasStoredData } =
+  const { getStoredData, saveData, debouncedSave, clearData, hasStoredData } =
     useFormPersistence<KYCFormData>({
       formId: FORM_ID,
     });
@@ -164,7 +164,8 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
   const handleResume = useCallback(() => {
     const stored = getStoredData();
     if (stored) {
-      reset(stored);
+      reset(stored.formData);
+      setCurrentStep(stored.currentStep);
     }
     setShowResumePrompt(false);
   }, [getStoredData, reset]);
@@ -175,11 +176,19 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
     setShowResumePrompt(false);
   }, [clearData, reset]);
 
-  // Auto-save on blur (via form's onBlur events)
+  // Debounced auto-save on every form change (catches mid-typing data)
+  useEffect(() => {
+    const subscription = watch((formValues) => {
+      debouncedSave(formValues as KYCFormData, currentStep);
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, debouncedSave, currentStep]);
+
+  // Immediate save on blur (for instant persistence when leaving a field)
   const handleFieldBlur = useCallback(() => {
     const currentData = getValues();
-    saveData(currentData);
-  }, [getValues, saveData]);
+    saveData(currentData, currentStep);
+  }, [getValues, saveData, currentStep]);
 
   // Step navigation
   const goToNextStep = useCallback(async () => {
@@ -188,13 +197,17 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
     const isValid = await trigger(stepFields);
 
     if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, 4));
+      const nextStep = Math.min(currentStep + 1, 4);
+      setCurrentStep(nextStep);
+      saveData(getValues(), nextStep);
     }
-  }, [currentStep, trigger]);
+  }, [currentStep, trigger, saveData, getValues]);
 
   const goToPrevStep = useCallback(() => {
-    setCurrentStep((prev) => Math.max(prev - 1, 0));
-  }, []);
+    const prevStep = Math.max(currentStep - 1, 0);
+    setCurrentStep(prevStep);
+    saveData(getValues(), prevStep);
+  }, [currentStep, saveData, getValues]);
 
   // Final submit
   const handleFinalSubmit = handleSubmit((data) => {
@@ -231,9 +244,9 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
       const updated = [...current];
       updated[index] = nominee;
       setValue("nominees", updated);
-      saveData(getValues());
+      saveData(getValues(), currentStep);
     },
-    [getValues, setValue, saveData]
+    [getValues, setValue, saveData, currentStep],
   );
 
   const removeNominee = useCallback(
@@ -241,17 +254,21 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
       const current = getValues("nominees") || [];
       setValue(
         "nominees",
-        current.filter((_, i) => i !== index)
+        current.filter((_, i) => i !== index),
       );
-      saveData(getValues());
+      saveData(getValues(), currentStep);
     },
-    [getValues, setValue, saveData]
+    [getValues, setValue, saveData, currentStep],
   );
 
   // Navigate to specific step (for review edit links)
-  const goToStep = useCallback((step: number) => {
-    setCurrentStep(step);
-  }, []);
+  const goToStep = useCallback(
+    (step: number) => {
+      setCurrentStep(step);
+      saveData(getValues(), step);
+    },
+    [saveData, getValues],
+  );
 
   // Section to step mapping for review edit navigation
   const sectionStepMap: Record<string, number> = {
@@ -503,7 +520,11 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
                       <Plus className="h-4 w-4 mr-2" />
                       Add Nominee
                     </Button>
-                    <Button type="button" variant="ghost" onClick={goToNextStep}>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={goToNextStep}
+                    >
                       Skip for Now
                     </Button>
                   </div>
@@ -520,7 +541,11 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
                     />
                   ))}
                   {nominees.length < 2 && (
-                    <Button type="button" variant="outline" onClick={addNominee}>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={addNominee}
+                    >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Another Nominee
                     </Button>
@@ -543,7 +568,7 @@ export function KYCForm({ onSubmit, className, quote }: KYCFormProps) {
               termsAccepted={termsAccepted}
               onTermsChange={(checked) => {
                 setValue("termsAccepted", checked);
-                saveData(getValues());
+                saveData(getValues(), currentStep);
               }}
             />
           </FormStep>

@@ -1,13 +1,14 @@
 import { Router } from "express";
 import { Tenant } from "../entities/tenant";
 import { TenantKeyValueStore } from "../infra/key-value/redis";
+import { logger } from "../lib/logger";
 import {
   getSearchEntry,
   getSearchResults,
   subscribeToSearch,
 } from "../lib/search-store";
 
-export const sseRouter = Router();
+export const sseRouter: Router = Router();
 
 /**
  * SSE endpoint for streaming search results
@@ -127,13 +128,13 @@ sseRouter.get("/search-stream/:transactionId", async (req, res) => {
 
     // Handle client disconnect
     req.on("close", () => {
-      console.log(
+      logger.info(
         `[SSE] Client disconnected for transaction: ${transactionId}`,
       );
       cleanup();
     });
   } catch (error) {
-    console.error("[SSE] Stream error:", error);
+    logger.error({ err: error as Error }, "SSE stream error");
     cleanup();
     sendEvent("error", {
       message: error instanceof Error ? error.message : "Stream error",

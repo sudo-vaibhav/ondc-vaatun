@@ -2,7 +2,7 @@
 
 ## Overview
 
-This roadmap delivers a complete health insurance purchase flow through ONDC. Starting with quote selection, we build custom form UI for seamless KYC capture, then implement payment and policy issuance flows. Each phase follows the ONDC protocol sequence (select -> init -> confirm -> status) with protocol context embedded for vibe-coding.
+This roadmap delivers full end-to-end request traceability across BAP → Gateway → BPP using OpenTelemetry. The goal is to enable debugging any transactionId by viewing the complete request chain with timing and payloads in SigNoz (ClickHouse-backed, OTLP-native). Each phase builds on distributed tracing fundamentals: SDK initialization, auto-instrumentation, manual business logic spans, async callback correlation, and error attribution.
 
 ## Phases
 
@@ -12,112 +12,102 @@ This roadmap delivers a complete health insurance purchase flow through ONDC. St
 
 Decimal phases appear between their surrounding integers in numeric order.
 
-- [x] **Phase 1: Select Flow** - User can get detailed quotes for health insurance products
-- [x] **Phase 2: Form Infrastructure** - Custom Typeform-style multi-step forms for KYC
-- [x] **Phase 3: Init Flow** - User can submit KYC data and reach payment stage
-- [x] **Phase 4: Confirm & Status Flows** - User can pay and receive policy document
-- [x] **Phase 5: Protocol Context & Testing** - Protocol specs embedded, full E2E test coverage
+- [x] **Phase 1: SDK Foundation** - OpenTelemetry SDK installed and auto-instrumentation verified
+- [x] **Phase 2: Core Instrumentation** - tRPC procedures and ONDC requests create spans with attributes
+- [x] **Phase 3: Async Callback Correlation** - Callbacks link to parent traces via transactionId
+- [x] **Phase 4: Comprehensive Coverage** - All ONDC flows instrumented with enriched attributes
+- [x] **Phase 5: Error Classification & Logging** - Error source attribution and structured logging
 
 ## Phase Details
 
-### Phase 1: Select Flow
-**Goal**: Users can select health insurance products and view detailed quotes with coverage and pricing
+### Phase 1: SDK Foundation
+**Goal**: OpenTelemetry SDK integrated, auto-instrumentation working for HTTP/Express/Redis operations
 **Depends on**: Nothing (first phase)
-**Requirements**: SEL-01, SEL-02, SEL-03, SEL-04, SEL-05
+**Requirements**: OTEL-01, OTEL-06
 **Success Criteria** (what must be TRUE):
-  1. User can click "Get Quote" on a product from search results
-  2. Select request is sent to BPP with proper ONDC authorization headers
-  3. on_select callback stores quote details in Redis
-  4. Quote display page shows coverage amount, premium, co-payment, and room rent cap
-  5. Quote display shows available add-ons with their prices
+  1. OpenTelemetry packages installed (sdk-node, api, auto-instrumentations, otlp exporter)
+  2. tracing.ts exists and initializes SDK with OTLP HTTP exporter
+  3. tracing.ts is imported first in server entry point
+  4. Health check request creates HTTP/Express spans visible in SigNoz
+  5. SigNoz UI shows service name "ondc-bap" with spans for incoming requests
+  6. Redis commands (GET, SET) appear as child spans with command names
 **Plans**: 3 plans
 
 Plans:
-- [x] 01-01-PLAN.md — Install UI components, create QuoteHeader and CoverageDetails
-- [x] 01-02-PLAN.md — Create AddOnSelector, TermsCollapsible, wire up quote page with polling
-- [x] 01-03-PLAN.md — E2E tests and OpenAPI documentation
+- [x] 01-01-PLAN.md — Install OpenTelemetry packages and create tracing.ts with SDK initialization
+- [x] 01-02-PLAN.md — Configure OTLP exporter, resource attributes, and span limits
+- [x] 01-03-PLAN.md — Update server entry point to import tracing first, add SigNoz docker-compose, verify traces
 
-### Phase 2: Form Infrastructure
-**Goal**: Reusable Typeform-style form system for all KYC flows with progress tracking and state persistence
+### Phase 2: Core Instrumentation
+**Goal**: tRPC procedures and ONDC client requests create manual spans with transactionId attributes
 **Depends on**: Phase 1
-**Requirements**: FORM-01, FORM-02, FORM-03, FORM-04, FORM-05, FORM-06, FORM-07, FORM-08, INFRA-01, INFRA-02, INFRA-03
+**Requirements**: OTEL-02, OTEL-05
 **Success Criteria** (what must be TRUE):
-  1. Multi-step form component renders with smooth transitions between steps
-  2. Progress indicator shows current step and total steps
-  3. Form fields are based on ONDC spec, not BPP-provided HTML
-  4. PED (Pre-Existing Disease) form allows condition selection
-  5. PAN & DOB form validates input before allowing progression
-  6. Personal info form captures name, address, and contact details
-  7. Form state persists across page refreshes
-  8. Form submission generates submission_id for ONDC protocol compliance
-**Plans**: 4 plans
-
-Plans:
-- [x] 02-01-PLAN.md — Install dependencies, create persistence hook, Zod schemas, and formatters
-- [x] 02-02-PLAN.md — Create MultiStepForm, FormStep, StepProgress, and ResumePrompt components
-- [x] 02-03-PLAN.md — Create specialized field components (PANInput, PhoneInput, DateInput, PEDSelector)
-- [x] 02-04-PLAN.md — Create KYCForm integration, submission_id generation, and barrel exports
-
-### Phase 3: Init Flow
-**Goal**: Users can complete full KYC process (buyer info, insured info, medical history, nominees) and receive payment link
-**Depends on**: Phase 2
-**Requirements**: INIT-01, INIT-02, INIT-03, INIT-04, INIT-05, INIT-06, INIT-07
-**Success Criteria** (what must be TRUE):
-  1. User can fill buyer information form (proposer details)
-  2. User can fill insured information form (who is covered)
-  3. User can answer medical history questions
-  4. User can add nominee information (beneficiary details)
-  5. User can review all entered data before proceeding to payment
-  6. init endpoint sends complete KYC payload to BPP with proper signing
-  7. on_init callback captures response with payment link
-**Plans**: 5 plans
-
-Plans:
-- [x] 03-01-PLAN.md — Backend init/on_init procedures and init-store with Redis state management
-- [x] 03-02-PLAN.md — Nominee Zod schema and NomineeInput component
-- [x] 03-03-PLAN.md — ReviewSection and ReviewPage components with quote sidebar
-- [x] 03-04-PLAN.md — Extend KYCForm with Nominee and Review steps
-- [x] 03-05-PLAN.md — Init polling page and quote page integration
-
-### Phase 4: Confirm & Status Flows
-**Goal**: Users can complete payment, receive policy confirmation, and check policy status
-**Depends on**: Phase 3
-**Requirements**: CONF-01, CONF-02, CONF-03, CONF-04, CONF-05, STAT-01, STAT-02, STAT-03, STAT-04
-**Success Criteria** (what must be TRUE):
-  1. User is redirected to BPP's payment gateway after init
-  2. Payment callback handler processes success and failure cases
-  3. confirm endpoint sends payment confirmation to BPP
-  4. on_confirm callback stores policy document
-  5. Success page displays policy summary
-  6. User can query policy status from BPP
-  7. Policy view page displays policy details
-  8. User can download policy document (PDF if available)
-**Plans**: 4 plans
-
-Plans:
-- [x] 04-01-PLAN.md — Confirm and status stores with Redis state management
-- [x] 04-02-PLAN.md — Gateway procedures (confirm, onConfirm, status, onStatus) and results queries
-- [x] 04-03-PLAN.md — Payment callback page with confirm trigger and status polling
-- [x] 04-04-PLAN.md — Policy success and view pages with Captain Otter celebration
-
-### Phase 5: Protocol Context & Testing
-**Goal**: ONDC FIS13 protocol specs embedded in codebase and comprehensive E2E test coverage
-**Depends on**: Phase 4
-**Requirements**: CTX-01, CTX-02, CTX-03, TEST-01, TEST-02, TEST-03, TEST-04
-**Success Criteria** (what must be TRUE):
-  1. ONDC FIS13 health insurance reference docs exist in codebase
-  2. Example payloads for each endpoint (select, init, confirm, status) are documented
-  3. Zod schemas defined for all request/response types
-  4. E2E tests verify select flow (select -> on_select -> quote display)
-  5. E2E tests verify init flow (init -> on_init -> payment redirect)
-  6. E2E tests verify confirm flow (payment callback -> confirm -> on_confirm)
-  7. E2E tests verify status flow (status -> on_status -> policy display)
+  1. tRPC tracing middleware creates spans for all procedures
+  2. gateway.search creates a child span labeled "ondc.search"
+  3. transactionId and messageId captured as span attributes
+  4. Outgoing ONDC HTTP requests show as child spans with full request payloads
+  5. HTTP client spans include full Authorization header
+  6. Span hierarchy shows: HTTP request → tRPC procedure → ONDC action → HTTP client
 **Plans**: 3 plans
 
 Plans:
-- [x] 05-01-PLAN.md — Fetch protocol specs from GitHub, create Zod schemas
-- [x] 05-02-PLAN.md — E2E tests for init and confirm flows
-- [x] 05-03-PLAN.md — E2E tests for status flow, verify select coverage
+- [x] 02-01-PLAN.md — Add tRPC tracing middleware to publicProcedure for universal span creation
+- [x] 02-02-PLAN.md — Add ondc.search manual span to gateway.search with ONDC-specific attributes
+- [x] 02-03-PLAN.md — Wrap ONDCClient.send() in manual span with full payload and auth header capture
+
+### Phase 3: Async Callback Correlation
+**Goal**: ONDC callbacks (on_search) link back to their originating request traces via transactionId stored in Redis
+**Depends on**: Phase 2
+**Requirements**: OTEL-03, OTEL-04
+**Success Criteria** (what must be TRUE):
+  1. Search request stores W3C traceparent in Redis embedded in search entry
+  2. on_search callback retrieves stored traceparent and creates linked span
+  3. SigNoz shows on_search span linked to search span via span link and transactionId attribute
+  4. Redis operations for trace storage appear as child spans with key names (already done in Phase 1)
+  5. Trace context TTL is 30 minutes (embedded in search entry with extended TTL)
+  6. Multiple BPP responses to same search all link to same parent trace as sibling spans
+**Plans**: 2 plans
+
+Plans:
+- [x] 03-01-PLAN.md — Create trace context utility module and extend search store with traceparent support
+- [x] 03-02-PLAN.md — Wire trace context storage into search and restoration into on_search callback
+
+### Phase 4: Comprehensive Coverage
+**Goal**: All ONDC flows (select, init, confirm, status) fully instrumented with enriched attributes
+**Depends on**: Phase 3
+**Requirements**: OTEL-02, OTEL-04, OTEL-05
+**Success Criteria** (what must be TRUE):
+  1. Select flow creates spans for select request and on_select callback
+  2. Init flow creates spans for init request and on_init callback
+  3. Confirm flow creates spans for confirm request and on_confirm callback
+  4. Status flow creates spans for status request and on_status callback
+  5. Ed25519 signing operations appear as child spans with timing
+  6. ONDC-specific attributes added: ondc.action, ondc.domain, ondc.bpp_id
+  7. All stores extended with traceparent field and 30-min TTL (status keeps 24h)
+**Plans**: 2 plans
+
+Plans:
+- [x] 04-01-PLAN.md — Extend stores with traceparent, trace select/on_select, add signing spans
+- [x] 04-02-PLAN.md — Trace init/on_init, confirm/on_confirm, and status/on_status flows
+
+### Phase 5: Error Classification & Logging
+**Goal**: Errors classified by source (BAP/gateway/BPP) and logs correlated with traces
+**Depends on**: Phase 4
+**Requirements**: OTEL-07, OTEL-08
+**Success Criteria** (what must be TRUE):
+  1. Failed spans marked with error status and exception details
+  2. error.source attribute distinguishes "bap", "gateway", "bpp" failures
+  3. BPP 500 errors attributed as error.source="bpp"
+  4. Gateway timeout errors attributed as error.source="gateway"
+  5. Validation errors attributed as error.source="bap"
+  6. Console logs include traceId and spanId for correlation
+  7. Structured logging library integrated with OpenTelemetry context
+**Plans**: 2 plans
+
+Plans:
+- [x] 05-01-PLAN.md — Add error classification logic to ONDC client and callback handlers
+- [x] 05-02-PLAN.md — Integrate structured logging with trace context injection
 
 ## Progress
 
@@ -126,8 +116,8 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Select Flow | 3/3 | Complete | 2026-02-02 |
-| 2. Form Infrastructure | 4/4 | Complete | 2026-02-03 |
-| 3. Init Flow | 5/5 | Complete | 2026-02-04 |
-| 4. Confirm & Status Flows | 4/4 | Complete | 2026-02-04 |
-| 5. Protocol Context & Testing | 3/3 | Complete | 2026-02-05 |
+| 1. SDK Foundation | 3/3 | Complete | 2026-02-09 |
+| 2. Core Instrumentation | 3/3 | Complete | 2026-02-09 |
+| 3. Async Callback Correlation | 2/2 | Complete | 2026-02-10 |
+| 4. Comprehensive Coverage | 2/2 | Complete | 2026-02-15 |
+| 5. Error Classification & Logging | 2/2 | Complete | 2026-02-16 |

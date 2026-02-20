@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { logger } from "../../lib/logger";
 import { publicProcedure, router } from "../trpc";
 
 const SubscriberSchema = z
@@ -32,8 +33,11 @@ export const registryRouter = router({
 
     const registryUrl = new URL("/v2.0/lookup", tenant.registryUrl);
 
-    console.log("[Lookup] Sending request to:", registryUrl.toString());
-    console.log("[Lookup] Payload:", JSON.stringify(lookupPayload, null, 2));
+    logger.info(
+      { action: "lookup", url: registryUrl.toString() },
+      "Sending registry request",
+    );
+    logger.debug({ payload: lookupPayload }, "Lookup payload");
 
     const response = await ondcClient.send<SubscriberDetails[]>(
       registryUrl,
@@ -41,10 +45,7 @@ export const registryRouter = router({
       lookupPayload,
     );
 
-    console.log(
-      "[Lookup] Registry Response:",
-      JSON.stringify(response, null, 2),
-    );
+    logger.debug({ response }, "Registry response received");
 
     return response;
   }),
@@ -105,15 +106,15 @@ export const registryRouter = router({
 
     const registryUrl = new URL("/subscribe", tenant.registryUrl);
 
-    console.log("[Subscribe] Sending request to:", registryUrl.toString());
-    console.log("[Subscribe] Payload:", JSON.stringify(payload, null, 2));
+    logger.info(
+      { action: "subscribe", url: registryUrl.toString() },
+      "Sending registry request",
+    );
+    logger.debug({ payload }, "Subscribe payload");
 
     const response = await ondcClient.send(registryUrl, "POST", payload);
 
-    console.log(
-      "[Subscribe] ONDC Response:",
-      JSON.stringify(response, null, 2),
-    );
+    logger.debug({ response }, "Registry response received");
 
     return response;
   }),
@@ -128,18 +129,22 @@ export const registryRouter = router({
     .mutation(async ({ ctx, input }) => {
       const { tenant } = ctx;
 
-      console.log("[on_subscribe] Request:", JSON.stringify(input, null, 2));
+      logger.info({ action: "on_subscribe" }, "Callback received");
 
       if (input.subscriber_id && input.subscriber_id !== tenant.subscriberId) {
-        console.warn("[on_subscribe] Subscriber ID mismatch:", {
-          expected: tenant.subscriberId,
-          received: input.subscriber_id,
-        });
+        logger.warn(
+          {
+            action: "on_subscribe",
+            expected: tenant.subscriberId,
+            received: input.subscriber_id,
+          },
+          "Subscriber ID mismatch",
+        );
       }
 
       const answer = tenant.decryptChallenge(input.challenge);
 
-      console.log("[on_subscribe] Answer:", answer);
+      logger.debug({ answer }, "Challenge answer computed");
 
       return { answer };
     }),

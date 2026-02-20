@@ -20,7 +20,10 @@ export interface ConfirmData {
   customerPhone: string;
   quoteId: string;
   amount: string;
-  quoteBreakup?: Array<{ title: string; price: { currency: string; value: string } }>;
+  quoteBreakup?: Array<{
+    title: string;
+    price: { currency: string; value: string };
+  }>;
   // Store timestamp to detect stale data
   storedAt: number;
 }

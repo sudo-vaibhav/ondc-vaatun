@@ -1,16 +1,22 @@
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Loader2, RefreshCw } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { clearConfirmData, getConfirmData } from "@/lib/confirm-data";
 import { trpc } from "@/trpc/client";
-import { getConfirmData, clearConfirmData } from "@/lib/confirm-data";
 
 export const Route = createFileRoute("/payment-callback/$transactionId")({
   component: PaymentCallbackPage,
 });
 
-type Stage = "loading" | "confirming" | "polling-confirm" | "polling-status" | "not-paid" | "error";
+type Stage =
+  | "loading"
+  | "confirming"
+  | "polling-confirm"
+  | "polling-status"
+  | "not-paid"
+  | "error";
 
 function PaymentCallbackPage() {
   const { transactionId } = Route.useParams();
@@ -29,7 +35,7 @@ function PaymentCallbackPage() {
   // Confirm mutation with 3 retries
   const confirmMutation = trpc.gateway.confirm.useMutation({
     retry: 3,
-    retryDelay: (attempt) => Math.min(1000 * Math.pow(2, attempt), 5000),
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     onSuccess: (result) => {
       setConfirmMessageId(result.messageId);
       setStage("polling-confirm");
@@ -56,7 +62,7 @@ function PaymentCallbackPage() {
         if (Date.now() - pollStartTimeRef.current > 60000) return false;
         return 2000;
       },
-    }
+    },
   );
 
   // Status mutation
@@ -68,30 +74,38 @@ function PaymentCallbackPage() {
   });
 
   // Poll status results (2 minute timeout)
-  const { data: statusResult, refetch: refetchStatus } = trpc.results.getStatusResults.useQuery(
-    { orderId: orderId || "" },
-    {
-      enabled: stage === "polling-status" && !!orderId,
-      refetchInterval: (query) => {
-        const elapsed = Date.now() - pollStartTimeRef.current;
-        const data = query.state.data;
-        // 2 minute timeout
-        if (elapsed > 120000) return false;
-        // Stop on PAID
-        if (data && "paymentStatus" in data && data.paymentStatus === "PAID") return false;
-        // Stop on policy document
-        if (data && "policyDocument" in data && data.policyDocument?.url) return false;
-        // Stop on error
-        if (data && "error" in data && data.error) return false;
-        return 3000; // Poll every 3s
+  const { data: statusResult, refetch: refetchStatus } =
+    trpc.results.getStatusResults.useQuery(
+      { orderId: orderId || "" },
+      {
+        enabled: stage === "polling-status" && !!orderId,
+        refetchInterval: (query) => {
+          const elapsed = Date.now() - pollStartTimeRef.current;
+          const data = query.state.data;
+          // 2 minute timeout
+          if (elapsed > 120000) return false;
+          // Stop on PAID
+          if (data && "paymentStatus" in data && data.paymentStatus === "PAID")
+            return false;
+          // Stop on policy document
+          if (data && "policyDocument" in data && data.policyDocument?.url)
+            return false;
+          // Stop on error
+          if (data && "error" in data && data.error) return false;
+          return 3000; // Poll every 3s
+        },
       },
-    }
-  );
+    );
 
   // When confirm response received, trigger status
   useEffect(() => {
-    const hasOrderId = confirmResult && "orderId" in confirmResult && confirmResult.orderId;
-    if (confirmResult?.hasResponse && hasOrderId && stage === "polling-confirm") {
+    const hasOrderId =
+      confirmResult && "orderId" in confirmResult && confirmResult.orderId;
+    if (
+      confirmResult?.hasResponse &&
+      hasOrderId &&
+      stage === "polling-confirm"
+    ) {
       const orderIdValue = confirmResult.orderId as string;
       setOrderId(orderIdValue);
       setStage("polling-status");
@@ -111,8 +125,12 @@ function PaymentCallbackPage() {
   useEffect(() => {
     if (stage !== "polling-status" || !statusResult) return;
 
-    const paymentStatus = "paymentStatus" in statusResult ? statusResult.paymentStatus : undefined;
-    const policyUrl = "policyDocument" in statusResult ? statusResult.policyDocument?.url : undefined;
+    const paymentStatus =
+      "paymentStatus" in statusResult ? statusResult.paymentStatus : undefined;
+    const policyUrl =
+      "policyDocument" in statusResult
+        ? statusResult.policyDocument?.url
+        : undefined;
 
     if (paymentStatus === "PAID" || policyUrl) {
       clearConfirmData();
@@ -213,7 +231,8 @@ function PaymentCallbackPage() {
                   Payment Processing
                 </h2>
                 <p className="text-sm text-muted-foreground">
-                  If you completed payment, please wait a moment for it to be verified.
+                  If you completed payment, please wait a moment for it to be
+                  verified.
                   <br />
                   Otherwise, please contact support for assistance.
                 </p>
