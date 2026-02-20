@@ -173,10 +173,10 @@
 | OTEL-05 | v2.0 Phase 2 | Complete |
 | OTEL-03 | v2.0 Phase 3 | Complete |
 | OTEL-04 | v2.0 Phase 3 | Complete |
-| OTEL-04 | v2.0 Phase 4 | Complete |
-| OTEL-05 | v2.0 Phase 4 | Complete |
-| OTEL-07 | v2.0 Phase 5 | Complete |
-| OTEL-08 | v2.0 Phase 5 | Complete |
+| OTEL-04 | v2.0 Phase 4 | Pending |
+| OTEL-05 | v2.0 Phase 4 | Pending |
+| OTEL-07 | v2.0 Phase 5 | Pending |
+| OTEL-08 | v2.0 Phase 5 | Pending |
 
 ---
 

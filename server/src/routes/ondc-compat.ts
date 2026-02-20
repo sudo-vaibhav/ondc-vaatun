@@ -245,7 +245,11 @@ ondcCompatRouter.post("/search", async (req, res) => {
       "Sending ONDC request",
     );
 
-    const response = await ondcClient.send<Record<string, unknown>>(gatewayUrl, "POST", payload);
+    const response = await ondcClient.send<Record<string, unknown>>(
+      gatewayUrl,
+      "POST",
+      payload,
+    );
 
     res.json({ ...response, transactionId, messageId });
   } catch (error) {
@@ -414,7 +418,11 @@ ondcCompatRouter.post("/select", async (req, res) => {
       traceparent,
     );
 
-    const response = await ondcClient.send<Record<string, unknown>>(selectUrl, "POST", payload);
+    const response = await ondcClient.send<Record<string, unknown>>(
+      selectUrl,
+      "POST",
+      payload,
+    );
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
@@ -640,7 +648,11 @@ ondcCompatRouter.post("/init", async (req, res) => {
       ? `${body.bppUri}init`
       : `${body.bppUri}/init`;
 
-    const response = await ondcClient.send<Record<string, unknown>>(initUrl, "POST", payload);
+    const response = await ondcClient.send<Record<string, unknown>>(
+      initUrl,
+      "POST",
+      payload,
+    );
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
@@ -877,7 +889,11 @@ ondcCompatRouter.post("/confirm", async (req, res) => {
       ? `${body.bppUri}confirm`
       : `${body.bppUri}/confirm`;
 
-    const response = await ondcClient.send<Record<string, unknown>>(confirmUrl, "POST", payload);
+    const response = await ondcClient.send<Record<string, unknown>>(
+      confirmUrl,
+      "POST",
+      payload,
+    );
 
     res.json({ ...response, transactionId: body.transactionId, messageId });
   } catch (error) {
@@ -1157,7 +1173,11 @@ ondcCompatRouter.post("/status", async (req, res) => {
     logger.info({ action: "status", url: statusUrl }, "Sending ONDC request");
     // Payload logged via span attributes
 
-    const response = await ondcClient.send<Record<string, unknown>>(statusUrl, "POST", payload);
+    const response = await ondcClient.send<Record<string, unknown>>(
+      statusUrl,
+      "POST",
+      payload,
+    );
 
     // Response logged via span attributes
 

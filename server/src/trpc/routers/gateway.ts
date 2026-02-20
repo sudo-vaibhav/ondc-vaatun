@@ -86,7 +86,11 @@ export const gatewayRouter = router({
           logger.debug({ payload }, "Search payload");
 
           // ondcClient.send() creates its own child span (ondc.http.request from 02-03)
-          const response = await ondcClient.send<Record<string, unknown>>(gatewayUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(
+            gatewayUrl,
+            "POST",
+            payload,
+          );
 
           logger.debug({ response }, "ONDC response received");
 
@@ -236,7 +240,11 @@ export const gatewayRouter = router({
           );
           logger.debug({ payload }, "Select payload");
 
-          const response = await ondcClient.send<Record<string, unknown>>(selectUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(
+            selectUrl,
+            "POST",
+            payload,
+          );
 
           logger.debug({ response }, "ONDC response received");
 
@@ -404,7 +412,11 @@ export const gatewayRouter = router({
           logger.info({ action: "init", url: initUrl }, "Sending ONDC request");
           logger.debug({ payload }, "Init payload");
 
-          const response = await ondcClient.send<Record<string, unknown>>(initUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(
+            initUrl,
+            "POST",
+            payload,
+          );
 
           logger.debug({ response }, "ONDC response received");
 
@@ -598,7 +610,11 @@ export const gatewayRouter = router({
           );
           logger.debug({ payload }, "Confirm payload");
 
-          const response = await ondcClient.send<Record<string, unknown>>(confirmUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(
+            confirmUrl,
+            "POST",
+            payload,
+          );
 
           logger.debug({ response }, "ONDC response received");
 
@@ -696,7 +712,11 @@ export const gatewayRouter = router({
           );
           logger.debug({ payload }, "Status payload");
 
-          const response = await ondcClient.send<Record<string, unknown>>(statusUrl, "POST", payload);
+          const response = await ondcClient.send<Record<string, unknown>>(
+            statusUrl,
+            "POST",
+            payload,
+          );
 
           logger.debug({ response }, "ONDC response received");
 
