@@ -187,7 +187,7 @@ test.describe("Gateway API", () => {
             transaction_id: "019abc12-3456-7890-abcd-ef1234567890",
             message_id: "019abc12-3456-7890-abcd-ef1234567891",
             timestamp: new Date().toISOString(),
-            version: "2.0.1",
+            version: "2.0.0",
           },
           message: {
             catalog: {
@@ -290,7 +290,7 @@ test.describe("Gateway API", () => {
             transaction_id: "019abc12-3456-7890-abcd-ef1234567890",
             message_id: "019abc12-3456-7890-abcd-ef1234567891",
             timestamp: new Date().toISOString(),
-            version: "2.0.1",
+            version: "2.0.0",
           },
           message: {
             order: {

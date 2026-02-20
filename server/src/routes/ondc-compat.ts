@@ -420,7 +420,7 @@ ondcCompatRouter.post("/select", async (req, res) => {
           message_id: messageId,
           timestamp: new Date().toISOString(),
           ttl: "PT30S",
-          version: "2.0.1",
+          version: "2.0.0",
         },
         message: {
           order: { provider: { id: body.providerId }, items },
@@ -653,7 +653,7 @@ ondcCompatRouter.post("/init", async (req, res) => {
           message_id: messageId,
           timestamp: new Date().toISOString(),
           ttl: "P24H",
-          version: "2.0.1",
+          version: "2.0.0",
         },
         message: {
           order: {
@@ -902,7 +902,7 @@ ondcCompatRouter.post("/confirm", async (req, res) => {
           message_id: messageId,
           timestamp: new Date().toISOString(),
           ttl: "P24H",
-          version: "2.0.1",
+          version: "2.0.0",
         },
         message: {
           order: {
@@ -1237,7 +1237,7 @@ ondcCompatRouter.post("/status", async (req, res) => {
           message_id: messageId,
           timestamp: new Date().toISOString(),
           ttl: "PT10M",
-          version: "2.0.1",
+          version: "2.0.0",
         },
         message: {
           order_id: body.orderId,

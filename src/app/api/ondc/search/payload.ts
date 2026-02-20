@@ -115,6 +115,6 @@ function createPayloadContext(transactionId: string, messageId: string) {
     // Timing details
     timestamp: new Date().toISOString(), // Time of request generation in RFC3339 format
     ttl: "PT5M", // Duration in ISO8601 format after timestamp for which message holds valid
-    version: "2.0.1", // Version of transaction protocol being used
+    version: "2.0.0", // Version of transaction protocol being used
   };
 }
