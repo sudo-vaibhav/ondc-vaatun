@@ -139,7 +139,7 @@ export const POST = createONDCHandler(
           message_id: messageId,
           timestamp: new Date().toISOString(),
           ttl: "PT30S",
-          version: "2.0.1",
+          version: "2.0.0",
         },
         message: {
           order: {
