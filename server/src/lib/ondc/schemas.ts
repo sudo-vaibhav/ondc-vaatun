@@ -5,7 +5,7 @@
  * - Response schemas: Use z.looseObject() to allow additional fields from external APIs
  * - Request schemas: Use z.object() for strict validation of outgoing requests
  *
- * Source: ONDC-Official/ONDC-FIS-Specifications @ draft-FIS13-health-2.0.1
+ * Source: ONDC-Official/ONDC-FIS-Specifications @ draft-FIS13-health-2.0.0
  */
 
 import { z } from "zod";

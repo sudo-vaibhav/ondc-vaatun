@@ -143,9 +143,9 @@ export function ReviewPage({
   const hasNominees = formData.nominees && formData.nominees.length > 0;
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Main content - 2/3 width on desktop */}
-      <div className="lg:col-span-2 space-y-6">
+    <div className="flex flex-wrap items-start gap-4 sm:gap-6">
+      {/* Main content */}
+      <div className="flex-[2_1_32rem] min-w-[min(100%,32rem)] space-y-4 sm:space-y-6 min-w-0">
         {/* Personal Information Section */}
         <ReviewSection
           title="Personal Information"
@@ -160,7 +160,7 @@ export function ReviewPage({
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Email</dt>
-              <dd className="font-medium">{formData.email}</dd>
+              <dd className="font-medium break-all">{formData.email}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">Phone</dt>
@@ -168,7 +168,7 @@ export function ReviewPage({
             </div>
             <div className="sm:col-span-2">
               <dt className="text-sm text-muted-foreground">Address</dt>
-              <dd className="font-medium">{formData.address}</dd>
+              <dd className="font-medium break-words">{formData.address}</dd>
             </div>
             <div>
               <dt className="text-sm text-muted-foreground">City</dt>
@@ -193,7 +193,7 @@ export function ReviewPage({
           <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <dt className="text-sm text-muted-foreground">PAN</dt>
-              <dd className="font-medium font-mono">
+              <dd className="font-medium font-mono break-all">
                 {maskPAN(formData.panNumber)}
               </dd>
             </div>
@@ -316,9 +316,9 @@ export function ReviewPage({
         </Card>
       </div>
 
-      {/* Sidebar - 1/3 width on desktop */}
-      <div className="lg:col-span-1">
-        <Card className="sticky top-4">
+      {/* Sidebar */}
+      <div className="flex-[1_1_18rem] min-w-[min(100%,18rem)] min-w-0">
+        <Card className="2xl:sticky 2xl:top-4">
           <CardHeader>
             <CardTitle>Quote Summary</CardTitle>
           </CardHeader>

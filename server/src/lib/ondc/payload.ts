@@ -108,6 +108,6 @@ function createPayloadContext(
     message_id: messageId,
     timestamp: new Date().toISOString(),
     ttl: "PT5M",
-    version: "2.0.1",
+    version: "2.0.0",
   };
 }

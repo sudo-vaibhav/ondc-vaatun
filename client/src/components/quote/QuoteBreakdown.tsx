@@ -73,8 +73,8 @@ export default function QuoteBreakdown({ quote }: QuoteBreakdownProps) {
   return (
     <Card className="border-2 border-foreground shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,1)]">
       <CardHeader className="pb-2">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <CardTitle className="text-base sm:text-lg flex items-center gap-2">
             <Receipt className="h-5 w-5" />
             Quote Breakdown
           </CardTitle>
@@ -99,14 +99,11 @@ export default function QuoteBreakdown({ quote }: QuoteBreakdownProps) {
         {/* Price Breakdown Table */}
         <div className="space-y-2">
           {baseItems.map((item) => (
-            <div
-              key={item.title}
-              className="flex justify-between items-center py-1"
-            >
-              <span className="text-sm text-muted-foreground">
+            <div key={item.title} className="flex justify-between gap-3 py-1">
+              <span className="text-sm text-muted-foreground min-w-0 break-words">
                 {formatTitle(item.title)}
               </span>
-              <span className="text-sm font-medium">
+              <span className="text-sm font-medium shrink-0">
                 {formatCurrency(item.price.value, item.price.currency)}
               </span>
             </div>
@@ -120,15 +117,12 @@ export default function QuoteBreakdown({ quote }: QuoteBreakdownProps) {
                 Add-ons
               </p>
               {addOnItems.map((item) => (
-                <div
-                  key={`${item.item?.id}`}
-                  className="flex justify-between items-center py-1 pl-4"
-                >
-                  <span className="text-sm text-muted-foreground">
+                <div key={`${item.item?.id}`} className="flex justify-between gap-3 py-1 pl-4">
+                  <span className="text-sm text-muted-foreground min-w-0 break-words">
                     {item.item?.add_ons?.map((a) => a.id).join(", ") ||
                       "Add-on"}
                   </span>
-                  <span className="text-sm font-medium">
+                  <span className="text-sm font-medium shrink-0">
                     {formatCurrency(item.price.value, item.price.currency)}
                   </span>
                 </div>
@@ -140,9 +134,9 @@ export default function QuoteBreakdown({ quote }: QuoteBreakdownProps) {
         <Separator className="my-4 border-foreground" />
 
         {/* Total */}
-        <div className="flex justify-between items-center">
-          <span className="text-lg font-bold">Total Premium</span>
-          <span className="text-xl font-bold text-primary">
+        <div className="flex justify-between items-end gap-3">
+          <span className="text-base sm:text-lg font-bold">Total Premium</span>
+          <span className="text-lg sm:text-xl font-bold text-primary shrink-0">
             {formatCurrency(total.value, total.currency)}
           </span>
         </div>

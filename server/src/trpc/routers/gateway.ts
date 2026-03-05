@@ -209,7 +209,7 @@ export const gatewayRouter = router({
               message_id: messageId,
               timestamp: new Date().toISOString(),
               ttl: "PT30S",
-              version: "2.0.1",
+              version: "2.0.0",
             },
             message: {
               order: {
@@ -373,7 +373,7 @@ export const gatewayRouter = router({
               message_id: messageId,
               timestamp: new Date().toISOString(),
               ttl: "P24H",
-              version: "2.0.1",
+              version: "2.0.0",
             },
             message: {
               order: {
@@ -560,7 +560,7 @@ export const gatewayRouter = router({
               message_id: messageId,
               timestamp: new Date().toISOString(),
               ttl: "P24H",
-              version: "2.0.1",
+              version: "2.0.0",
             },
             message: {
               order: {
@@ -695,7 +695,7 @@ export const gatewayRouter = router({
               message_id: messageId,
               timestamp: new Date().toISOString(),
               ttl: "PT10M", // Shorter TTL for status
-              version: "2.0.1",
+              version: "2.0.0",
             },
             message: {
               order_id: input.orderId,
